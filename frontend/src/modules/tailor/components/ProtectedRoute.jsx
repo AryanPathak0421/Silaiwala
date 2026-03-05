@@ -1,0 +1,35 @@
+import React from 'react';
+import { Navigate, Outlet } from 'react-router-dom';
+import { useTailorAuth, TAILOR_STATUS } from '../context/AuthContext';
+
+const ProtectedRoute = ({ requiredStatus = [TAILOR_STATUS.APPROVED] }) => {
+    const { token, status, loading } = useTailorAuth();
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[#f8faf9]">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#1e3932]"></div>
+            </div>
+        );
+    }
+
+    if (!token) {
+        return <Navigate to="/tailor/login" replace />;
+    }
+
+    if (status === TAILOR_STATUS.PENDING_APPROVAL && !requiredStatus.includes(TAILOR_STATUS.PENDING_APPROVAL)) {
+        return <Navigate to="/tailor/under-review" replace />;
+    }
+
+    if (status === TAILOR_STATUS.REJECTED && !requiredStatus.includes(TAILOR_STATUS.REJECTED)) {
+        return <Navigate to="/tailor/rejected" replace />;
+    }
+
+    if (!requiredStatus.includes(status)) {
+        return <Navigate to="/tailor/login" replace />;
+    }
+
+    return <Outlet />;
+};
+
+export default ProtectedRoute;

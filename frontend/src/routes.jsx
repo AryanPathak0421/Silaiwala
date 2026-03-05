@@ -3,10 +3,28 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 
 // Layouts
 import AuthLayout from './layouts/AuthLayout';
+import TailorLayout from './layouts/TailorLayout';
+import AdminLayout from './layouts/AdminLayout';
 
 // Auth Pages
 import Login from './modules/auth/pages/Login';
 import Signup from './modules/auth/pages/Signup';
+
+// Tailor Module Pages
+import TailorLogin from './modules/tailor/pages/Login';
+import TailorRegistration from './modules/tailor/pages/Registration';
+import { UnderReview, RejectedPage } from './modules/tailor/pages/StatusPages';
+import TailorProtectedRoute from './modules/tailor/components/ProtectedRoute';
+import { TAILOR_STATUS } from './modules/tailor/context/AuthContext';
+import TailorOverview from './modules/tailor/pages/Overview';
+import TailorOrders from './modules/tailor/pages/Orders';
+import TailorProducts from './modules/tailor/pages/Products';
+import DeliveryDetails from './modules/tailor/pages/DeliveryDetails';
+import VerificationStatus from './modules/tailor/pages/VerificationStatus';
+import SubscriptionSettings from './modules/tailor/pages/Subscription';
+import ProfileSettings from './modules/tailor/pages/ProfileSettings';
+import TailorWithdraw from './modules/tailor/pages/Withdraw';
+import TailorNotifications from './modules/tailor/pages/Notifications';
 
 // Customer Pages
 import CustomerHome from './modules/customer/pages/Home';
@@ -49,7 +67,7 @@ const AppRoutes = () => {
             </Route>
 
             {/* Customer Routes */}
-            <Route path="/" element={<CustomerHome />} />
+            <Route path="/" element={<Navigate to="/tailor/login" replace />} />
             <Route path="/services" element={<ServicesPage />} />
             <Route path="/services/:id" element={<ServiceDetailPage />} />
 
@@ -73,13 +91,44 @@ const AppRoutes = () => {
 
             <Route path="/cart" element={<CartPage />} />
             <Route path="/wishlist" element={<WishlistPage />} />
-            <Route path="/tailor" element={<TailorDashboard />} />
+
+            {/* Tailor Public Routes */}
+            <Route path="/tailor/login" element={<TailorLogin />} />
+            <Route path="/tailor/register" element={<TailorRegistration />} />
+            <Route path="/tailor/under-review" element={<UnderReview />} />
+            <Route path="/tailor/rejected" element={<RejectedPage />} />
+
+            {/* Tailor Protected Routes */}
+            <Route element={<TailorProtectedRoute requiredStatus={[TAILOR_STATUS.APPROVED]} />}>
+                <Route element={<TailorLayout />}>
+                    <Route path="/tailor" element={<TailorOverview />} />
+                    <Route path="/tailor/orders" element={<TailorOrders />} />
+                    <Route path="/tailor/portfolio" element={<TailorProducts />} />
+                    <Route path="/tailor/earnings" element={<TailorOverview />} />
+                    <Route path="/tailor/products" element={<TailorProducts />} />
+                    <Route path="/tailor/delivery" element={<DeliveryDetails />} />
+                    <Route path="/tailor/verification" element={<VerificationStatus />} />
+                    <Route path="/tailor/subscription" element={<SubscriptionSettings />} />
+                    <Route path="/tailor/settings" element={<ProfileSettings />} />
+                </Route>
+                {/* Full screen tailor views separated from layout nav */}
+                <Route path="/tailor/withdraw" element={<TailorWithdraw />} />
+                <Route path="/tailor/notifications" element={<TailorNotifications />} />
+            </Route>
 
             {/* Delivery Routes */}
             <Route path="/delivery" element={<DeliveryDashboard />} />
 
-            {/* Admin Routes */}
-            <Route path="/admin" element={<AdminDashboard />} />
+            {/* Admin Module */}
+            <Route element={<AdminLayout />}>
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/orders" element={<AdminDashboard />} />
+                <Route path="/admin/tailors" element={<AdminDashboard />} />
+                <Route path="/admin/delivery" element={<AdminDashboard />} />
+                <Route path="/admin/customers" element={<AdminDashboard />} />
+                <Route path="/admin/services" element={<AdminDashboard />} />
+                <Route path="/admin/reports" element={<AdminDashboard />} />
+            </Route>
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />

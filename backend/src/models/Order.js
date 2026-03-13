@@ -1,0 +1,90 @@
+const mongoose = require("mongoose");
+
+const orderSchema = new mongoose.Schema(
+  {
+    orderId: {
+      type: String,
+      unique: true,
+      required: true,
+    },
+    customer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    tailor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    deliveryPartner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    items: [
+      {
+        product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+        service: { type: mongoose.Schema.Types.ObjectId, ref: "Service" },
+        fabricSource: {
+          type: String,
+          enum: ["customer", "platform"],
+          default: "customer",
+        },
+        deliveryType: {
+          type: String,
+          enum: ["standard", "express", "premium"],
+          default: "standard",
+        },
+        selectedFabric: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+        quantity: { type: Number, default: 1 },
+        price: Number,
+        measurements: Map,
+      },
+    ],
+    totalAmount: {
+      type: Number,
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ["pending", "accepted", "in-progress", "completed", "ready-for-pickup", "out-for-delivery", "delivered", "failed-delivery", "cancelled"],
+      default: "pending",
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "paid", "refunded", "failed"],
+      default: "pending",
+    },
+    paymentId: String, // Razorpay Payment ID
+    razorpayOrderId: String,
+    deliveryAddress: {
+      street: String,
+      city: String,
+      state: String,
+      zipCode: String,
+    },
+    trackingHistory: [
+      {
+        status: String,
+        timestamp: { type: Date, default: Date.now },
+        message: String,
+        proof: String,
+      },
+    ],
+    deliveryProof: String,
+    acceptedAt: Date,
+    deliveredAt: Date,
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Indexes for optimization
+orderSchema.index({ customer: 1, status: 1 });
+orderSchema.index({ tailor: 1, status: 1 });
+orderSchema.index({ deliveryPartner: 1, status: 1 });
+
+const Order = mongoose.model("Order", orderSchema);
+
+module.exports = Order;

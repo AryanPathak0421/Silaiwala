@@ -17,6 +17,11 @@ const deliveryService = {
         return response.data;
     },
 
+    submitDocuments: async (documents) => {
+        const response = await api.post('/deliveries/documents', { documents });
+        return response.data;
+    },
+
     getStats: async () => {
         const response = await api.get('/deliveries/stats');
         return response.data;

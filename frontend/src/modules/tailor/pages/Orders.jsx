@@ -5,6 +5,8 @@ import { io } from 'socket.io-client';
 import { SOCKET_URL } from '../../../config/constants';
 import { useTailorAuth } from '../context/AuthContext';
 import api from '../services/api';
+import { cn } from '../../../utils/cn';
+import { Truck, Phone } from 'lucide-react';
 
 const Orders = () => {
     const { user } = useTailorAuth();
@@ -81,14 +83,40 @@ const Orders = () => {
     }, [location]);
 
     const getStatusIcon = (status) => {
-        switch (status) {
-            case 'CUTTING': return <Scissors size={14} />;
-            case 'STITCHING': return <Layers size={14} />;
-            case 'READY': return <CheckCircle2 size={14} />;
-            case 'DELIVERED': return <Check size={14} />;
-            case 'CANCELLED': return <X size={14} />;
+        const s = status?.toLowerCase();
+        switch (s) {
+            case 'cutting': return <Scissors size={14} />;
+            case 'stitching': return <Layers size={14} />;
+            case 'ready-for-pickup': 
+            case 'ready': return <CheckCircle2 size={14} />;
+            case 'out-for-delivery':
+            case 'delivered': return <Check size={14} />;
+            case 'cancelled': return <X size={14} />;
             default: return null;
         }
+    };
+
+    const getDeadlineInfo = (createdAt, items) => {
+        if (!createdAt) return { text: 'Upcoming', color: 'text-gray-400', pulse: false };
+        const date = new Date(createdAt);
+        const deliveryType = items?.[0]?.deliveryType || 'standard';
+        
+        let days = 15;
+        if (deliveryType === 'express') days = 10;
+        if (deliveryType === 'premium') days = 7;
+        
+        date.setDate(date.getDate() + days);
+        const now = new Date();
+        const diffTime = date - now;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        
+        if (diffDays < 0) return { text: `Overdue (${formattedDate})`, color: 'text-red-600', pulse: true };
+        if (diffDays <= 2) return { text: `Urgent: ${formattedDate}`, color: 'text-red-500', pulse: true };
+        if (diffDays <= 5) return { text: `Due: ${formattedDate}`, color: 'text-orange-500', pulse: false };
+        
+        return { text: formattedDate, color: 'text-green-600', pulse: false };
     };
 
     const handleAction = (action, order) => {
@@ -151,6 +179,38 @@ const Orders = () => {
                             </div>
                         </div>
 
+                        {/* Workflow Actions */}
+                        <div className="pt-4 border-t border-gray-50">
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-3">Update Work Progress</p>
+                            <div className="grid grid-cols-2 gap-2">
+                                {[
+                                    { status: 'cutting', label: 'Cutting Started', icon: <Scissors size={14}/> },
+                                    { status: 'stitching', label: 'Stitching', icon: <Layers size={14}/> },
+                                    { status: 'ready-for-pickup', label: 'Ready for Pickup', icon: <CheckCircle2 size={14}/> },
+                                    { status: 'out-for-delivery', label: 'Out for Delivery', icon: <Truck size={14}/> }
+                                ].map((btn) => (
+                                    <button
+                                        key={btn.status}
+                                        onClick={() => handleStatusUpdate(order._id, btn.status)}
+                                        className={cn(
+                                            "p-3 rounded-2xl border text-[10px] font-black uppercase text-left flex items-center gap-2 transition-all",
+                                            order.status === btn.status 
+                                                ? "bg-[#1e3932] text-white border-[#1e3932] shadow-md" 
+                                                : "bg-white text-gray-500 border-gray-100 hover:border-gray-200"
+                                        )}
+                                    >
+                                        <div className={cn(
+                                            "w-6 h-6 rounded-lg flex items-center justify-center",
+                                            order.status === btn.status ? "bg-white/20" : "bg-gray-50 text-gray-400"
+                                        )}>
+                                            {btn.icon}
+                                        </div>
+                                        {btn.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
                         <div className="space-y-4 pt-4 border-t border-gray-50">
                             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Configuration</p>
                             <div className="grid grid-cols-2 gap-4">
@@ -164,6 +224,29 @@ const Orders = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {order.deliveryPartner && (
+                            <div className="pt-4 border-t border-gray-50">
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-2">Delivery Partner</p>
+                                <div className="flex items-center justify-between bg-blue-50/50 p-3 rounded-2xl border border-blue-100/50">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-[#1e3932] shadow-sm">
+                                            <Truck size={20} />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-black text-gray-900">{order.deliveryPartner.name}</p>
+                                            <p className="text-[10px] text-gray-500 font-bold">Rider assigned</p>
+                                        </div>
+                                    </div>
+                                    <a 
+                                        href={`tel:${order.deliveryPartner.phoneNumber}`}
+                                        className="p-2 bg-white text-[#1e3932] rounded-full shadow-sm hover:scale-110 transition-transform"
+                                    >
+                                        <Phone size={16} />
+                                    </a>
+                                </div>
+                            </div>
+                        )}
 
                         {order.deliveryAddress && (
                             <div className="pt-4 border-t border-gray-50">
@@ -278,9 +361,14 @@ const Orders = () => {
                             <div className="flex justify-between items-end border-t border-gray-50 pt-3 mt-1">
                                 <div>
                                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Deadline</p>
-                                    <p className="text-xs font-black text-red-500 animate-pulse">
-                                        {activeTab === 'new' ? 'Today' : 'Upcoming'}
-                                    </p>
+                                    {(() => {
+                                        const { text, color, pulse } = getDeadlineInfo(order.createdAt, order.items);
+                                        return (
+                                            <p className={cn("text-xs font-black", color, pulse && "animate-pulse")}>
+                                                {text}
+                                            </p>
+                                        );
+                                    })()}
                                 </div>
                                 <div className="flex gap-2">
                                     {order.status === 'pending' ? (
@@ -298,10 +386,27 @@ const Orders = () => {
                                                 <X size={14} strokeWidth={4} /> Reject
                                             </button>
                                         </>
+                                    ) : order.status === 'fabric-ready-for-pickup' ? (
+                                        <div className="px-4 py-2 bg-amber-50 text-amber-600 text-[10px] font-black uppercase rounded-xl flex items-center gap-1.5 ring-1 ring-amber-100">
+                                            <Truck size={14} className="animate-pulse" />
+                                            Waiting for Rider
+                                        </div>
+                                    ) : order.status === 'fabric-picked-up' ? (
+                                        <div className="px-4 py-2 bg-blue-50 text-blue-600 text-[10px] font-black uppercase rounded-xl flex items-center gap-1.5 ring-1 ring-blue-100">
+                                            <Truck size={14} className="animate-bounce" />
+                                            Fabric In-Transit
+                                        </div>
+                                    ) : order.status === 'fabric-delivered' ? (
+                                        <button
+                                            onClick={() => handleStatusUpdate(order._id, 'cutting')}
+                                            className="px-4 py-2 bg-[#1e3932] text-white text-[10px] font-black uppercase rounded-xl shadow-md active:scale-95 transition-all flex items-center gap-1.5"
+                                        >
+                                            <Scissors size={14} /> Start Batch
+                                        </button>
                                     ) : (
                                         <button className="px-4 py-2 bg-gray-100 text-[#1e3932] text-[10px] font-black uppercase rounded-xl flex items-center gap-1.5 ring-1 ring-gray-200">
                                             {getStatusIcon(order.status)}
-                                            {order.status}
+                                            {order.status.replace(/-/g, ' ')}
                                         </button>
                                     )}
                                 </div>

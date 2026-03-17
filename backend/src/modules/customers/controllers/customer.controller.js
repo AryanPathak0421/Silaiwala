@@ -18,7 +18,12 @@ exports.getProfile = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("User not found", 404));
   }
   
-  const customerProfile = await Customer.findOne({ user: req.user.id }).lean();
+  let customerProfile = await Customer.findOne({ user: req.user.id }).lean();
+  
+  if (!customerProfile && user.role === "customer") {
+    customerProfile = await Customer.create({ user: req.user.id });
+    customerProfile = customerProfile.toJSON();
+  }
   
   // Calculate Stats
   const [totalOrders, pendingOrders] = await Promise.all([

@@ -4,7 +4,7 @@ const tailorWorkSampleSchema = new mongoose.Schema(
   {
     tailor: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Tailor",
       required: true,
     },
     title: {

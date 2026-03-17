@@ -12,18 +12,22 @@ import BottomNav from '../components/BottomNav';
 const StorePage = () => {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [filters, setFilters] = useState({});
-    const [activeCategory, setActiveCategory] = useState("All");
+    const [activeCategory, setActiveCategory] = useState({ name: "All", id: null });
     const [searchQuery, setSearchQuery] = useState("");
 
+    const handleCategorySelect = (name, id) => {
+        setActiveCategory({ name, id });
+    };
+
     return (
-        <div className="min-h-screen bg-gray-50 pb-24 font-sans">
+        <div className="min-h-screen bg-gray-50 pb-24 font-sans text-[#1e3932]">
             {/* 1. Sticky Header */}
             <StoreHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
             {/* 3. Categories */}
             <CategoryScroll
-                activeCategory={activeCategory}
-                onSelectCategory={setActiveCategory}
+                activeCategory={activeCategory.name}
+                onSelectCategory={handleCategorySelect}
             />
 
             {/* 4. Search & Filter Bar (Sticky below header approx) */}
@@ -41,7 +45,7 @@ const StorePage = () => {
             </div>
 
             {/* 5. Product Grid (Infinite Scroll) */}
-            <ProductGrid filters={filters} category={activeCategory} searchQuery={searchQuery} />
+            <ProductGrid filters={filters} categoryId={activeCategory.id} categoryName={activeCategory.name} searchQuery={searchQuery} />
 
             {/* 6. Recently Viewed */}
             <RecentlyViewed />

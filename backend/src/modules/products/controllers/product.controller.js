@@ -119,7 +119,17 @@ exports.getFeaturedProducts = asyncHandler(async (req, res, next) => {
  * @access  Public
  */
 exports.getCategories = asyncHandler(async (req, res, next) => {
-  const categories = await Category.find({ isActive: true }).lean();
+  const { parent, type } = req.query;
+  let query = { isActive: true };
+  
+  if (parent) {
+    query.parentCategory = parent === 'null' ? null : parent;
+  }
+  if (type) {
+    query.type = type;
+  }
+
+  const categories = await Category.find(query).lean();
   res.status(200).json({
     success: true,
     data: categories,

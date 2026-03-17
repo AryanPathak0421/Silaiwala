@@ -59,6 +59,10 @@ const deliverySchema = new mongoose.Schema(
       accountNumber: String,
       ifscCode: String,
     },
+    emergencyContact: {
+      type: String,
+      trim: true,
+    },
   },
   {
     timestamps: true,

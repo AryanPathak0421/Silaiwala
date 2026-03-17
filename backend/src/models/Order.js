@@ -47,8 +47,27 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "accepted", "in-progress", "completed", "ready-for-pickup", "out-for-delivery", "delivered", "failed-delivery", "cancelled"],
+      enum: [
+        "pending", 
+        "fabric-ready-for-pickup",
+        "fabric-picked-up",
+        "fabric-delivered",
+        "accepted", 
+        "in-progress", 
+        "cutting",
+        "stitching",
+        "completed", 
+        "ready-for-pickup", 
+        "out-for-delivery", 
+        "delivered", 
+        "failed-delivery", 
+        "cancelled"
+      ],
       default: "pending",
+    },
+    fabricPickupRequired: {
+        type: Boolean,
+        default: false
     },
     paymentStatus: {
       type: String,
@@ -72,6 +91,11 @@ const orderSchema = new mongoose.Schema(
       },
     ],
     deliveryProof: String,
+    couponCode: String,
+    discountAmount: {
+      type: Number,
+      default: 0
+    },
     acceptedAt: Date,
     deliveredAt: Date,
   },

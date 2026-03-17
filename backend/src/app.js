@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
@@ -21,10 +22,10 @@ app.use(
   })
 );
 
-// Global Rate Limiter – 100 requests per 15 min per IP
+// Global Rate Limiter – Increased for development
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 10000, // Increased from 100
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -38,6 +39,9 @@ app.use(globalLimiter);
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+// ─── Static Files ────────────────────────────────────────────────────────────
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // ─── HTTP Request Logger ─────────────────────────────────────────────────────
 
@@ -69,7 +73,9 @@ app.use("/api/v1/services", require("./modules/services/routes/service.routes"))
 app.use("/api/v1/notifications", require("./modules/notifications/routes/notification.routes"));
 app.use("/api/v1/tailors", require("./modules/tailors/routes/tailor.routes"));
 app.use("/api/v1/deliveries", require("./modules/deliveries/routes/delivery.routes"));
-
+app.use("/api/v1/admin", require("./modules/admin/routes/admin.routes"));
+app.use("/api/v1/cms", require("./modules/public/routes/cms.routes"));
+app.use("/api/v1/upload", require("./routes/upload.routes"));
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 
 app.use((req, res, next) => {

@@ -46,7 +46,7 @@ const productSchema = new mongoose.Schema(
     },
     tailor: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Tailor",
       required: true,
     },
     stock: {
@@ -86,6 +86,11 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    productType: {
+      type: String,
+      enum: ["store_item", "fabric"],
+      default: "store_item",
+    },
   },
   {
     timestamps: true,
@@ -96,5 +101,6 @@ const productSchema = new mongoose.Schema(
 productSchema.index({ name: "text", description: "text" });
 productSchema.index({ category: 1, price: 1 });
 productSchema.index({ tailor: 1 });
+productSchema.index({ tailor: 1, productType: 1, isActive: 1, inStock: 1 });
 
 module.exports = mongoose.model("Product", productSchema);

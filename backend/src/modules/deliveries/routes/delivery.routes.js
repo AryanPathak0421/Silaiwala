@@ -9,6 +9,7 @@ const {
   getAvailableOrders,
   acceptOrder,
   updateDeliveryStatus,
+  submitDocuments,
 } = require("../controllers/delivery.controller");
 const { protect, authorize } = require("../../../middlewares/auth.middleware");
 
@@ -24,5 +25,6 @@ router.get("/orders", getAssignedOrders);
 router.get("/available-orders", getAvailableOrders);
 router.post("/orders/:id/accept", acceptOrder);
 router.patch("/orders/:id/status", updateDeliveryStatus);
+router.post("/documents", submitDocuments);
 
 module.exports = router;

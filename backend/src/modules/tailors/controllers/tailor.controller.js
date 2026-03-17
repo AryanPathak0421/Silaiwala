@@ -65,6 +65,10 @@ exports.getTailors = asyncHandler(async (req, res, next) => {
  * @access  Public
  */
 exports.getTailorDetails = asyncHandler(async (req, res, next) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return next(new ErrorResponse("Invalid Tailor ID format", 400));
+  }
+
   const tailor = await Tailor.findById(req.params.id)
     .populate({
       path: "user",
@@ -87,7 +91,7 @@ exports.getTailorDetails = asyncHandler(async (req, res, next) => {
  * @access  Private (Tailor)
  */
 exports.getMyProfile = asyncHandler(async (req, res, next) => {
-  const tailor = await Tailor.findOne({ user: req.user.id }).populate("user", "name email phoneNumber profileImage");
+  const tailor = await Tailor.findOne({ user: req.user.id }).populate("user", "name email phoneNumber profileImage isActive");
 
   if (!tailor) {
     return next(new ErrorResponse("Tailor profile not found", 404));
@@ -252,12 +256,25 @@ exports.getDashboardData = asyncHandler(async (req, res, next) => {
           },
           { $unwind: "$customerInfo" },
           {
+            $lookup: {
+              from: "users",
+              localField: "deliveryPartner",
+              foreignField: "_id",
+              as: "deliveryPartnerInfo"
+            }
+          },
+          { $unwind: { path: "$deliveryPartnerInfo", preserveNullAndEmptyArrays: true } },
+          {
             $project: {
               orderId: 1,
               totalAmount: 1,
               status: 1,
               createdAt: 1,
               customerName: "$customerInfo.name",
+              deliveryPartner: {
+                name: "$deliveryPartnerInfo.name",
+                phoneNumber: "$deliveryPartnerInfo.phoneNumber"
+              },
               items: 1
             }
           }
@@ -305,14 +322,21 @@ exports.getOrders = asyncHandler(async (req, res, next) => {
 
   if (status) {
     const statusLower = status.toLowerCase();
-    if (statusLower === 'new') query.status = 'pending';
-    else if (statusLower === 'active') query.status = { $in: ['accepted', 'in-progress', 'completed'] };
-    else if (statusLower === 'history') query.status = { $in: ['delivered', 'cancelled'] };
+    if (statusLower === 'new') {
+      query.status = { $in: ['pending', 'fabric-ready-for-pickup', 'fabric-picked-up', 'fabric-delivered'] };
+    }
+    else if (statusLower === 'active') {
+      query.status = { $in: ['accepted', 'in-progress', 'cutting', 'stitching', 'completed', 'ready-for-pickup', 'out-for-delivery'] };
+    }
+    else if (statusLower === 'history') {
+      query.status = { $in: ['delivered', 'cancelled'] };
+    }
     else query.status = status;
   }
 
   const orders = await Order.find(query)
     .populate('customer', 'name profileImage phoneNumber')
+    .populate('deliveryPartner', 'name phoneNumber profileImage')
     .populate({
       path: 'items.service',
       select: 'title image'
@@ -339,7 +363,7 @@ exports.getOrders = asyncHandler(async (req, res, next) => {
  */
 exports.updateOrderStatus = asyncHandler(async (req, res, next) => {
   const { status, message } = req.body;
-  const allowedStatuses = ["accepted", "in-progress", "completed", "delivered", "cancelled"];
+  const allowedStatuses = ["accepted", "cutting", "stitching", "ready-for-pickup", "out-for-delivery", "delivered", "cancelled"];
 
   if (!allowedStatuses.includes(status)) {
     return next(new ErrorResponse("Invalid status update", 400));
@@ -359,14 +383,61 @@ exports.updateOrderStatus = asyncHandler(async (req, res, next) => {
     order.deliveredAt = new Date();
   }
 
-  order.status = status;
+  // LOGIC: If tailor accepts AND fabric pickup is needed, change status to fabric-ready-for-pickup
+  let finalStatus = status;
+  if (status === "accepted" && order.fabricPickupRequired) {
+    finalStatus = "fabric-ready-for-pickup";
+  }
+
+  order.status = finalStatus;
   order.trackingHistory.push({
-    status,
-    message: message || `Order status updated to ${status}`,
+    status: finalStatus,
+    message: message || `Order status updated to ${finalStatus}`,
     timestamp: new Date()
   });
 
   await order.save();
+  
+  // Real-time notification for Delivery Partners if a task is now ready
+  if (finalStatus === "fabric-ready-for-pickup" || finalStatus === "ready-for-pickup") {
+    const Delivery = require("../../../models/Delivery");
+    const tailorProfile = await Tailor.findOne({ user: req.user.id });
+    
+    let nearbyRiders = [];
+    if (tailorProfile?.location?.coordinates) {
+       nearbyRiders = await Delivery.find({
+          isAvailable: true,
+          currentLocation: {
+             $near: {
+                $geometry: tailorProfile.location,
+                $maxDistance: 10000 // 10km radius
+             }
+          }
+       }).populate("user");
+    }
+
+    if (nearbyRiders.length > 0) {
+       // Target specific nearby riders
+       for (const rider of nearbyRiders) {
+          await sendNotification({
+            recipient: rider.user._id,
+            type: "NEW_DELIVERY_TASK",
+            title: `New Task Near You! 📍`,
+            message: `Order ${order.orderId} is ready for ${finalStatus.includes('fabric') ? 'fabric pickup' : 'final delivery'} at ${tailorProfile.shopName || 'Artisan Workshop'}.`,
+            data: { orderId: order._id, type: finalStatus, targetUrl: "/delivery/tasks" }
+          });
+       }
+    } else {
+       // Fallback: Notify all delivery partners if no one is explicitly "near" (or location missing)
+       await sendNotification({
+         recipient: "delivery_partners",
+         type: "NEW_DELIVERY_TASK",
+         title: "New Dispatch Available! 🚚",
+         message: `A new ${finalStatus.includes('fabric') ? 'fabric pickup' : 'final delivery'} task for order ${order.orderId} is available in your area.`,
+         data: { orderId: order._id, type: finalStatus, targetUrl: "/delivery/tasks" }
+       });
+    }
+  }
 
   // Notify Customer about status change
   let notificationType = "ORDER_STATUS_UPDATED";

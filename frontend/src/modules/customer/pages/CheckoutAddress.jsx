@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, CheckCircle2, ChevronRight, Plus, ArrowRight, MapPin } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAddressStore from '../../../store/userStore';
@@ -8,9 +8,11 @@ import { cn } from '../../../utils/cn';
 
 const CheckoutAddress = () => {
     const navigate = useNavigate();
-    const addresses = useAddressStore((state) => state.addresses);
-    const selectedAddressId = useAddressStore((state) => state.selectedAddressId);
-    const selectAddress = useAddressStore((state) => state.selectAddress);
+    const { addresses, selectedAddressId, selectAddress, fetchAddresses } = useAddressStore();
+
+    useEffect(() => {
+        fetchAddresses();
+    }, [fetchAddresses]);
 
     const [isAddingNew, setIsAddingNew] = useState(false);
 
@@ -81,10 +83,10 @@ const CheckoutAddress = () => {
                                 <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1 mb-2">Saved Addresses</h3>
                                 {addresses.map((addr) => (
                                     <AddressCard
-                                        key={addr.id}
+                                        key={addr._id}
                                         address={addr}
-                                        isSelected={selectedAddressId === addr.id}
-                                        onSelect={() => handleSelect(addr.id)}
+                                        isSelected={selectedAddressId === addr._id}
+                                        onSelect={() => handleSelect(addr._id)}
                                     />
                                 ))}
                             </>

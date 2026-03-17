@@ -8,9 +8,20 @@ const ErrorResponse = require("../../../utils/errorResponse");
  * @access  Private (Customer)
  */
 exports.getAddresses = asyncHandler(async (req, res, next) => {
-  const customer = await Customer.findOne({ user: req.user.id });
+  let customer = await Customer.findOne({ user: req.user.id });
+  
+  // Auto-create profile if role is customer but profile is missing
+  if (!customer && req.user.role === "customer") {
+    customer = await Customer.create({ user: req.user.id });
+  }
+
   if (!customer) {
-    return next(new ErrorResponse("Customer profile not found", 404));
+    // If it's an admin or other authorized role, return empty data instead of error
+    return res.status(200).json({
+      success: true,
+      count: 0,
+      data: [],
+    });
   }
 
   res.status(200).json({
@@ -26,7 +37,12 @@ exports.getAddresses = asyncHandler(async (req, res, next) => {
  * @access  Private (Customer)
  */
 exports.addAddress = asyncHandler(async (req, res, next) => {
-  const customer = await Customer.findOne({ user: req.user.id });
+  let customer = await Customer.findOne({ user: req.user.id });
+  
+  if (!customer && req.user.role === "customer") {
+    customer = await Customer.create({ user: req.user.id });
+  }
+
   if (!customer) {
     return next(new ErrorResponse("Customer profile not found", 404));
   }

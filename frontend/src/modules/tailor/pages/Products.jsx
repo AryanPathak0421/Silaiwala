@@ -7,19 +7,22 @@ const Products = () => {
     const [activeTab, setActiveTab] = useState('samples'); // 'samples' | 'fabrics'
     const [samples, setSamples] = useState([]);
     const [fabrics, setFabrics] = useState([]);
-    const [categories, setCategories] = useState([]);
+    const [categories, setCategories] = useState([]); // These will be top-level categories
+    const [subcategories, setSubcategories] = useState([]); // Tracks subcategories for selected parent
+    const [selectedParent, setSelectedParent] = useState(''); // Tracking parent category for Fabrics
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isImageUploading, setIsImageUploading] = useState(false);
     const [newItem, setNewItem] = useState({
         title: '',
         name: '',
         description: '',
         image: '',
-        laborPrice: '',
+        basePrice: '',
         price: '',
-        avgCompletionTime: '2 DAYS',
+        deliveryTime: '2-4 DAYS',
         stock: '',
         category: '',
         serviceType: 'STITCHING',
@@ -29,15 +32,22 @@ const Products = () => {
     const fetchData = async () => {
         setIsLoading(true);
         try {
-            const [samplesRes, productsRes, catsRes] = await Promise.all([
-                api.get('/tailors/work-samples'),
+            const [servicesRes, productsRes, catsRes] = await Promise.all([
+                api.get('/tailors/services'),
                 api.get('/tailors/products'),
                 api.get('/products/categories')
             ]);
             
-            if (samplesRes.data.success) setSamples(samplesRes.data.data);
+            if (servicesRes.data.success) setSamples(servicesRes.data.data);
             if (productsRes.data.success) setFabrics(productsRes.data.data);
-            if (catsRes.data.success) setCategories(catsRes.data.data);
+            
+            // Fetch top-level categories
+            if (catsRes.data.success) {
+                // For 'fabrics', we only want categories with parentCategory: null
+                // The API now supports 'parent' query param
+                const topLevelRes = await api.get('/products/categories?parent=null');
+                setCategories(topLevelRes.data.data);
+            }
         } catch (error) {
             console.error('Error fetching data:', error);
         } finally {
@@ -45,28 +55,82 @@ const Products = () => {
         }
     };
 
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        setIsImageUploading(true);
+        try {
+            const res = await api.post('/upload', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            setNewItem({ ...newItem, image: res.data.data });
+        } catch (error) {
+            console.error('Upload failed:', error);
+            alert('Image upload failed');
+        } finally {
+            setIsImageUploading(false);
+        }
+    };
+
     useEffect(() => {
         fetchData();
     }, []);
+
+    // Fetch subcategories when parent selection changes (only for Fabrics)
+    useEffect(() => {
+        const fetchSubcats = async () => {
+            if (activeTab === 'fabrics' && selectedParent) {
+                try {
+                    const res = await api.get(`/products/categories?parent=${selectedParent}`);
+                    setSubcategories(res.data.data);
+                } catch (error) {
+                    console.error('Error fetching subcategories:', error);
+                }
+            } else {
+                setSubcategories([]);
+            }
+        };
+        fetchSubcats();
+    }, [selectedParent, activeTab]);
 
     const handleAdd = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            const endpoint = activeTab === 'samples' ? '/tailors/work-samples' : '/tailors/products';
-            const payload = activeTab === 'samples' 
-                ? { ...newItem, name: newItem.title, tags: newItem.tags.split(',').map(t => t.trim()).filter(t => t !== '') } 
-                : { ...newItem, title: newItem.name };
+            let endpoint = '';
+            let payload = {};
+
+            if (activeTab === 'samples') {
+                endpoint = '/tailors/services';
+                payload = { 
+                    title: newItem.title,
+                    description: newItem.description,
+                    image: newItem.image,
+                    basePrice: newItem.basePrice,
+                    deliveryTime: newItem.deliveryTime,
+                    category: newItem.category,
+                    tags: newItem.tags.split(',').map(t => t.trim()).filter(t => t !== ''),
+                    isActive: true
+                };
+            } else if (activeTab === 'fabrics') {
+                endpoint = '/tailors/products';
+                payload = { ...newItem, title: newItem.name };
+            }
             
             const res = await api.post(endpoint, payload);
             if (res.data.success) {
                 setShowModal(false);
                 setNewItem({
                     title: '', name: '', description: '', image: '',
-                    laborPrice: '', price: '', avgCompletionTime: '2 DAYS',
+                    basePrice: '', price: '', deliveryTime: '2-4 DAYS',
                     stock: '', category: '', serviceType: 'STITCHING',
                     tags: ''
                 });
+                setSelectedParent('');
                 fetchData();
             }
         } catch (error) {
@@ -77,9 +141,16 @@ const Products = () => {
     };
 
     const handleDelete = async (id, type) => {
-        if (window.confirm(`Are you sure you want to delete this ${type === 'samples' ? 'sample' : 'fabric'}?`)) {
+        const typeLabels = {
+            samples: 'service',
+            fabrics: 'fabric'
+        };
+        if (window.confirm(`Are you sure you want to delete this ${typeLabels[type]}?`)) {
             try {
-                const endpoint = type === 'samples' ? `/tailors/work-samples/${id}` : `/tailors/products/${id}`;
+                let endpoint = '';
+                if (type === 'samples') endpoint = `/tailors/services/${id}`;
+                else if (type === 'fabrics') endpoint = `/tailors/products/${id}`;
+                
                 await api.delete(endpoint);
                 fetchData();
             } catch (error) {
@@ -99,10 +170,10 @@ const Products = () => {
             <div className="flex justify-between items-center mb-6">
                 <div>
                     <h3 className="text-2xl font-black text-[#1e3932] tracking-tighter">
-                        {activeTab === 'samples' ? 'My Samples' : 'Fabric Inventory'}
+                        {activeTab === 'samples' ? 'Stitching Services' : 'Fabric Inventory'}
                     </h3>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                        {activeTab === 'samples' ? 'Showcase your best work' : 'Manage your fabric materials'}
+                        {activeTab === 'samples' ? 'Manage your bookable services' : 'Manage your fabric materials'}
                     </p>
                 </div>
                 <button
@@ -119,13 +190,13 @@ const Products = () => {
                     onClick={() => setActiveTab('samples')}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 text-[10px] font-black uppercase tracking-widest rounded-[1rem] transition-all ${activeTab === 'samples' ? 'bg-[#1e3932] text-white shadow-md' : 'text-gray-400'}`}
                 >
-                    <Scissors size={14} /> My Samples
+                    <Layers size={14} /> Stitching Services
                 </button>
                 <button
                     onClick={() => setActiveTab('fabrics')}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 text-[10px] font-black uppercase tracking-widest rounded-[1rem] transition-all ${activeTab === 'fabrics' ? 'bg-[#1e3932] text-white shadow-md' : 'text-gray-400'}`}
                 >
-                    <ShoppingBag size={14} /> Fabric List
+                    <ShoppingBag size={14} /> Fabric Inventory
                 </button>
             </div>
 
@@ -207,16 +278,16 @@ const Products = () => {
                                         </h4>
                                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-3 flex items-center gap-1.5">
                                             {activeTab === 'samples' ? (
-                                                <><Scissors size={10} /> AVG COMPLETION: {item.avgCompletionTime || '2 DAYS'}</>
+                                                <><Scissors size={10} /> EST DELIVERY: {item.deliveryTime || '10-15 DAYS'}</>
                                             ) : (
                                                 <><Package size={10} /> STOCK AVAILABLE: <span className="text-[#1e3932] font-black">{item.stock || 0} METERS</span></>
                                             )}
                                         </p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest mb-1">{activeTab === 'samples' ? 'Labor Price' : 'Per Meter'}</p>
+                                        <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest mb-1">{activeTab === 'samples' ? 'Base Price' : 'Per Meter'}</p>
                                         <p className="text-2xl font-black text-[#1e3932] italic tracking-tighter">
-                                            ₹{(item.laborPrice || item.price || 0).toLocaleString()}
+                                            ₹{(item.basePrice || item.price || item.laborPrice || 0).toLocaleString()}
                                         </p>
                                     </div>
                                 </div>
@@ -228,30 +299,30 @@ const Products = () => {
 
             {/* Add New Modal */}
             {showModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#1e3932]/30 backdrop-blur-md animate-in fade-in duration-500">
-                    <div className="bg-white w-full max-w-lg rounded-[2.5rem] md:rounded-[3.5rem] shadow-[0_25px_80px_rgb(0,0,0,0.15)] flex flex-col overflow-hidden animate-in zoom-in-95 duration-500 relative max-h-[90vh]">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#1e3932]/40 backdrop-blur-xl animate-in fade-in duration-500">
+                    <div className="bg-white w-full max-w-xl rounded-[3rem] shadow-[0_32px_100px_rgba(0,0,0,0.18)] flex flex-col overflow-hidden animate-in zoom-in-95 duration-500 relative max-h-[92vh]">
                         {/* Close Button Top Right */}
                         <button 
                             onClick={() => setShowModal(false)} 
-                            className="absolute top-4 right-4 md:top-8 md:right-8 h-10 w-10 md:h-12 md:w-12 flex items-center justify-center rounded-full bg-[#f8f9fa] text-gray-400 hover:text-red-500 transition-all z-10 hover:rotate-90"
+                            className="absolute top-6 right-6 h-10 w-10 flex items-center justify-center rounded-full bg-[#f8f9fa] text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all z-20"
                         >
-                            <X size={20} className="md:w-6 md:h-6" />
+                            <X size={18} />
                         </button>
 
-                        <div className="p-6 md:p-10 pt-10 md:pt-12 pb-4 md:pb-6 flex justify-between items-center">
+                        <div className="p-8 md:p-12 pt-12 md:pt-16 pb-4 md:pb-6">
                             <div>
-                                <h4 className="text-2xl md:text-3xl font-black text-[#1e3932] tracking-tighter uppercase italic leading-none">Upload {activeTab === 'samples' ? 'Sample' : 'Fabric'}</h4>
-                                <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">Share your expertise with customers</p>
+                                <h4 className="text-3xl md:text-4xl font-black text-[#1e3932] tracking-tighter uppercase italic leading-none">Upload {activeTab === 'samples' ? 'Service' : 'Fabric'}</h4>
+                                <p className="text-[10px] md:text-[11px] font-bold text-gray-400 uppercase tracking-[0.25em] mt-3">{activeTab === 'samples' ? 'Add a new stitching service for customers' : 'Add new fabric material to your shop'}</p>
                             </div>
                         </div>
                         
                         <form onSubmit={handleAdd} className="p-6 md:p-10 pt-2 space-y-4 md:space-y-6 overflow-y-auto custom-scrollbar border-b border-gray-50/50">
                             {/* Title/Name */}
                             <div className="space-y-1.5 md:space-y-2">
-                                <label className="text-[10px] md:text-[11px] font-black text-gray-400 uppercase tracking-widest ml-3">Title / Name</label>
+                                <label className="text-[11px] font-black text-gray-300 uppercase tracking-widest ml-4">Title / Name</label>
                                 <input 
                                     required
-                                    className="w-full px-6 md:px-8 py-4 md:py-5 bg-[#f8f9fa] border-none rounded-2xl md:rounded-[1.75rem] focus:outline-none focus:ring-4 ring-[#1e3932]/5 focus:bg-white transition-all text-sm font-bold text-[#1e3932] placeholder:text-gray-300"
+                                    className="w-full px-8 py-5 bg-[#f8f9fa] border-2 border-transparent focus:border-[#1e3932]/10 rounded-full focus:outline-none focus:ring-8 ring-[#1e3932]/5 focus:bg-white transition-all text-sm font-black text-[#1e3932] placeholder:text-gray-300 shadow-inner"
                                     placeholder={activeTab === 'samples' ? "e.g. Royal Silk Sherwani" : "e.g. Italian Wool Fabric"}
                                     value={activeTab === 'samples' ? newItem.title : newItem.name}
                                     onChange={(e) => activeTab === 'samples' 
@@ -260,67 +331,102 @@ const Products = () => {
                                     }
                                 />
                             </div>
-
-                            {/* Category Selection */}
-                            <div className="space-y-1.5 md:space-y-2">
-                                <label className="text-[10px] md:text-[11px] font-black text-gray-400 uppercase tracking-widest ml-3">Category</label>
-                                <div className="relative">
-                                    <select 
-                                        required
-                                        className="w-full px-6 md:px-8 py-4 md:py-5 bg-[#f8f9fa] border-none rounded-2xl md:rounded-[1.75rem] focus:outline-none focus:ring-4 ring-[#1e3932]/5 focus:bg-white transition-all text-sm font-bold text-[#1e3932] appearance-none"
-                                        value={newItem.category}
-                                        onChange={(e) => setNewItem({...newItem, category: e.target.value})}
-                                    >
-                                        <option value="">Select Category</option>
-                                        {categories.map(cat => <option key={cat._id} value={cat._id}>{cat.name}</option>)}
-                                    </select>
-                                    <div className="absolute right-6 md:right-8 top-1/2 -translate-y-1/2 pointer-events-none text-gray-300">
-                                        <ChevronRight className="rotate-90" size={16} />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                                {/* Category Selection */}
+                                <div className="space-y-2.5">
+                                    <label className="text-[11px] font-black text-gray-300 uppercase tracking-widest ml-4">
+                                        {activeTab === 'fabrics' ? 'Fabric Category' : 'Category'}
+                                    </label>
+                                    <div className="relative">
+                                        <select 
+                                            required
+                                            className="w-full px-8 py-5 bg-[#f8f9fa] border-2 border-transparent focus:border-[#1e3932]/10 rounded-full focus:outline-none focus:ring-8 ring-[#1e3932]/5 focus:bg-white transition-all text-sm font-black text-[#1e3932] appearance-none cursor-pointer"
+                                            value={activeTab === 'fabrics' ? selectedParent : newItem.category}
+                                            onChange={(e) => {
+                                                if (activeTab === 'fabrics') {
+                                                    setSelectedParent(e.target.value);
+                                                    setNewItem({...newItem, category: ''});
+                                                } else {
+                                                    setNewItem({...newItem, category: e.target.value});
+                                                }
+                                            }}
+                                        >
+                                            <option value="">Select {activeTab === 'fabrics' ? 'Type' : 'Category'}</option>
+                                            {categories
+                                                .filter(cat => activeTab === 'samples' ? cat.type === 'service' : cat.type === 'product')
+                                                .map(cat => (
+                                                    <option key={cat._id} value={cat._id}>{cat.name}</option>
+                                                ))}
+                                        </select>
+                                        <div className="absolute right-8 top-1/2 -translate-y-1/2 pointer-events-none text-[#1e3932]/30">
+                                            <ChevronRight className="rotate-90" size={20} />
+                                        </div>
                                     </div>
                                 </div>
+
+                                {/* Subcategory Selection (Only for Fabrics) */}
+                                {activeTab === 'fabrics' && selectedParent && (
+                                    <div className="space-y-2.5 animate-in slide-in-from-top-2 duration-300">
+                                        <label className="text-[11px] font-black text-gray-300 uppercase tracking-widest ml-4">Material / Sub-Fabric</label>
+                                        <div className="relative">
+                                            <select 
+                                                required
+                                                className="w-full px-8 py-5 bg-[#f8f9fa] border-2 border-transparent focus:border-[#1e3932]/10 rounded-full focus:outline-none focus:ring-8 ring-[#1e3932]/5 focus:bg-white transition-all text-sm font-black text-[#1e3932] appearance-none cursor-pointer"
+                                                value={newItem.category}
+                                                onChange={(e) => setNewItem({...newItem, category: e.target.value})}
+                                            >
+                                                <option value="">Select Material</option>
+                                                {subcategories.map(cat => (
+                                                    <option key={cat._id} value={cat._id}>{cat.name}</option>
+                                                ))}
+                                            </select>
+                                            <div className="absolute right-8 top-1/2 -translate-y-1/2 pointer-events-none text-[#1e3932]/30">
+                                                <ChevronRight className="rotate-90" size={20} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 md:gap-6">
                                 {/* Price */}
-                                <div className="space-y-1.5 md:space-y-2">
-                                    <label className="text-[10px] md:text-[11px] font-black text-gray-400 uppercase tracking-widest ml-3">Price (₹)</label>
+                                <div className="space-y-2.5">
+                                    <label className="text-[11px] font-black text-gray-300 uppercase tracking-widest ml-4">Price (₹)</label>
                                     <input 
                                         required
                                         type="number"
-                                        className="w-full px-6 md:px-8 py-4 md:py-5 bg-[#f8f9fa] border-none rounded-2xl md:rounded-[1.75rem] focus:outline-none focus:ring-4 ring-[#1e3932]/5 focus:bg-white transition-all text-sm font-bold text-[#1e3932]"
+                                        className="w-full px-8 py-5 bg-[#f8f9fa] border-2 border-transparent focus:border-[#1e3932]/10 rounded-full focus:outline-none focus:ring-8 ring-[#1e3932]/5 focus:bg-white transition-all text-sm font-black text-[#1e3932]"
                                         placeholder="0.00"
-                                        value={activeTab === 'samples' ? newItem.laborPrice : newItem.price}
+                                        value={activeTab === 'samples' ? newItem.basePrice : newItem.price}
                                         onChange={(e) => activeTab === 'samples'
-                                            ? setNewItem({...newItem, laborPrice: e.target.value})
+                                            ? setNewItem({...newItem, basePrice: e.target.value})
                                             : setNewItem({...newItem, price: e.target.value})
                                         }
                                     />
                                 </div>
                                 {/* Time / Stock */}
-                                <div className="space-y-1.5 md:space-y-2">
-                                    <label className="text-[10px] md:text-[11px] font-black text-gray-400 uppercase tracking-widest ml-3">
+                                <div className="space-y-2.5">
+                                    <label className="text-[11px] font-black text-gray-300 uppercase tracking-widest ml-4">
                                         {activeTab === 'samples' ? 'Avg Time' : 'Stock (Mtrs)'}
                                     </label>
                                     <input 
                                         required
-                                        className="w-full px-6 md:px-8 py-4 md:py-5 bg-[#f8f9fa] border-none rounded-2xl md:rounded-[1.75rem] focus:outline-none focus:ring-4 ring-[#1e3932]/5 focus:bg-white transition-all text-sm font-bold text-[#1e3932] placeholder:text-gray-300"
-                                        placeholder={activeTab === 'samples' ? "2 DAYS" : "50"}
-                                        value={activeTab === 'samples' ? newItem.avgCompletionTime : newItem.stock}
+                                        className="w-full px-8 py-5 bg-[#f8f9fa] border-2 border-transparent focus:border-[#1e3932]/10 rounded-full focus:outline-none focus:ring-8 ring-[#1e3932]/5 focus:bg-white transition-all text-sm font-black text-[#1e3932] placeholder:text-gray-300"
+                                        placeholder={activeTab === 'samples' ? "2-4 DAYS" : "50"}
+                                        value={activeTab === 'samples' ? newItem.deliveryTime : newItem.stock}
                                         onChange={(e) => activeTab === 'samples'
-                                            ? setNewItem({...newItem, avgCompletionTime: e.target.value})
+                                            ? setNewItem({...newItem, deliveryTime: e.target.value})
                                             : setNewItem({...newItem, stock: e.target.value})
                                         }
                                     />
                                 </div>
-                            </div>
-
-                            {/* Description */}
-                            <div className="space-y-1.5 md:space-y-2">
-                                <label className="text-[10px] md:text-[11px] font-black text-gray-400 uppercase tracking-widest ml-3">Description</label>
+                            </div>                             {/* Description */}
+                            <div className="space-y-2.5">
+                                <label className="text-[11px] font-black text-gray-300 uppercase tracking-widest ml-4">Description</label>
                                 <textarea 
                                     required
                                     rows="3"
-                                    className="w-full px-6 md:px-8 py-4 md:py-6 bg-[#f8f9fa] border-none rounded-[1.5rem] md:rounded-[2rem] focus:outline-none focus:ring-4 ring-[#1e3932]/5 focus:bg-white transition-all text-sm font-bold text-[#1e3932] resize-none placeholder:text-gray-300"
+                                    className="w-full px-8 py-6 bg-[#f8f9fa] border-2 border-transparent focus:border-[#1e3932]/10 rounded-[2rem] focus:outline-none focus:ring-8 ring-[#1e3932]/5 focus:bg-white transition-all text-sm font-black text-[#1e3932] resize-none placeholder:text-gray-300 shadow-inner"
                                     placeholder={`Describe your ${activeTab.slice(0, -1)}...`}
                                     value={newItem.description}
                                     onChange={(e) => setNewItem({...newItem, description: e.target.value})}
@@ -329,10 +435,10 @@ const Products = () => {
 
                             {/* Tags Input */}
                             {activeTab === 'samples' && (
-                                <div className="space-y-1.5 md:space-y-2">
-                                    <label className="text-[10px] md:text-[11px] font-black text-gray-400 uppercase tracking-widest ml-3">Tags (Comma separated)</label>
+                                <div className="space-y-2.5">
+                                    <label className="text-[11px] font-black text-gray-300 uppercase tracking-widest ml-4">Tags (Comma separated)</label>
                                     <input 
-                                        className="w-full px-6 md:px-8 py-4 md:py-5 bg-[#f8f9fa] border-none rounded-2xl md:rounded-[1.75rem] focus:outline-none focus:ring-4 ring-[#1e3932]/5 focus:bg-white transition-all text-sm font-bold text-[#1e3932] placeholder:text-gray-300"
+                                        className="w-full px-8 py-5 bg-[#f8f9fa] border-2 border-transparent focus:border-[#1e3932]/10 rounded-full focus:outline-none focus:ring-8 ring-[#1e3932]/5 focus:bg-white transition-all text-sm font-black text-[#1e3932] placeholder:text-gray-300 shadow-inner"
                                         placeholder="e.g. POPULAR, EXPRESS, BRIDAL"
                                         value={newItem.tags}
                                         onChange={(e) => setNewItem({...newItem, tags: e.target.value.toUpperCase()})}
@@ -347,29 +453,59 @@ const Products = () => {
                                 </div>
                             )}
 
-                            {/* Image Link */}
-                            <div className="space-y-1.5 md:space-y-2">
-                                <label className="text-[10px] md:text-[11px] font-black text-gray-400 uppercase tracking-widest ml-3">Image URL</label>
-                                <div className="relative">
-                                    <input 
-                                        className="w-full px-6 md:px-8 py-4 md:py-5 bg-[#f8f9fa] border-none rounded-2xl md:rounded-[1.75rem] focus:outline-none focus:ring-4 ring-[#1e3932]/5 focus:bg-white transition-all text-sm font-bold text-[#1e3932] placeholder:text-gray-300"
-                                        placeholder="Paste image link here"
-                                        value={newItem.image}
-                                        onChange={(e) => setNewItem({...newItem, image: e.target.value})}
-                                    />
+                            {/* Category Image */}
+                            <div className="space-y-2.5">
+                                <label className="text-[11px] font-black text-gray-300 uppercase tracking-widest ml-4">Image / Photo</label>
+                                <div className="flex gap-4 items-center px-2">
+                                    <div className="h-20 w-20 rounded-2xl bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
+                                        {newItem.image ? (
+                                            <img src={newItem.image} alt="Preview" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <Scissors size={24} className="text-gray-200" />
+                                        )}
+                                    </div>
+                                    <div className="flex-1 space-y-3">
+                                        <div className="relative">
+                                            <input 
+                                                type="file" 
+                                                accept="image/*"
+                                                onChange={handleImageUpload}
+                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                                                disabled={isImageUploading}
+                                            />
+                                            <div className="w-full px-6 py-4 bg-[#f8f9fa] rounded-2xl text-[10px] font-black text-[#1e3932] flex items-center justify-center gap-2 hover:bg-white border border-transparent hover:border-gray-100 transition-all uppercase tracking-widest">
+                                                {isImageUploading ? (
+                                                    <div className="w-4 h-4 border-2 border-[#1e3932] border-t-transparent animate-spin rounded-full" />
+                                                ) : (
+                                                    <Plus size={16} />
+                                                )}
+                                                {isImageUploading ? 'Uploading...' : 'Choose File'}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-px bg-gray-100 flex-1"></div>
+                                            <span className="text-[8px] font-black text-gray-300 uppercase">Or</span>
+                                            <div className="h-px bg-gray-100 flex-1"></div>
+                                        </div>
+                                        <input 
+                                            className="w-full px-4 py-2 bg-gray-50 border-none rounded-xl text-[10px] font-bold text-gray-400 outline-none focus:bg-white transition-all"
+                                            placeholder="Paste image link manually"
+                                            value={newItem.image}
+                                            onChange={(e) => setNewItem({...newItem, image: e.target.value})}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </form>
                         
-                        {/* Footer Action */}
-                        <div className="p-6 md:p-10 pt-4 md:pt-6 pb-8 md:pb-12 bg-white">
-                            <Button 
+                        <div className="p-8 md:p-12 pt-4 md:pt-6 pb-10 md:pb-16 bg-white">
+                            <button 
                                 onClick={handleAdd}
                                 disabled={isSubmitting}
-                                className="w-full rounded-2xl md:rounded-[2rem] py-4 md:py-6 font-black uppercase tracking-[0.2em] md:tracking-[0.3em] italic text-xs md:text-sm shadow-[0_20px_50px_rgba(30,57,50,0.15)] hover:shadow-[0_25px_60px_rgba(30,57,50,0.25)] transition-all"
+                                className="w-full bg-[#1e3932] text-white rounded-full py-6 font-black uppercase tracking-[0.3em] italic text-sm shadow-[0_24px_50px_rgba(30,57,50,0.22)] hover:shadow-[0_28px_60px_rgba(30,57,50,0.3)] transition-all active:scale-95 disabled:opacity-50"
                             >
-                                {isSubmitting ? 'Publishing...' : 'Publish Sample'}
-                            </Button>
+                                {isSubmitting ? 'Publishing...' : 'Publish ' + (activeTab === 'samples' ? 'Service' : 'Fabric')}
+                            </button>
                         </div>
                     </div>
                 </div>

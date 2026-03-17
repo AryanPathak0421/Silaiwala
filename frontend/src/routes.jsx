@@ -45,6 +45,7 @@ import TailorProfile from './modules/customer/pages/TailorProfile'; // NEW
 import TailorListing from './modules/customer/pages/TailorListing'; // NEW
 import TailorSelection from './modules/customer/pages/TailorSelection'; // NEW
 import CustomerProtectedRoute from './modules/customer/components/CustomerProtectedRoute';
+import { NotificationProvider as CustomerNotificationProvider } from './modules/customer/context/NotificationContext';
 
 // Delivery Pages
 import DeliveryDashboard from './modules/delivery/pages/Dashboard/DeliveryDashboard';
@@ -68,11 +69,15 @@ import AdminFinance from './modules/admin/pages/Finance';
 import AdminCMS from './modules/admin/pages/CMS';
 import AdminReports from './modules/admin/pages/Reports';
 import AdminSettings from './modules/admin/pages/Settings';
+import AdminLogin from './modules/admin/pages/Login';
+import AdminProtectedRoute from './modules/admin/components/AdminProtectedRoute';
 
 import ReferEarn from './modules/customer/pages/ReferEarn'; // NEW
 import FabricDetail from './modules/customer/pages/FabricDetail'; // NEW
 import Measurements from './modules/customer/pages/Measurements'; // NEW
 import SavedAddresses from './modules/customer/pages/SavedAddresses'; // NEW
+import Support from './modules/customer/pages/Support'; // NEW
+import CMSContent from './modules/customer/pages/CMSContent'; // NEW
 
 const AppRoutes = () => {
     return (
@@ -89,33 +94,37 @@ const AppRoutes = () => {
 
             {/* Customer Routes */}
             <Route element={<CustomerProtectedRoute />}>
-                <Route path="/" element={<CustomerHome />} />
-                <Route path="/services" element={<ServicesPage />} />
-                <Route path="/services/:id" element={<ServiceDetailPage />} />
+                <Route element={<CustomerNotificationProvider />}>
+                    <Route index element={<CustomerHome />} />
+                    <Route path="/services" element={<ServicesPage />} />
+                    <Route path="/services/:id" element={<ServiceDetailPage />} />
 
-                {/* New Store & Nav Routes */}
-                <Route path="/store" element={<StorePage />} />
-                <Route path="/store/product/:id" element={<StoreProductDetail />} />
-                <Route path="/fabric/:id" element={<FabricDetail />} />
-                <Route path="/orders" element={<OrdersPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/profile/edit" element={<EditProfile />} />
-                <Route path="/profile/measurements" element={<Measurements />} />
-                <Route path="/profile/addresses" element={<SavedAddresses />} />
-                <Route path="/refer" element={<ReferEarn />} />
-                {/* Fixed path from /tailor/:id to /shop/:id to avoid conflict or keep it customer centric */}
-                <Route path="/tailor/:id" element={<TailorProfile />} />
-                <Route path="/tailors" element={<TailorListing />} />
+                    {/* New Store & Nav Routes */}
+                    <Route path="/store" element={<StorePage />} />
+                    <Route path="/store/product/:id" element={<StoreProductDetail />} />
+                    <Route path="/fabric/:id" element={<FabricDetail />} />
+                    <Route path="/orders" element={<OrdersPage />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/profile/edit" element={<EditProfile />} />
+                    <Route path="/profile/measurements" element={<Measurements />} />
+                    <Route path="/profile/addresses" element={<SavedAddresses />} />
+                    <Route path="/refer" element={<ReferEarn />} />
+                    {/* Fixed path from /tailor/:id to /shop/:id to avoid conflict or keep it customer centric */}
+                    <Route path="/tailor/:id" element={<TailorProfile />} />
+                    <Route path="/tailors" element={<TailorListing />} />
 
-                {/* Checkout Flow */}
-                <Route path="/checkout/tailor" element={<TailorSelection />} />
-                <Route path="/checkout/address" element={<CheckoutAddress />} />
-                <Route path="/checkout/summary" element={<CheckoutSummary />} />
-                <Route path="/checkout/success" element={<OrderSuccess />} />
-                <Route path="/orders/:id/track" element={<OrderTracking />} />
+                    {/* Checkout Flow */}
+                    <Route path="/checkout/tailor" element={<TailorSelection />} />
+                    <Route path="/checkout/address" element={<CheckoutAddress />} />
+                    <Route path="/checkout/summary" element={<CheckoutSummary />} />
+                    <Route path="/checkout/success" element={<OrderSuccess />} />
+                    <Route path="/orders/:id/track" element={<OrderTracking />} />
+                    <Route path="/support" element={<Support />} />
+                    <Route path="/legal/:slug" element={<CMSContent />} />
 
-                <Route path="/cart" element={<CartPage />} />
-                <Route path="/wishlist" element={<WishlistPage />} />
+                    <Route path="/cart" element={<CartPage />} />
+                    <Route path="/wishlist" element={<WishlistPage />} />
+                </Route>
             </Route>
 
             {/* Tailor/Partner Public Routes */}
@@ -154,18 +163,21 @@ const AppRoutes = () => {
             </Route>
 
             {/* Admin Module */}
-            <Route element={<AdminLayout />}>
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/admin/orders" element={<AdminOrders />} />
-                <Route path="/admin/tailors" element={<AdminTailors />} />
-                <Route path="/admin/delivery" element={<AdminDelivery />} />
-                <Route path="/admin/customers" element={<AdminCustomers />} />
-                <Route path="/admin/services" element={<AdminServices />} />
-                <Route path="/admin/store" element={<AdminStore />} />
-                <Route path="/admin/finance" element={<AdminFinance />} />
-                <Route path="/admin/cms" element={<AdminCMS />} />
-                <Route path="/admin/reports" element={<AdminReports />} />
-                <Route path="/admin/settings" element={<AdminSettings />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route element={<AdminProtectedRoute />}>
+                <Route element={<AdminLayout />}>
+                    <Route path="/admin" element={<AdminDashboard />} />
+                    <Route path="/admin/orders" element={<AdminOrders />} />
+                    <Route path="/admin/tailors" element={<AdminTailors />} />
+                    <Route path="/admin/delivery" element={<AdminDelivery />} />
+                    <Route path="/admin/customers" element={<AdminCustomers />} />
+                    <Route path="/admin/services" element={<AdminServices />} />
+                    <Route path="/admin/store" element={<AdminStore />} />
+                    <Route path="/admin/finance" element={<AdminFinance />} />
+                    <Route path="/admin/cms" element={<AdminCMS />} />
+                    <Route path="/admin/reports" element={<AdminReports />} />
+                    <Route path="/admin/settings" element={<AdminSettings />} />
+                </Route>
             </Route>
 
             {/* Fallback */}

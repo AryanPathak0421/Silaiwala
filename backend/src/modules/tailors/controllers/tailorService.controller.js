@@ -101,3 +101,20 @@ exports.deleteService = asyncHandler(async (req, res, next) => {
     data: {},
   });
 });
+
+/**
+ * @desc    Get all services for a specific tailor (Public)
+ * @route   GET /api/v1/tailors/:tailorId/services
+ * @access  Public
+ */
+exports.getTailorServices = asyncHandler(async (req, res, next) => {
+  const services = await Service.find({ tailor: req.params.tailorId, isActive: true })
+    .populate("category", "name")
+    .sort("-createdAt");
+
+  res.status(200).json({
+    success: true,
+    count: services.length,
+    data: services,
+  });
+});

@@ -23,7 +23,14 @@ const ServiceHero = ({ service }) => {
             <div className="flex justify-between items-start mb-2">
                 <div>
                     <h1 className="text-xl font-bold text-gray-900 leading-tight">{service.title}</h1>
-                    <p className="text-sm text-gray-500 mt-1">{service.category}</p>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                        <p className="text-sm text-gray-500">{service.category?.name || service.category}</p>
+                        {service.tags && service.tags.map((tag, idx) => (
+                            <span key={idx} className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
+                                {tag}
+                            </span>
+                        ))}
+                    </div>
                 </div>
                 <div className="text-right">
                     <p className="text-xs text-gray-500 mb-0.5">Starting from</p>

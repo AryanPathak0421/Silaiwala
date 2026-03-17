@@ -1,6 +1,30 @@
 const Product = require("../../../models/Product");
+const Tailor = require("../../../models/Tailor");
 const asyncHandler = require("../../../utils/asyncHandler");
 const ErrorResponse = require("../../../utils/errorResponse");
+
+/**
+ * @desc    Get all fabrics of a specific tailor (for customers during checkout)
+ * @route   GET /api/v1/tailors/:tailorId/fabrics
+ * @access  Public (Customer)
+ */
+exports.getTailorFabrics = asyncHandler(async (req, res, next) => {
+  const fabrics = await Product.find({
+    tailor: req.params.tailorId,
+    productType: "fabric",
+    isActive: true,
+    inStock: true,
+  })
+    .select("name description price image images stock")
+    .lean();
+
+  res.status(200).json({
+    success: true,
+    count: fabrics.length,
+    data: fabrics,
+  });
+});
+
 
 /**
  * @desc    Get all fabric products for logged in tailor
@@ -8,7 +32,12 @@ const ErrorResponse = require("../../../utils/errorResponse");
  * @access  Private (Tailor)
  */
 exports.getMyProducts = asyncHandler(async (req, res, next) => {
-  const products = await Product.find({ tailor: req.user.id }).populate("category", "name").sort("-createdAt");
+  const tailor = await Tailor.findOne({ user: req.user.id });
+  if (!tailor) {
+    return next(new ErrorResponse("Tailor profile not found", 404));
+  }
+
+  const products = await Product.find({ tailor: tailor._id }).populate("category", "name").sort("-createdAt");
 
   res.status(200).json({
     success: true,
@@ -23,7 +52,12 @@ exports.getMyProducts = asyncHandler(async (req, res, next) => {
  * @access  Private (Tailor)
  */
 exports.createProduct = asyncHandler(async (req, res, next) => {
-  req.body.tailor = req.user.id;
+  const tailor = await Tailor.findOne({ user: req.user.id });
+  if (!tailor) {
+    return next(new ErrorResponse("Tailor profile not found", 404));
+  }
+  
+  req.body.tailor = tailor._id;
   
   // Force it to be active by default
   req.body.isActive = true;
@@ -42,7 +76,12 @@ exports.createProduct = asyncHandler(async (req, res, next) => {
  * @access  Private (Tailor)
  */
 exports.updateProduct = asyncHandler(async (req, res, next) => {
-  let product = await Product.findOne({ _id: req.params.id, tailor: req.user.id });
+  const tailor = await Tailor.findOne({ user: req.user.id });
+  if (!tailor) {
+    return next(new ErrorResponse("Tailor profile not found", 404));
+  }
+
+  let product = await Product.findOne({ _id: req.params.id, tailor: tailor._id });
 
   if (!product) {
     return next(new ErrorResponse("Product not found", 404));
@@ -65,7 +104,12 @@ exports.updateProduct = asyncHandler(async (req, res, next) => {
  * @access  Private (Tailor)
  */
 exports.deleteProduct = asyncHandler(async (req, res, next) => {
-  const product = await Product.findOne({ _id: req.params.id, tailor: req.user.id });
+  const tailor = await Tailor.findOne({ user: req.user.id });
+  if (!tailor) {
+    return next(new ErrorResponse("Tailor profile not found", 404));
+  }
+
+  const product = await Product.findOne({ _id: req.params.id, tailor: tailor._id });
 
   if (!product) {
     return next(new ErrorResponse("Product not found", 404));

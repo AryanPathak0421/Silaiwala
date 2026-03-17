@@ -1,10 +1,76 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, MoreHorizontal, X, User, MapPin, CheckCircle2, ShoppingBag, Mail, Phone, Clock, Ban } from 'lucide-react';
-import { allCustomers } from '../data/mockData';
+import api from '../../../utils/api';
+import { toast } from 'react-hot-toast';
 
 const AdminCustomers = () => {
     const [selectedCustomer, setSelectedCustomer] = useState(null);
+    const [customersData, setCustomersData] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedTab, setSelectedTab] = useState('All Customers');
+    const [isUpdating, setIsUpdating] = useState(false);
+
+    const fetchCustomers = async () => {
+        setIsLoading(true);
+        try {
+            const res = await api.get('/admin/users?role=customer');
+            setCustomersData(res.data.data.map(c => ({
+                id: c._id,
+                name: c.name,
+                joined: new Date(c.createdAt).toLocaleDateString(),
+                phone: c.phoneNumber || 'N/A',
+                email: c.email || 'N/A',
+                orders: c.orderCount || 0,
+                totalSpent: `₹${(c.totalSpent || 0).toLocaleString()}`,
+                status: c.isActive ? 'Active' : 'Suspended',
+                addresses: c.addresses || []
+            })));
+        } catch (error) {
+            console.error('Failed to fetch customers:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchCustomers();
+    }, []);
+
+    const handleToggleStatus = async (customerId, currentStatus) => {
+        setIsUpdating(true);
+        try {
+            const nextActive = currentStatus !== 'Active';
+            await api.put(`/admin/users/${customerId}/status`, { isActive: nextActive });
+            toast.success(`Customer ${nextActive ? 'activated' : 'suspended'}`);
+            fetchCustomers();
+            if (selectedCustomer && selectedCustomer.id === customerId) {
+                setSelectedCustomer(prev => ({ ...prev, status: nextActive ? 'Active' : 'Suspended' }));
+            }
+        } catch (error) {
+            console.error('Failed to update status:', error);
+            toast.error('Failed to update status');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const filteredCustomers = customersData.filter(c => {
+        const matchesSearch = 
+            c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+            c.phone.includes(searchQuery) || 
+            c.email.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        if (selectedTab === 'New This Month') {
+            const joinedDate = new Date(c.joined);
+            const now = new Date();
+            const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+            return matchesSearch && joinedDate > oneMonthAgo;
+        }
+        
+        return matchesSearch;
+    });
 
     const getStatusStyle = (status) => {
         switch (status) {
@@ -25,10 +91,16 @@ const AdminCustomers = () => {
             {/* Controls */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
                 <div className="flex bg-gray-50 p-1 rounded-xl w-full sm:w-auto overflow-x-auto no-scrollbar">
-                    <button className="px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap transition-all bg-white text-[#1e3932] shadow-sm">
+                    <button 
+                        onClick={() => setSelectedTab('All Customers')}
+                        className={`px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap transition-all ${selectedTab === 'All Customers' ? 'bg-white text-[#1e3932] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                    >
                         All Customers
                     </button>
-                    <button className="px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap transition-all text-gray-500 hover:text-gray-900">
+                    <button 
+                        onClick={() => setSelectedTab('New This Month')}
+                        className={`px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap transition-all ${selectedTab === 'New This Month' ? 'bg-white text-[#1e3932] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                    >
                         New This Month
                     </button>
                 </div>
@@ -36,13 +108,24 @@ const AdminCustomers = () => {
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                     <div className="relative flex-1 sm:w-64">
                         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input type="text" placeholder="Search customers by name, phone..." className="w-full pl-9 pr-4 py-2 text-xs font-semibold bg-gray-50 border border-transparent focus:border-gray-200 rounded-xl outline-none transition-all" />
+                        <input 
+                            type="text" 
+                            placeholder="Search customers..." 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-9 pr-4 py-2 text-xs font-semibold bg-gray-50 border border-transparent focus:border-gray-200 rounded-xl outline-none transition-all" 
+                        />
                     </div>
                 </div>
             </div>
 
             {/* Content Area */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex-1 overflow-hidden flex flex-col">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex-1 overflow-hidden flex flex-col relative">
+                {isLoading && (
+                     <div className="w-full h-1 bg-gray-100 overflow-hidden absolute top-0 left-0 z-10">
+                         <div className="h-full bg-[#1e3932] animate-pulse w-1/3"></div>
+                     </div>
+                )}
                 <div className="overflow-x-auto">
                     <table className="w-full text-left whitespace-nowrap">
                         <thead>
@@ -55,7 +138,7 @@ const AdminCustomers = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
-                            {allCustomers.map((customer) => (
+                            {filteredCustomers.map((customer) => (
                                 <tr
                                     key={customer.id}
                                     onClick={() => setSelectedCustomer(customer)}
@@ -171,24 +254,40 @@ const AdminCustomers = () => {
                                     <h3 className="text-[10px] font-black uppercase text-gray-400 tracking-widest flex items-center gap-2">
                                         <MapPin size={12} /> Saved Addresses
                                     </h3>
-                                    <div className="space-y-3">
-                                        {['Home - Bandra West, Mumbai, 400050', 'Office - Andheri East, Mumbai, 400069'].map((address, index) => (
-                                            <div key={index} className="bg-gray-50 border border-gray-100 p-3 rounded-xl text-xs font-medium text-gray-700 flex items-start gap-2">
-                                                <MapPin size={14} className="text-gray-400 shrink-0 mt-0.5" />
-                                                <span>{address}</span>
+                                {selectedCustomer.addresses && selectedCustomer.addresses.length > 0 ? (
+                                    selectedCustomer.addresses.map((addr, index) => (
+                                        <div key={index} className="bg-gray-50 border border-gray-100 p-3 rounded-xl text-xs font-medium text-gray-700 flex items-start gap-2">
+                                            <MapPin size={14} className="text-gray-400 shrink-0 mt-0.5" />
+                                            <div>
+                                                <p className="font-bold text-gray-900">{addr.type}</p>
+                                                <p className="opacity-70">{addr.street}, {addr.city}, {addr.state} - {addr.zipCode}</p>
                                             </div>
-                                        ))}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="bg-gray-50 border border-dashed border-gray-200 p-4 rounded-xl text-[10px] font-bold text-gray-400 text-center uppercase tracking-widest">
+                                        No addresses saved
                                     </div>
-                                </div>
+                                )}
                             </div>
+                        </div>
 
-                            {/* Actions */}
+                        {/* Actions */}
                             <div className="p-6 border-t border-gray-100 bg-white flex gap-3">
-                                <button className="flex-1 py-3 bg-[#1e3932] text-white text-xs font-black rounded-xl hover:bg-[#0a211e] shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest">
+                                <button 
+                                    onClick={() => {
+                                        window.location.href = `/admin/orders?search=${selectedCustomer.name}`;
+                                    }}
+                                    className="flex-1 py-3 bg-[#1e3932] text-white text-xs font-black rounded-xl hover:bg-[#0a211e] shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest"
+                                >
                                     View Full Order History
                                 </button>
-                                <button className="p-3 border border-red-100 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors tooltip-wrapper">
-                                    <Ban size={20} />
+                                <button 
+                                    onClick={() => handleToggleStatus(selectedCustomer.id, selectedCustomer.status)}
+                                    disabled={isUpdating}
+                                    className={`p-3 border rounded-xl transition-colors tooltip-wrapper ${selectedCustomer.status === 'Active' ? 'bg-red-50 text-red-600 border-red-100 hover:bg-red-100' : 'bg-green-50 text-green-600 border-green-100 hover:bg-green-100'}`}
+                                >
+                                    {isUpdating ? <div className="w-5 h-5 border-2 border-current border-t-transparent animate-spin rounded-full" /> : <Ban size={20} />}
                                 </button>
                             </div>
                         </motion.div>

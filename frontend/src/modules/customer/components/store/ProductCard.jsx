@@ -38,7 +38,7 @@ const ProductCard = ({ product }) => {
             </button>
 
             {/* Image Link */}
-            <Link to={`/store/product/${product.id}`} className="block relative aspect-[3/4] overflow-hidden bg-gray-100">
+            <Link to={`/store/product/${product._id || product.id}`} className="block relative aspect-[3/4] overflow-hidden bg-gray-100">
                 <img
                     src={product.image}
                     alt={product.name}
@@ -58,24 +58,44 @@ const ProductCard = ({ product }) => {
 
             {/* Details */}
             <div className="p-3">
-                <Link to={`/store/product/${product.id}`} className="block">
+                <Link to={`/store/product/${product._id || product.id}`} className="block">
                     {/* Category & Rating */}
                     <div className="flex justify-between items-start mb-1">
-                        <span className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">{product.category}</span>
+                        <span className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
+                            {typeof product.category === 'object' ? product.category?.name : product.category}
+                        </span>
                         <div className="flex items-center gap-1 bg-green-50 px-1 py-0.5 rounded text-[10px] font-bold text-green-700">
-                            {product.rating} <Star className="h-2 w-2 fill-current" />
+                            {product.rating || product.ratings || 0} <Star className="h-2 w-2 fill-current" />
                         </div>
                     </div>
 
-                    {/* Name */}
-                    <h3 className="text-sm font-semibold text-gray-800 line-clamp-1 mb-1 group-hover:text-[#1e3932] transition-colors">{product.name}</h3>
+                    {/* Name & Tailor */}
+                    <h3 className="text-sm font-bold text-gray-800 line-clamp-1 mb-0.5 group-hover:text-[#1e3932] transition-colors">{product.name}</h3>
+                    {product.tailor && (
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter mb-2">Available at: <span className="text-[#1e3932]">{product.tailor.shopName || product.tailor.name}</span></p>
+                    )}
 
-                    {/* Price */}
-                    <div className="flex items-baseline gap-2 mb-2">
-                        <span className="text-base font-bold text-[#1e3932]">₹{product.price}</span>
-                        {product.originalPrice && (
-                            <span className="text-xs text-gray-400 line-through">₹{product.originalPrice}</span>
-                        )}
+                    {/* Price Breakdown */}
+                    <div className="space-y-1">
+                        <div className="flex items-baseline gap-2">
+                            <span className="text-base font-black text-[#1e3932]">₹{product.price}</span>
+                            <span className="text-[10px] text-gray-400 font-medium">/ meter</span>
+                            {product.originalPrice && (
+                                <span className="text-xs text-gray-400 line-through">₹{product.originalPrice}</span>
+                            )}
+                        </div>
+                        
+                        {/* Estimated Total (Fabric + Stitching) */}
+                        <div className="bg-gray-50 p-2 rounded-lg border border-dashed border-gray-200 mt-1">
+                            <div className="flex justify-between items-center">
+                                <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Est. Stitching</span>
+                                <span className="text-[10px] font-black text-[#1e3932]">₹{product.category?.basePrice || 499}</span>
+                            </div>
+                            <div className="flex justify-between items-center pt-0.5 border-t border-gray-200 mt-0.5">
+                                <span className="text-[9px] font-black text-gray-500 uppercase">Total Est.</span>
+                                <span className="text-xs font-black text-[#1e3932]">₹{Number(product.price) + (product.category?.basePrice || 499)}*</span>
+                            </div>
+                        </div>
                     </div>
                 </Link>
 

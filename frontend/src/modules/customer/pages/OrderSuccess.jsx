@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { CheckCircle, PackageCheck, ShoppingBag, Truck } from 'lucide-react';
-import { Link } from 'react-router-dom';
-
-import useOrderStore from '../../../store/orderStore';
+import { Link, useLocation, Navigate } from 'react-router-dom';
 
 const OrderSuccess = () => {
     const [animationDone, setAnimationDone] = useState(false);
-    const orders = useOrderStore(state => state.orders);
-    const latestOrder = orders[0]; // The addOrder puts new orders at index 0
+    const location = useLocation();
+    const { orderId, orderNumber } = location.state || {};
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -15,6 +13,11 @@ const OrderSuccess = () => {
         }, 1200);
         return () => clearTimeout(timer);
     }, []);
+
+    // Redirect if direct access without order data
+    if (!orderId) {
+        return <Navigate to="/" replace />;
+    }
 
     return (
         <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500">
@@ -28,13 +31,14 @@ const OrderSuccess = () => {
             <h1 className="text-2xl font-bold text-gray-900 mb-2 animate-in slide-in-from-bottom-2 duration-700 delay-200">
                 Order Placed Successfully!
             </h1>
-            <p className="text-sm text-gray-500 mb-8 max-w-xs animate-in slide-in-from-bottom-2 duration-700 delay-300">
-                Thank you for choosing us. We have received your order and will assign a pickup shortly.
+            <p className="text-sm font-bold text-[#1e3932] mb-1 font-mono uppercase tracking-widest">{orderNumber}</p>
+            <p className="text-xs text-gray-500 mb-8 max-w-xs animate-in slide-in-from-bottom-2 duration-700 delay-300">
+                Thank you for choosing us. We have received your order and our artisan is starting to prepare it.
             </p>
 
             <div className="w-full max-w-xs space-y-3 animate-in slide-in-from-bottom-2 duration-700 delay-500">
                 <Link
-                    to={latestOrder ? `/orders/${latestOrder.id}/track` : "/orders"}
+                    to={`/orders/${orderId}/track`}
                     className="w-full py-3.5 rounded-full bg-[#1e3932] text-white font-bold shadow-lg shadow-[#1e3932]/20 hover:bg-[#152e28] active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
                     <PackageCheck size={18} />
@@ -52,7 +56,7 @@ const OrderSuccess = () => {
 
             <div className="mt-8 text-xs text-gray-400 flex items-center gap-1.5 opacity-60">
                 <Truck size={12} />
-                Expected Delivery by next Tuesday
+                Tracking is now live for your order
             </div>
         </div>
     );

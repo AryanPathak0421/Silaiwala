@@ -1,4 +1,5 @@
 const TailorWorkSample = require("../../../models/TailorWorkSample");
+const Tailor = require("../../../models/Tailor");
 const asyncHandler = require("../../../utils/asyncHandler");
 const ErrorResponse = require("../../../utils/errorResponse");
 
@@ -8,9 +9,54 @@ const ErrorResponse = require("../../../utils/errorResponse");
  * @access  Private (Tailor)
  */
 exports.getMyWorkSamples = asyncHandler(async (req, res, next) => {
-  const samples = await TailorWorkSample.find({ tailor: req.user.id })
+  const tailor = await Tailor.findOne({ user: req.user.id });
+  if (!tailor) {
+    return next(new ErrorResponse("Tailor profile not found", 404));
+  }
+
+  const samples = await TailorWorkSample.find({ tailor: tailor._id })
     .populate("category", "name")
     .sort("-createdAt");
+
+  res.status(200).json({
+    success: true,
+    count: samples.length,
+    data: samples,
+  });
+});
+
+/**
+ * @desc    Get all work samples for a specific tailor (Public)
+ * @route   GET /api/v1/tailors/:tailorId/work-samples
+ * @access  Public
+ */
+exports.getTailorWorkSamples = asyncHandler(async (req, res, next) => {
+  const samples = await TailorWorkSample.find({ tailor: req.params.tailorId })
+    .populate("category", "name")
+    .sort("-createdAt");
+
+  res.status(200).json({
+    success: true,
+    count: samples.length,
+    data: samples,
+  });
+});
+
+/**
+ * @desc    Get all work samples (Global Feed)
+ * @route   GET /api/v1/tailors/work-samples/feed
+ * @access  Public
+ */
+exports.getAllWorkSamples = asyncHandler(async (req, res, next) => {
+  const samples = await TailorWorkSample.find({ isActive: true })
+    .populate("category", "name")
+    .populate({
+      path: "tailor",
+      select: "shopName",
+      populate: { path: "user", select: "name profileImage" }
+    })
+    .sort("-createdAt")
+    .limit(20);
 
   res.status(200).json({
     success: true,
@@ -25,7 +71,12 @@ exports.getMyWorkSamples = asyncHandler(async (req, res, next) => {
  * @access  Private (Tailor)
  */
 exports.createWorkSample = asyncHandler(async (req, res, next) => {
-  req.body.tailor = req.user.id;
+  const tailor = await Tailor.findOne({ user: req.user.id });
+  if (!tailor) {
+    return next(new ErrorResponse("Tailor profile not found", 404));
+  }
+
+  req.body.tailor = tailor._id;
 
   const sample = await TailorWorkSample.create(req.body);
 
@@ -41,7 +92,12 @@ exports.createWorkSample = asyncHandler(async (req, res, next) => {
  * @access  Private (Tailor)
  */
 exports.updateWorkSample = asyncHandler(async (req, res, next) => {
-  let sample = await TailorWorkSample.findOne({ _id: req.params.id, tailor: req.user.id });
+  const tailor = await Tailor.findOne({ user: req.user.id });
+  if (!tailor) {
+    return next(new ErrorResponse("Tailor profile not found", 404));
+  }
+
+  let sample = await TailorWorkSample.findOne({ _id: req.params.id, tailor: tailor._id });
 
   if (!sample) {
     return next(new ErrorResponse("Work sample not found", 404));
@@ -64,7 +120,12 @@ exports.updateWorkSample = asyncHandler(async (req, res, next) => {
  * @access  Private (Tailor)
  */
 exports.deleteWorkSample = asyncHandler(async (req, res, next) => {
-  const sample = await TailorWorkSample.findOne({ _id: req.params.id, tailor: req.user.id });
+  const tailor = await Tailor.findOne({ user: req.user.id });
+  if (!tailor) {
+    return next(new ErrorResponse("Tailor profile not found", 404));
+  }
+
+  const sample = await TailorWorkSample.findOne({ _id: req.params.id, tailor: tailor._id });
 
   if (!sample) {
     return next(new ErrorResponse("Work sample not found", 404));

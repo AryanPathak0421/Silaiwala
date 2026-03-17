@@ -3,13 +3,33 @@ import { Package, Search, ListFilter } from 'lucide-react';
 import useOrderStore from '../../../store/orderStore';
 import OrderCard from '../components/orders/OrderCard';
 import BottomNav from '../components/BottomNav';
+import { io } from 'socket.io-client';
+import { SOCKET_URL } from '../../../config/constants';
+import useAuthStore from '../../../store/authStore';
 
 const OrdersPage = () => {
-    const orders = useOrderStore((state) => state.orders);
+    const { orders, fetchOrders, isLoading } = useOrderStore();
+    const { user } = useAuthStore();
 
     useEffect(() => {
-        // Can fetch orders from backend here
-    }, []);
+        fetchOrders();
+
+        const socket = io(SOCKET_URL);
+        
+        if (user?.id || user?._id) {
+            const userId = user.id || user._id;
+            socket.emit('join', `user_${userId}`);
+        }
+
+        socket.on('new_notification', (data) => {
+            console.log('Order status update received:', data);
+            fetchOrders();
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, [fetchOrders, user?.id, user?._id]);
 
     return (
         <div className="min-h-screen bg-gray-50 pb-24 font-sans">
@@ -38,7 +58,12 @@ const OrdersPage = () => {
 
             {/* 3. Orders List */}
             <div className="p-4 space-y-3">
-                {orders.length === 0 ? (
+                {isLoading ? (
+                    <div className="flex flex-col items-center justify-center py-20 text-center opacity-60">
+                         <div className="w-10 h-10 border-4 border-[#1e3932] border-t-transparent rounded-full animate-spin mb-4" />
+                         <p className="text-xs text-gray-500">Loading your orders...</p>
+                    </div>
+                ) : orders.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center opacity-60">
                         <Package size={48} className="text-gray-300 mb-4" />
                         <h3 className="text-sm font-bold text-gray-900">No Orders Yet</h3>
@@ -48,7 +73,7 @@ const OrdersPage = () => {
                     </div>
                 ) : (
                     orders.map((order, index) => (
-                        <OrderCard key={index} order={order} />
+                        <OrderCard key={order._id || index} order={order} />
                     ))
                 )}
             </div>

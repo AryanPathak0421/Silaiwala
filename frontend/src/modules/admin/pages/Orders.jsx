@@ -1,30 +1,167 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, MoreHorizontal, X, User, MapPin, CheckCircle2, Package, Scissors, CreditCard, ChevronRight } from 'lucide-react';
-import { recentOrders } from '../data/mockData';
+import { Search, Filter, MoreHorizontal, X, User, MapPin, CheckCircle2, Package, Scissors, CreditCard, ChevronRight, Truck, Clock } from 'lucide-react';
+import api from '../../../utils/api';
 
 const AdminOrders = () => {
     const [selectedTab, setSelectedTab] = useState('All Orders');
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const [ordersData, setOrdersData] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+    const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    // States for Assignments
+    const [tailorsList, setTailorsList] = useState([]);
+    const [deliveryList, setDeliveryList] = useState([]);
+    const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+    const [assignRole, setAssignRole] = useState(null); // 'tailor' or 'deliveryPartner'
 
     const tabs = ['All Orders', 'Stitching Service', 'Readymade Store'];
 
-    const filteredOrders = recentOrders.filter(o => {
-        if (selectedTab === 'Stitching Service') return o.type === 'Stitching';
-        if (selectedTab === 'Readymade Store') return o.type === 'Store';
-        return true;
+    const fetchOrders = async () => {
+        try {
+             const res = await api.get('/admin/orders');
+             const formatted = res.data.data.map(o => ({
+                 id: o.orderId || o._id.substring(0, 8),
+                 fullId: o._id,
+                 date: new Date(o.createdAt).toLocaleDateString(),
+                 customer: o.customer?.name || 'Unknown Customer',
+                 phone: o.customer?.phoneNumber || 'N/A',
+                 email: o.customer?.email || 'N/A',
+                 address: o.deliveryAddress ? `${o.deliveryAddress.street}, ${o.deliveryAddress.city}` : 'Shipping address provided',
+                 service: o.items?.[0]?.service?.title || o.items?.[0]?.product?.name || 'Custom Request',
+                 type: o.items?.[0]?.product ? 'Store' : 'Stitching',
+                 tailor: o.tailor?.name || 'Unassigned',
+                 tailorId: o.tailor?._id,
+                 deliveryPartner: o.deliveryPartner?.name || 'Unassigned',
+                 deliveryPartnerId: o.deliveryPartner?._id,
+                 amount: `₹${(o.totalAmount || 0).toLocaleString()}`,
+                 status: o.status || 'pending',
+                 paymentStatus: o.paymentStatus || 'pending',
+                 measurements: 'Standard Profile',
+                 trackingHistory: o.trackingHistory || []
+             }));
+             setOrdersData(formatted);
+        } catch (err) {
+             console.error('Failed to fetch orders:', err);
+             setOrdersData([]);
+        } finally {
+             setIsLoading(false);
+        }
+    };
+
+    const fetchUsers = async () => {
+        try {
+            const [tailorsRes, deliveryRes] = await Promise.all([
+                api.get('/admin/users?role=tailor'),
+                api.get('/admin/users?role=delivery')
+            ]);
+            setTailorsList(tailorsRes.data.data.map(t => ({
+                id: t._id,
+                name: t.name,
+                phone: t.phoneNumber,
+                isActive: t.isActive,
+                joined: new Date(t.createdAt).toLocaleDateString()
+            })) || []);
+            setDeliveryList(deliveryRes.data.data.map(d => ({
+                id: d._id,
+                name: d.name,
+                phone: d.phoneNumber,
+                isActive: d.isActive,
+                status: d.isActive ? 'Online' : 'Offline',
+                joined: new Date(d.createdAt).toLocaleDateString()
+            })) || []);
+        } catch (err) {
+            console.error('Failed to fetch users:', err);
+        }
+    };
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const searchVal = params.get('search');
+        if (searchVal) setSearchQuery(searchVal);
+        
+        fetchOrders();
+        fetchUsers();
+    }, []);
+
+    const handleUpdateStatus = async (orderId, newStatus) => {
+        setIsUpdatingStatus(true);
+        setStatusDropdownOpen(false);
+        try {
+            await api.put(`/admin/orders/${orderId}/status`, { status: newStatus });
+            fetchOrders();
+            if (selectedOrder && selectedOrder.fullId === orderId) {
+                setSelectedOrder(prev => ({ ...prev, status: newStatus }));
+            }
+        } catch (err) {
+            console.error('Failed to update status:', err);
+        } finally {
+            setIsUpdatingStatus(false);
+        }
+    };
+
+    const handleAssign = async (userId) => {
+        setIsUpdatingStatus(true);
+        setIsAssignModalOpen(false);
+        try {
+            const updateData = {};
+            updateData[assignRole] = userId;
+            
+            await api.put(`/admin/orders/${selectedOrder.fullId}/status`, updateData);
+            
+            fetchOrders();
+            // Update selected order UI
+            if (selectedOrder) {
+                const userName = (assignRole === 'tailor' ? tailorsList : deliveryList).find(u => u._id === userId)?.name || 'Assigned';
+                setSelectedOrder(prev => ({
+                    ...prev, 
+                    [assignRole]: userName,
+                    [`${assignRole}Id`]: userId
+                }));
+            }
+        } catch (err) {
+            console.error('Failed to assign:', err);
+        } finally {
+            setIsUpdatingStatus(false);
+        }
+    };
+
+    const filteredOrders = ordersData.filter(o => {
+        const matchesTab = 
+            selectedTab === 'All Orders' || 
+            (selectedTab === 'Stitching Service' && o.type === 'Stitching') || 
+            (selectedTab === 'Readymade Store' && o.type === 'Store');
+
+        const matchesSearch = 
+            o.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
+            o.customer.toLowerCase().includes(searchQuery.toLowerCase()) || 
+            o.service.toLowerCase().includes(searchQuery.toLowerCase());
+
+        return matchesTab && matchesSearch;
     });
 
     const getStatusStyle = (status) => {
-        switch (status) {
-            case 'Delivered': return 'bg-green-100 text-green-700 border-green-200';
-            case 'In Production': return 'bg-blue-100 text-blue-700 border-blue-200';
-            case 'Quality Check': return 'bg-purple-100 text-purple-700 border-purple-200';
-            case 'Pickup Assigned': return 'bg-orange-100 text-orange-700 border-orange-200';
-            case 'Order Placed': return 'bg-gray-100 text-gray-700 border-gray-200';
+        switch (status.toLowerCase()) {
+            case 'delivered': return 'bg-green-100 text-green-700 border-green-200';
+            case 'completed': return 'bg-green-100 text-green-700 border-green-200';
+            case 'in-progress': return 'bg-blue-100 text-blue-700 border-blue-200';
+            case 'accepted': return 'bg-indigo-100 text-indigo-700 border-indigo-200';
+            case 'ready-for-pickup': return 'bg-purple-100 text-purple-700 border-purple-200';
+            case 'out-for-delivery': return 'bg-orange-100 text-orange-700 border-orange-200';
+            case 'pending': return 'bg-gray-100 text-gray-700 border-gray-200';
+            case 'cancelled': return 'bg-red-100 text-red-700 border-red-200';
             default: return 'bg-gray-100 text-gray-700 border-gray-200';
         }
     };
+    
+    const availableStatuses = [
+        "pending", "fabric-ready-for-pickup", "fabric-picked-up", "fabric-delivered", 
+        "accepted", "in-progress", "completed", "ready-for-pickup", 
+        "out-for-delivery", "delivered", "failed-delivery", "cancelled"
+    ];
 
     return (
         <div className="h-full flex flex-col space-y-6 relative">
@@ -50,7 +187,13 @@ const AdminOrders = () => {
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                     <div className="relative flex-1 sm:w-64">
                         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input type="text" placeholder="Search orders..." className="w-full pl-9 pr-4 py-2 text-xs font-semibold bg-gray-50 border border-transparent focus:border-gray-200 rounded-xl outline-none transition-all" />
+                        <input 
+                            type="text" 
+                            placeholder="Search orders..." 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-9 pr-4 py-2 text-xs font-semibold bg-gray-50 border border-transparent focus:border-gray-200 rounded-xl outline-none transition-all" 
+                        />
                     </div>
                     <button className="p-2 bg-gray-50 text-gray-600 rounded-xl hover:bg-gray-100 hover:text-[#1e3932] transition-colors shrink-0 border border-transparent">
                         <Filter size={18} />
@@ -59,7 +202,12 @@ const AdminOrders = () => {
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex-1 overflow-hidden flex flex-col">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex-1 overflow-hidden flex flex-col relative">
+                {isLoading && (
+                     <div className="w-full h-1 bg-gray-100 overflow-hidden absolute top-0 left-0 z-10">
+                         <div className="h-full bg-[#1e3932] animate-pulse w-1/3"></div>
+                     </div>
+                )}
                 <div className="overflow-x-auto">
                     <table className="w-full text-left whitespace-nowrap">
                         <thead>
@@ -109,7 +257,7 @@ const AdminOrders = () => {
                                     <td className="px-6 py-4">
                                         <div className="flex items-center justify-between">
                                             <span className={`px-2 py-1 rounded-lg text-[9px] font-black border uppercase tracking-wider ${getStatusStyle(order.status)}`}>
-                                                {order.status}
+                                                {order.status.replace(/-/g, ' ')}
                                             </span>
                                             <ChevronRight size={16} className="text-gray-300 group-hover:text-[#1e3932] transition-colors" />
                                         </div>
@@ -151,7 +299,7 @@ const AdminOrders = () => {
                                     <h2 className="text-lg font-black text-gray-900 tracking-tight flex items-center gap-2">
                                         Order {selectedOrder.id}
                                         <span className={`px-2 py-0.5 rounded text-[9px] uppercase tracking-wider border ${getStatusStyle(selectedOrder.status)}`}>
-                                            {selectedOrder.status}
+                                            {selectedOrder.status.replace(/-/g, ' ')}
                                         </span>
                                     </h2>
                                     <p className="text-[10px] text-gray-500 font-bold mt-1">Placed on {selectedOrder.date}</p>
@@ -201,46 +349,160 @@ const AdminOrders = () => {
                                             </div>
                                             <div>
                                                 <p className="text-[9px] uppercase text-gray-400 font-bold">Fabric Source</p>
-                                                <p className="text-xs font-bold text-gray-700 mt-0.5">Provided by Tailor</p>
+                                                <p className="text-xs font-bold text-gray-700 mt-0.5">
+                                                    {selectedOrder.items?.some(i => i.fabricSource === 'customer') ? 'Customer Pickup' : 'Self/Provided'}
+                                                </p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Assignment & Payment */}
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm space-y-2">
-                                        <h3 className="text-[10px] font-black uppercase text-gray-400 tracking-widest flex items-center gap-1.5 mb-3">
-                                            <Scissors size={12} /> Assignment
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm space-y-3">
+                                        <h3 className="text-[10px] font-black uppercase text-gray-400 tracking-widest flex items-center gap-1.5 border-b border-gray-100 pb-2">
+                                            <Scissors size={12} /> Assignments
                                         </h3>
-                                        <p className="text-[10px] text-gray-400 font-bold">Assigned Tailor</p>
-                                        <p className="text-xs font-bold text-[#1e3932]">{selectedOrder.tailor}</p>
-                                        <button className="text-[10px] font-bold text-blue-600 hover:underline mt-2 inline-block">Reassign Tailor</button>
+                                        <div className="flex justify-between items-center">
+                                            <div>
+                                                <p className="text-[10px] text-gray-400 font-bold">Tailor</p>
+                                                <p className="text-xs font-bold text-[#1e3932]">{selectedOrder.tailor}</p>
+                                            </div>
+                                            <button onClick={() => { setAssignRole('tailor'); setIsAssignModalOpen(true); }} className="text-[10px] font-bold text-blue-600 hover:underline">Reassign</button>
+                                        </div>
+                                        <div className="flex justify-between items-center pt-2 border-t border-gray-50">
+                                            <div>
+                                                <p className="text-[10px] text-gray-400 font-bold">Delivery Partner</p>
+                                                <p className="text-xs font-bold text-[#1e3932]">{selectedOrder.deliveryPartner}</p>
+                                            </div>
+                                            <button onClick={() => { setAssignRole('deliveryPartner'); setIsAssignModalOpen(true); }} className="text-[10px] font-bold text-orange-600 hover:underline">Reassign</button>
+                                        </div>
                                     </div>
                                     <div className="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm space-y-2">
-                                        <h3 className="text-[10px] font-black uppercase text-gray-400 tracking-widest flex items-center gap-1.5 mb-3">
+                                        <h3 className="text-[10px] font-black uppercase text-gray-400 tracking-widest flex items-center gap-1.5 border-b border-gray-100 pb-2 mb-3">
                                             <CreditCard size={12} /> Payment
                                         </h3>
                                         <p className="text-[10px] text-gray-400 font-bold">Status</p>
                                         <div className="flex items-center gap-1.5 mt-0.5">
-                                            {selectedOrder.paymentStatus === 'Paid' ? <CheckCircle2 size={14} className="text-green-500" /> : <div className="w-2 h-2 rounded-full bg-orange-400" />}
-                                            <p className="text-xs font-bold text-gray-900">{selectedOrder.paymentStatus}</p>
+                                            {selectedOrder.paymentStatus.toLowerCase() === 'paid' ? <CheckCircle2 size={14} className="text-green-500" /> : <div className="w-2 h-2 rounded-full bg-orange-400" />}
+                                            <p className="text-xs font-bold text-gray-900 capitalize">{selectedOrder.paymentStatus}</p>
                                         </div>
+                                    </div>
+                                </div>
+
+                                {/* Tracking History Timeline */}
+                                <div className="space-y-4">
+                                    <h3 className="text-[10px] font-black uppercase text-gray-400 tracking-widest flex items-center gap-2">
+                                        <Clock size={12} /> Tracking Timeline
+                                    </h3>
+                                    <div className="relative pl-6 space-y-6 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-100">
+                                        {selectedOrder.trackingHistory.length > 0 ? (
+                                            [...selectedOrder.trackingHistory].reverse().map((event, idx) => (
+                                                <div key={idx} className="relative">
+                                                    <div className={`absolute -left-[19px] top-1 h-3 w-3 rounded-full border-2 border-white shadow-sm ${idx === 0 ? 'bg-[#1e3932] scale-125' : 'bg-gray-300'}`} />
+                                                    <div className="bg-white p-3 rounded-xl border border-gray-50 shadow-sm">
+                                                        <div className="flex justify-between items-start">
+                                                            <p className="text-[11px] font-black text-gray-900 uppercase tracking-tight">{event.status.replace(/-/g, ' ')}</p>
+                                                            <p className="text-[9px] text-gray-400 font-bold">{new Date(event.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {new Date(event.timestamp).toLocaleDateString()}</p>
+                                                        </div>
+                                                        <p className="text-[10px] text-gray-500 font-medium mt-1 leading-relaxed">{event.message}</p>
+                                                        {event.proof && (
+                                                           <a href={event.proof} target="_blank" rel="noreferrer" className="mt-2 block w-20 h-20 rounded-lg overflow-hidden border border-gray-100">
+                                                               <img src={event.proof} alt="Proof" className="w-full h-full object-cover" />
+                                                           </a>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="text-[10px] text-gray-400 font-medium italic">No tracking updates yet.</div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
 
                             {/* Action Bottom */}
-                            <div className="p-6 border-t border-gray-100 bg-white grid grid-cols-2 gap-3">
-                                <button className="px-4 py-3 border border-gray-200 text-gray-700 text-xs font-black rounded-xl hover:bg-gray-50 transition-colors uppercase tracking-widest">
-                                    Update Status
-                                </button>
-                                <button className="px-4 py-3 bg-[#1e3932] text-white text-xs font-black rounded-xl hover:bg-[#0a211e] shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest">
-                                    Manage Order
+                            <div className="p-6 border-t border-gray-100 bg-white flex items-center justify-between gap-3 relative">
+                                <div className="relative">
+                                     <button 
+                                        onClick={() => setStatusDropdownOpen(!statusDropdownOpen)}
+                                        className="px-6 py-3 border border-gray-200 text-gray-700 text-xs font-black rounded-xl hover:bg-gray-50 transition-colors uppercase tracking-widest min-w-[150px]"
+                                     >
+                                         {isUpdatingStatus ? 'Updating...' : 'Update Status'}
+                                     </button>
+                                     <AnimatePresence>
+                                         {statusDropdownOpen && (
+                                              <motion.div 
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: 10 }}
+                                                className="absolute bottom-full left-0 mb-2 w-48 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden z-50 py-1"
+                                              >
+                                                  {availableStatuses.map(status => (
+                                                      <button
+                                                        key={status}
+                                                        onClick={() => handleUpdateStatus(selectedOrder.fullId, status)}
+                                                        className="w-full text-left px-4 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50 hover:text-[#1e3932] uppercase tracking-wider"
+                                                      >
+                                                          {status.replace(/-/g, ' ')}
+                                                      </button>
+                                                  ))}
+                                              </motion.div>
+                                         )}
+                                     </AnimatePresence>
+                                </div>
+                                <button className="px-6 py-3 bg-[#1e3932] text-white text-xs font-black rounded-xl hover:bg-[#0a211e] shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest flex-1">
+                                    Manage Order Details
                                 </button>
                             </div>
                         </motion.div>
                     </>
+                )}
+            </AnimatePresence>
+
+            {/* Assign Modal */}
+            <AnimatePresence>
+                {isAssignModalOpen && (
+                    <motion.div 
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
+                    >
+                        <motion.div 
+                            initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+                            className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl"
+                        >
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-sm font-black text-gray-900 capitalize">Assign {assignRole === 'tailor' ? 'Tailor' : 'Delivery Partner'}</h3>
+                                <button onClick={() => setIsAssignModalOpen(false)} className="text-gray-400 hover:text-red-500">
+                                    <X size={18} />
+                                </button>
+                            </div>
+                            <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
+                                {(assignRole === 'tailor' ? tailorsList : deliveryList).map(user => (
+                                    <button 
+                                        key={user.id}
+                                        onClick={() => handleAssign(user.id)}
+                                        className={`w-full text-left p-3 rounded-xl border transition-all text-xs font-bold flex justify-between items-center ${user.isActive ? 'border-gray-100 hover:border-[#1e3932] hover:bg-[#1e3932]/5 bg-white text-gray-700' : 'border-gray-50 bg-gray-50 opacity-50 cursor-not-allowed text-gray-400'}`}
+                                        disabled={!user.isActive}
+                                    >
+                                        <div className="flex flex-col">
+                                            <span>{user.name}</span>
+                                            <span className="text-[10px] text-gray-400 font-medium">Joined: {user.joined}</span>
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="text-[10px] font-medium">{user.phone}</span>
+                                            <p className={`text-[8px] uppercase tracking-widest mt-0.5 ${user.isActive ? 'text-green-600' : 'text-gray-400'}`}>
+                                                {user.isActive ? 'Verified & Active' : 'Suspended'}
+                                            </p>
+                                        </div>
+                                    </button>
+                                ))}
+                                {(assignRole === 'tailor' ? tailorsList : deliveryList).length === 0 && (
+                                    <div className="text-center p-4 text-xs font-medium text-gray-400">No active {assignRole === 'tailor' ? 'tailors' : 'delivery partners'} found.</div>
+                                )}
+                            </div>
+                        </motion.div>
+                    </motion.div>
                 )}
             </AnimatePresence>
         </div>

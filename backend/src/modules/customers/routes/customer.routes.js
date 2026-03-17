@@ -23,31 +23,30 @@ const {
 const { protect, authorize } = require("../../../middlewares/auth.middleware");
 
 router.use(protect);
-router.use(authorize("customer"));
 
-router.get("/profile", getProfile);
-router.patch("/profile", updateProfile);
-router.get("/tailors", getTailors);
+router.get("/profile", authorize("customer", "admin"), getProfile);
+router.patch("/profile", authorize("customer", "admin"), updateProfile);
+router.get("/tailors", authorize("customer", "delivery", "tailor", "admin"), getTailors);
 
 // Address Management
-router.get("/addresses", getAddresses);
-router.post("/addresses", addAddress);
-router.patch("/addresses/:id", updateAddress);
-router.delete("/addresses/:id", deleteAddress);
+router.get("/addresses", authorize("customer", "admin"), getAddresses);
+router.post("/addresses", authorize("customer", "admin"), addAddress);
+router.patch("/addresses/:id", authorize("customer", "admin"), updateAddress);
+router.delete("/addresses/:id", authorize("customer", "admin"), deleteAddress);
 
 // Wishlist
-router.get("/wishlist", getWishlist);
-router.post("/wishlist/toggle", wishlistToggle);
+router.get("/wishlist", authorize("customer", "admin"), getWishlist);
+router.post("/wishlist/toggle", authorize("customer", "admin"), wishlistToggle);
 
 // Promo
-router.post("/apply-promo", applyPromoCode);
+router.post("/apply-promo", authorize("customer"), applyPromoCode);
 
 // Refer & Earn
-router.get("/referral-stats", getReferralStats);
+router.get("/referral-stats", authorize("customer"), getReferralStats);
 
 // Cart Management
-router.get("/cart", getCart);
-router.post("/cart", addToCart);
-router.delete("/cart/:itemId", removeFromCart);
+router.get("/cart", authorize("customer"), getCart);
+router.post("/cart", authorize("customer"), addToCart);
+router.delete("/cart/:itemId", authorize("customer"), removeFromCart);
 
 module.exports = router;

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 
 import silaiwalaLogo from '../assets/silaiwala-logo.png';
+import useAuthStore from '../store/authStore';
 
 const AdminLayout = () => {
     const location = useLocation();
@@ -89,7 +90,12 @@ const AdminLayout = () => {
                 </nav>
 
                 <div className="p-4 border-t border-white/5 bg-[#081816]">
-                    <button className="flex items-center gap-3 px-4 py-3 w-full text-gray-500 hover:text-red-400 transition-all rounded-lg hover:bg-red-400/5">
+                    <button 
+                        onClick={() => {
+                            useAuthStore.getState().logout();
+                            window.location.href = '/admin/login';
+                        }}
+                        className="flex items-center gap-3 px-4 py-3 w-full text-gray-500 hover:text-red-400 transition-all rounded-lg hover:bg-red-400/5">
                         <LogOut size={20} />
                         <span className="font-bold text-sm">Sign Out</span>
                     </button>

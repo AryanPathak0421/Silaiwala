@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import deliveryService from '../../services/deliveryService';
 import { toast } from 'react-hot-toast';
+import api from '../../../../utils/api';
 
 const DeliveryProfile = () => {
     const navigate = useNavigate();
@@ -41,7 +42,7 @@ const DeliveryProfile = () => {
     const [personalInfo, setPersonalInfo] = useState({
         name: '',
         phone: '',
-        emergencyPhone: '+91 91234 56789', // Local only for now
+        emergencyPhone: '',
         vehicle: '',
     });
 
@@ -67,8 +68,13 @@ const DeliveryProfile = () => {
                         ...prev,
                         name: data.user.name,
                         phone: data.user.phoneNumber || '',
+                        emergencyPhone: data.emergencyContact || '',
                         vehicle: data.vehicleNumber || '',
                     }));
+                    if (data.documents && data.documents.length > 0) {
+                        const allVerified = data.documents.every(doc => doc.status === 'verified');
+                        setKycStatus(allVerified ? 'Verified' : 'Under Review');
+                    }
                     if (data.bankDetails) {
                         setBankInfo({
                             accountName: data.bankDetails.accountName || 'Partner Name',
@@ -106,6 +112,7 @@ const DeliveryProfile = () => {
                 await deliveryService.updateProfile({
                     name: personalInfo.name,
                     phoneNumber: personalInfo.phone,
+                    emergencyContact: personalInfo.emergencyPhone,
                     vehicleNumber: personalInfo.vehicle
                 });
                 
@@ -128,6 +135,39 @@ const DeliveryProfile = () => {
         } catch (error) {
             console.error(`Failed to update ${section} details:`, error);
             toast.error(`Failed to update ${section} details`);
+        }
+    };
+
+    const handleKYCSubmit = async () => {
+        if (!aadharImage || !licenseImage) {
+            toast.error('Please upload both documents');
+            return;
+        }
+
+        const toastId = toast.loading('Uploading documents...');
+        try {
+            // In a real app, these are File objects from the input
+            // For this UI, we might need a way to get the actual file if it was a real upload
+            // but I will mock the upload logic for now to show how it calls the API.
+
+            // 1. Upload logic (If these were real Files)
+            // const formData = new FormData();
+            // formData.append('image', aadharFile);
+            // const res1 = await api.post('/upload', formData);
+
+            // Mocking URLs for now since we just have blobs in state
+            const documents = [
+                { name: 'Aadhar/Voter ID', url: aadharImage },
+                { name: 'Driving License', url: licenseImage }
+            ];
+
+            await deliveryService.submitDocuments(documents);
+            setKycStatus('Under Review');
+            setShowKYCModal(false);
+            toast.success('KYC Documents submitted successfully', { id: toastId });
+        } catch (error) {
+            console.error('KYC Submission failed:', error);
+            toast.error('KYC Submission failed', { id: toastId });
         }
     };
 
@@ -179,6 +219,12 @@ const DeliveryProfile = () => {
                                 <User size={18} />
                             </div>
                             <h3 className="text-sm font-black text-slate-900 tracking-tight">Identity Profile</h3>
+                            {deliveryProfile?.user?.isVerified && (
+                                <div className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md flex items-center gap-1">
+                                    <ShieldCheck size={10} className="fill-emerald-800 text-white" />
+                                    <span className="text-[8px] font-black uppercase tracking-widest">Verified</span>
+                                </div>
+                            )}
                         </div>
                         {isEditing !== 'personal' && (
                             <button onClick={() => setIsEditing('personal')} className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all">
@@ -515,9 +561,19 @@ const DeliveryProfile = () => {
                                         Aadhar Core / Voter ID
                                     </label>
                                     <label className="w-full h-24 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 flex flex-col items-center justify-center hover:bg-blue-50 hover:border-blue-200 hover:text-blue-500 transition-all text-slate-400 group cursor-pointer relative overflow-hidden">
-                                        <input type="file" className="hidden" accept="image/*" onChange={(e) => {
+                                        <input type="file" className="hidden" accept="image/*" onChange={async (e) => {
                                             if (e.target.files && e.target.files[0]) {
-                                                setAadharImage(URL.createObjectURL(e.target.files[0]));
+                                                const file = e.target.files[0];
+                                                const formData = new FormData();
+                                                formData.append('image', file);
+                                                
+                                                try {
+                                                    const res = await api.post('/upload', formData);
+                                                    setAadharImage(res.data.data);
+                                                    toast.success('Aadhar uploaded');
+                                                } catch (err) {
+                                                    toast.error('Aadhar upload failed');
+                                                }
                                             }
                                         }} />
                                         {aadharImage ? (
@@ -541,9 +597,19 @@ const DeliveryProfile = () => {
                                         Valid Driving License
                                     </label>
                                     <label className="w-full h-24 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 flex flex-col items-center justify-center hover:bg-slate-50 hover:border-slate-200 hover:text-slate-500 transition-all text-slate-400 group cursor-pointer relative overflow-hidden">
-                                        <input type="file" className="hidden" accept="image/*" onChange={(e) => {
+                                        <input type="file" className="hidden" accept="image/*" onChange={async (e) => {
                                             if (e.target.files && e.target.files[0]) {
-                                                setLicenseImage(URL.createObjectURL(e.target.files[0]));
+                                                const file = e.target.files[0];
+                                                const formData = new FormData();
+                                                formData.append('image', file);
+                                                
+                                                try {
+                                                    const res = await api.post('/upload', formData);
+                                                    setLicenseImage(res.data.data);
+                                                    toast.success('License uploaded');
+                                                } catch (err) {
+                                                    toast.error('License upload failed');
+                                                }
                                             }
                                         }} />
                                         {licenseImage ? (
@@ -562,10 +628,7 @@ const DeliveryProfile = () => {
                             </div>
 
                             <button
-                                onClick={() => {
-                                    setKycStatus('Under Review');
-                                    setShowKYCModal(false);
-                                }}
+                                onClick={handleKYCSubmit}
                                 className="w-full bg-slate-900 text-white rounded-2xl p-4 font-black tracking-widest text-xs hover:bg-black active:scale-95 transition-all shadow-xl flex items-center justify-center gap-2 uppercase"
                             >
                                 <CheckCircle2 size={16} className="text-emerald-800" /> Submit To Admin

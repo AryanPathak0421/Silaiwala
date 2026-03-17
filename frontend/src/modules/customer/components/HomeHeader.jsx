@@ -6,17 +6,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import silaiwalaLogo from '../../../assets/silaiwala-logo.png';
 
+import { useNotifications } from '../context/NotificationContext';
+
 const HomeHeader = ({ user }) => {
     const [showNotifications, setShowNotifications] = useState(false);
     const cartCount = useCartStore(state => state.getTotalItems());
 
-    const notifications = [
-        { id: 1, title: 'Order Shipped', message: 'Your Kurti order is on the way!', time: '2m ago', unread: true },
-        { id: 2, title: 'Fabric Picked Up', message: 'Rider has collected your fabric.', time: '1h ago', unread: false },
-        { id: 3, title: 'Welcome Gift', message: 'Here is a 10% off coupon for you.', time: '1d ago', unread: false },
-    ];
-
-    const unreadCount = notifications.filter(n => n.unread).length;
+    const { notifications, unreadCount, markAsRead, markAllRead } = useNotifications();
 
     return (
         <div className="sticky top-0 z-[100] bg-white/80 backdrop-blur-2xl border-b border-gray-100/50 pt-2">
@@ -108,19 +104,27 @@ const HomeHeader = ({ user }) => {
                                 </button>
                             </div>
 
-                            <div className="space-y-4">
-                                {notifications.map(n => (
+                            <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                                {notifications.length > 0 ? notifications.map(n => (
                                     <div
-                                        key={n.id}
-                                        className={`p-4 rounded-2xl border transition-all ${n.unread ? 'bg-green-50/50 border-green-100 shadow-sm' : 'bg-white border-gray-100'}`}
+                                        key={n._id}
+                                        onClick={() => markAsRead(n._id)}
+                                        className={`p-4 rounded-2xl border transition-all cursor-pointer ${!n.isRead ? 'bg-green-50/50 border-green-100 shadow-sm' : 'bg-white border-gray-100'}`}
                                     >
                                         <div className="flex justify-between items-start mb-1.5">
                                             <span className="text-xs font-black text-gray-900 leading-none">{n.title}</span>
-                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">{n.time}</span>
+                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">
+                                                {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </span>
                                         </div>
                                         <p className="text-[11px] text-gray-500 font-medium leading-relaxed">{n.message}</p>
                                     </div>
-                                ))}
+                                )) : (
+                                    <div className="py-12 text-center">
+                                        <Bell size={40} className="mx-auto text-gray-200 mb-3" />
+                                        <p className="text-xs font-bold text-gray-400">All caught up!</p>
+                                    </div>
+                                )}
                             </div>
 
                             <button className="w-full mt-6 py-3 text-xs font-black text-[#1e3932] uppercase tracking-widest border border-[#1e3932]/10 rounded-2xl hover:bg-[#1e3932]/5 transition-all">

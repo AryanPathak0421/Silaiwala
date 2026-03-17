@@ -17,10 +17,24 @@ import { toast } from 'react-hot-toast';
 import silaiwalaLogo from '../../../assets/silaiwala-logo.png';
 
 const DeliveryLayout = () => {
-    const [isOnline, setIsOnline] = useState(true);
+    const [isOnline, setIsOnline] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
+
+    React.useEffect(() => {
+        const fetchProfileStatus = async () => {
+            try {
+                const res = await deliveryService.getProfile();
+                if (res.success) {
+                    setIsOnline(res.data.isAvailable);
+                }
+            } catch (error) {
+                console.error('Failed to fetch profile status:', error);
+            }
+        };
+        fetchProfileStatus();
+    }, []);
 
     const toggleAvailability = async () => {
         const newStatus = !isOnline;

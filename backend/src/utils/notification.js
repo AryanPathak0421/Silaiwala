@@ -35,6 +35,30 @@ const sendNotification = async (options) => {
               message: title
           });
       }
+
+      // Real-time tracking for a specific order
+      if (data?.orderId) {
+          io.to(`order_${data.orderId}`).emit("order_status_updated", {
+              status: type, // Using type or status from data
+              message: message,
+              orderId: data.orderId
+          });
+      }
+
+      // Fleet-wide broadcast for delivery partners
+      if (recipient === "delivery_partners") {
+          io.to("delivery_partners").emit("new_notification", {
+              title,
+              message,
+              type,
+              data
+          });
+          io.to("delivery_partners").emit("new_task", {
+              title,
+              message,
+              data
+          });
+      }
     }
 
     return notification;

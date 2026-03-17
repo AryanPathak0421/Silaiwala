@@ -7,6 +7,7 @@ import { Step1Basic, Step2Business } from '../components/Registration/Steps1_2';
 import { Step3Docs, Step4Portfolio } from '../components/Registration/Steps3_4';
 import { ChevronLeft, CheckCircle2 } from 'lucide-react';
 import { useTailorAuth, TAILOR_STATUS } from '../context/AuthContext';
+import api from '../services/api';
 
 const Registration = () => {
     const [step, setStep] = useState(1);
@@ -48,10 +49,44 @@ const Registration = () => {
 
     const [isLoading, setIsLoading] = useState(false);
 
+    const uploadFile = async (file) => {
+        if (!file) return null;
+        const formData = new FormData();
+        formData.append('image', file);
+        try {
+            const res = await api.post('/upload/public', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            return res.data.data;
+        } catch (error) {
+            console.error('File upload failed:', error);
+            return null;
+        }
+    };
+
     const onSubmit = async (data) => {
         setIsLoading(true);
         try {
-            // Map frontend data to backend schema
+            // 1. Upload all documents first
+            const [aadharFrontUrl, aadharBackUrl, panUrl, licenseUrl, portfolio1Url, portfolio2Url] = await Promise.all([
+                uploadFile(data.aadharFront),
+                uploadFile(data.aadharBack),
+                uploadFile(data.panImage),
+                uploadFile(data.licenseImage),
+                uploadFile(data.portfolio1),
+                uploadFile(data.portfolio2)
+            ]);
+
+            const documents = [
+                { name: 'Aadhar Front', url: aadharFrontUrl, status: 'pending' },
+                { name: 'Aadhar Back', url: aadharBackUrl, status: 'pending' },
+                { name: 'PAN Card', url: panUrl, status: 'pending' },
+                { name: 'Shop License', url: licenseUrl, status: 'pending' },
+                { name: 'Portfolio 1', url: portfolio1Url, status: 'pending' },
+                { name: 'Portfolio 2', url: portfolio2Url, status: 'pending' }
+            ].filter(doc => doc.url); // Only include successfully uploaded docs
+
+            // 2. Map frontend data to backend schema
             const payload = {
                 name: data.fullName,
                 email: data.email,
@@ -61,6 +96,7 @@ const Registration = () => {
                 shopName: data.shopName,
                 experienceInYears: Number(data.experienceInYears),
                 specializations: data.specializations.split(',').map(s => s.trim()).filter(s => s),
+                documents,
                 coordinates: [72.8777, 19.0760] // Mumbai default
             };
 

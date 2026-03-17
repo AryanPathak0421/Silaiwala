@@ -8,26 +8,38 @@ const ErrorResponse = require("../../../utils/errorResponse");
  * @access  Public
  */
 exports.getServices = asyncHandler(async (req, res, next) => {
-  const { tailor, category, isActive = true } = req.query;
+  // Convert string 'true'/'false' to boolean, default to true
+  const isActive = req.query.isActive === 'false' ? false : true;
   
   let query = { isActive };
 
-  if (tailor) query.tailor = tailor;
-  if (category) query.category = category;
+  if (req.query.tailor) query.tailor = req.query.tailor;
+  if (req.query.category) query.category = req.query.category;
 
+  // We want to only show services from ACTIVE and VERIFIED tailors
   const services = await Service.find(query)
-    .populate("category", "name")
     .populate({
       path: "tailor",
-      select: "shopName rating location",
-      populate: { path: "user", select: "name profileImage" }
+      match: { isAvailable: true }, // Only populate if tailor is available
+      select: "shopName rating location user",
+      populate: { 
+        path: "user", 
+        match: { isActive: true }, // Only populate if user is active
+        select: "name profileImage" 
+      }
     })
+    .populate("category", "name")
     .lean();
+
+  // Filter out services where tailor or tailor's user was not found due to match conditions
+  const filteredServices = services.filter(service => 
+    service.tailor && service.tailor.user
+  );
 
   res.status(200).json({
     success: true,
-    count: services.length,
-    data: services,
+    count: filteredServices.length,
+    data: filteredServices,
   });
 });
 

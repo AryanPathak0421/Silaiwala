@@ -1,23 +1,114 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, MoreHorizontal, X, User, MapPin, CheckCircle2, Scissors, Building, Star, Mail, Phone, Clock, FileText, Ban } from 'lucide-react';
-import { allTailors, tailorApplications } from '../data/mockData';
+import api from '../../../utils/api';
+import { toast } from 'react-hot-toast';
 
 const AdminTailors = () => {
     const [selectedTab, setSelectedTab] = useState('All Tailors');
     const [selectedTailor, setSelectedTailor] = useState(null);
     const [selectedApp, setSelectedApp] = useState(null);
+    const [tailorsData, setTailorsData] = useState([]);
+    const [pendingData, setPendingData] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const tabs = ['All Tailors', 'Pending Applications'];
+
+    const fetchData = async () => {
+        setIsLoading(true);
+        try {
+            const [allRes, pendingRes] = await Promise.all([
+                api.get('/admin/users?role=tailor'),
+                api.get('/admin/tailors/pending')
+            ]);
+            
+            setTailorsData(allRes.data.data.map(t => ({
+                id: t._id,
+                name: t.name,
+                joined: new Date(t.createdAt).toLocaleDateString(),
+                specialty: t.profile?.specializations?.join(', ') || 'General Tailoring',
+                location: t.profile?.location?.address || 'Verified Platform User',
+                rating: t.profile?.rating || 4.8,
+                completedOrders: t.profile?.totalReviews || 0,
+                commission: '20%',
+                status: t.isActive ? 'Approved' : (t.isVerified ? 'Suspended' : 'Pending'),
+                email: t.email,
+                phone: t.phoneNumber,
+                documents: t.profile?.documents || [],
+                shopName: t.profile?.shopName,
+                experience: t.profile?.experienceInYears,
+                bio: t.profile?.bio
+            })));
+
+            setPendingData(pendingRes.data.data.map(t => ({
+                id: t._id,
+                name: t.name,
+                status: 'Pending Review',
+                specialty: t.profile?.specializations?.join(', ') || 'General Tailoring',
+                location: t.profile?.location?.address || 'Registration',
+                submittedDate: new Date(t.createdAt).toLocaleDateString(),
+                documents: t.profile?.documents || [],
+                bio: t.profile?.bio,
+                experience: t.profile?.experienceInYears,
+                shopName: t.profile?.shopName
+            })));
+
+        } catch (error) {
+            console.error('Error fetching tailors:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const handleApprove = async (id) => {
+        try {
+            await api.put(`/admin/tailors/${id}/approve`);
+            setSelectedApp(null);
+            toast.success('Tailor approved successfully');
+            fetchData();
+        } catch (error) {
+            console.error('Approval failed', error);
+        }
+    };
+
+    const handleReject = async (id) => {
+        try {
+            await api.delete(`/admin/tailors/${id}/reject`);
+            setSelectedApp(null);
+            toast.success('Tailor application rejected');
+            fetchData();
+        } catch (error) {
+            console.error('Rejection failed', error);
+        }
+    };
 
     const getStatusStyle = (status) => {
         switch (status) {
             case 'Approved': return 'bg-green-100 text-green-700 border-green-200';
-            case 'Pending Review': return 'bg-orange-100 text-orange-700 border-orange-200';
+            case 'Pending Review': 
+            case 'Pending': return 'bg-orange-100 text-orange-700 border-orange-200';
             case 'Suspended': return 'bg-red-100 text-red-700 border-red-200';
             default: return 'bg-gray-100 text-gray-700 border-gray-200';
         }
     };
+
+    const filteredTailors = tailorsData.filter(t => 
+        t.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        t.email.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        t.phone.includes(searchQuery) ||
+        t.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.location.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const filteredPending = pendingData.filter(t => 
+        t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.specialty.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
         <div className="h-full flex flex-col space-y-6 relative">
@@ -38,7 +129,7 @@ const AdminTailors = () => {
                             {tab}
                             {tab === 'Pending Applications' && (
                                 <span className={`px-1.5 py-0.5 rounded-full text-[9px] ${selectedTab === tab ? 'bg-orange-100 text-orange-600' : 'bg-gray-200 text-gray-500'}`}>
-                                    {tailorApplications.length}
+                                    {pendingData.length}
                                 </span>
                             )}
                         </button>
@@ -48,13 +139,24 @@ const AdminTailors = () => {
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                     <div className="relative flex-1 sm:w-64">
                         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input type="text" placeholder="Search tailors..." className="w-full pl-9 pr-4 py-2 text-xs font-semibold bg-gray-50 border border-transparent focus:border-gray-200 rounded-xl outline-none transition-all" />
+                        <input 
+                            type="text" 
+                            placeholder="Search tailors..." 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-9 pr-4 py-2 text-xs font-semibold bg-gray-50 border border-transparent focus:border-gray-200 rounded-xl outline-none transition-all" 
+                        />
                     </div>
                 </div>
             </div>
 
             {/* Content Area */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex-1 overflow-hidden flex flex-col">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex-1 overflow-hidden flex flex-col relative">
+                {isLoading && (
+                     <div className="w-full h-1 bg-gray-100 overflow-hidden absolute top-0 left-0 z-10">
+                         <div className="h-full bg-[#1e3932] animate-pulse w-1/3"></div>
+                     </div>
+                )}
                 {selectedTab === 'All Tailors' ? (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left whitespace-nowrap">
@@ -68,7 +170,7 @@ const AdminTailors = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
-                                {allTailors.map((tailor) => (
+                                {filteredTailors.map((tailor) => (
                                     <tr
                                         key={tailor.id}
                                         onClick={() => setSelectedTailor(tailor)}
@@ -112,7 +214,7 @@ const AdminTailors = () => {
                     </div>
                 ) : (
                     <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto">
-                        {tailorApplications.map((app) => (
+                        {filteredPending.map((app) => (
                             <div key={app.id} className="bg-white border text-left border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
                                 <div>
                                     <div className="flex justify-between items-start">
@@ -241,6 +343,32 @@ const AdminTailors = () => {
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Documents Section in Drawer */}
+                                {selectedTailor.documents && selectedTailor.documents.length > 0 && (
+                                    <div className="space-y-3">
+                                        <h3 className="text-[10px] font-black uppercase text-gray-400 tracking-widest flex items-center gap-2">
+                                            <FileText size={12} /> Verified Documents
+                                        </h3>
+                                        <div className="grid grid-cols-1 gap-2">
+                                            {selectedTailor.documents.map((doc, i) => (
+                                                <a 
+                                                    key={i}
+                                                    href={doc.url} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-xl hover:border-[#1e3932] transition-colors group"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <FileText size={14} className="text-gray-400 group-hover:text-[#1e3932]" />
+                                                        <span className="text-xs font-bold text-gray-700">{doc.name}</span>
+                                                    </div>
+                                                    <span className="text-[10px] font-black text-[#1e3932] uppercase tracking-[0.1em]">View</span>
+                                                </a>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Actions */}
@@ -287,37 +415,71 @@ const AdminTailors = () => {
                                         </div>
                                         <div>
                                             <h3 className="text-2xl font-black text-gray-900">{selectedApp.name}</h3>
-                                            <p className="text-sm font-bold text-gray-500">{selectedApp.specialty}</p>
-                                            <p className="text-xs font-medium text-gray-400 mt-1">{selectedApp.location}</p>
+                                            <p className="text-sm font-bold text-[#1e3932]">{selectedApp.specialty}</p>
+                                            <div className="flex gap-4 mt-2">
+                                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                                                    <Building size={14} /> {selectedApp.shopName || 'Independent'}
+                                                </div>
+                                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                                                    <Star size={14} /> {selectedApp.experience || 0} Years Exp.
+                                                </div>
+                                            </div>
+                                            <p className="text-xs font-medium text-gray-400 mt-2">{selectedApp.location}</p>
                                         </div>
                                     </div>
 
                                     <div className="space-y-4">
                                         <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">KYC Documents</h4>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            {[
-                                                { name: 'Aadhaar Card', status: 'Uploaded', icon: <FileText size={16} /> },
-                                                { name: 'PAN Card', status: 'Uploaded', icon: <FileText size={16} /> },
-                                                { name: 'Bank Passbook', status: 'Uploaded', icon: <FileText size={16} /> },
-                                                { name: 'Shop Photo', status: 'Uploaded', icon: <Building size={16} /> }
-                                            ].map((doc, i) => (
-                                                <div key={i} className="flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-xl cursor-pointer hover:border-[#1e3932] transition-colors">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="text-[#1e3932]/70">{doc.icon}</div>
-                                                        <span className="text-sm font-bold text-gray-700">{doc.name}</span>
+                                            {selectedApp.documents && selectedApp.documents.length > 0 ? (
+                                                selectedApp.documents.map((doc, i) => (
+                                                    <div key={i} className="group relative">
+                                                        <div className="flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-xl">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="text-[#1e3932]/70"><FileText size={16} /></div>
+                                                                <span className="text-sm font-bold text-gray-700">{doc.name}</span>
+                                                            </div>
+                                                            <div className={`text-[10px] font-bold px-2 py-1 rounded ${
+                                                                doc.status === 'verified' ? 'bg-green-100 text-green-600' : 
+                                                                doc.status === 'rejected' ? 'bg-red-100 text-red-600' : 
+                                                                'bg-orange-100 text-orange-600'
+                                                            }`}>
+                                                                {doc.status}
+                                                            </div>
+                                                        </div>
+                                                        <a 
+                                                            href={doc.url} 
+                                                            target="_blank" 
+                                                            rel="noopener noreferrer"
+                                                            className="absolute inset-0 flex items-center justify-center bg-[#1e3932]/10 opacity-0 group-hover:opacity-100 backdrop-blur-[2px] rounded-xl transition-all font-black text-[10px] text-[#1e3932] uppercase tracking-widest"
+                                                        >
+                                                            View Document
+                                                        </a>
                                                     </div>
-                                                    <div className="text-[10px] font-bold text-green-600 bg-green-100 px-2 py-1 rounded">{doc.status}</div>
+                                                ))
+                                            ) : (
+                                                <div className="col-span-full p-8 text-center bg-gray-50 border border-dashed border-gray-200 rounded-2xl">
+                                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">No documents uploaded</p>
                                                 </div>
-                                            ))}
+                                            )}
                                         </div>
                                     </div>
+
+                                    {selectedApp.bio && (
+                                        <div className="space-y-2">
+                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Professional Bio</h4>
+                                            <p className="text-sm font-medium text-gray-600 italic bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                                "{selectedApp.bio}"
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="p-6 border-t border-gray-100 bg-gray-50 grid grid-cols-2 gap-4">
-                                    <button className="py-3 bg-white border border-gray-200 text-red-600 text-xs font-black rounded-xl hover:bg-red-50 hover:border-red-100 transition-colors uppercase tracking-widest">
+                                    <button onClick={() => handleReject(selectedApp.id)} className="py-3 bg-white border border-gray-200 text-red-600 text-xs font-black rounded-xl hover:bg-red-50 hover:border-red-100 transition-colors uppercase tracking-widest">
                                         Reject
                                     </button>
-                                    <button className="py-3 bg-[#1e3932] text-white text-xs font-black rounded-xl hover:bg-[#0a211e] shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest">
+                                    <button onClick={() => handleApprove(selectedApp.id)} className="py-3 bg-[#1e3932] text-white text-xs font-black rounded-xl hover:bg-[#0a211e] shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest">
                                         Approve Profile
                                     </button>
                                 </div>

@@ -1,13 +1,152 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, MoreHorizontal, X, User, MapPin, CheckCircle2, Truck, Star, Phone, Clock, FileText, Ban, Power, Package } from 'lucide-react';
-import { deliveryPartners, unassignedOrders } from '../data/mockData';
+import { Search, Filter, MoreHorizontal, X, User, MapPin, CheckCircle2, Truck, Star, Phone, Clock, FileText, Ban, Power, Package, ShieldCheck } from 'lucide-react';
+import api from '../../../utils/api';
+import { toast } from 'react-hot-toast';
 
 const AdminDelivery = () => {
     const [selectedTab, setSelectedTab] = useState('All Partners');
     const [selectedPartner, setSelectedPartner] = useState(null);
+    const [selectedApp, setSelectedApp] = useState(null);
+    const [deliveryData, setDeliveryData] = useState([]);
+    const [pendingData, setPendingData] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
 
-    const tabs = ['All Partners', 'Manual Assignment'];
+    const [unassignedTasks, setUnassignedTasks] = useState([]);
+    const [isAssigning, setIsAssigning] = useState(false);
+    const [pendingAssignments, setPendingAssignments] = useState({}); // { orderId: partnerId }
+
+    const fetchData = async () => {
+        setIsLoading(true);
+        try {
+            const [partnersRes, pendingRes] = await Promise.all([
+                api.get('/admin/delivery-partners'),
+                api.get('/admin/delivery-partners/pending')
+            ]);
+            
+            setDeliveryData(partnersRes.data.data.map(p => ({
+                id: p._id,
+                name: p.name,
+                phone: p.phoneNumber || 'N/A',
+                isVerified: p.isVerified,
+                vehicle: p.profile?.vehicleType || 'Reg. Vehicle',
+                rating: p.profile?.rating || 5.0,
+                totalDeliveries: p.profile?.totalDeliveries || 0,
+                activeTasks: 0,
+                status: p.isActive ? 'Online' : 'Offline',
+                joined: new Date(p.createdAt).toLocaleDateString()
+            })));
+
+            setPendingData(pendingRes.data.data.map(p => ({
+                id: p._id,
+                name: p.name,
+                phone: p.phoneNumber,
+                status: 'Pending Review',
+                vehicle: p.profile?.vehicleType || 'Not Specified',
+                vehicleNumber: p.profile?.vehicleNumber,
+                documents: p.profile?.documents || [],
+                submittedDate: new Date(p.createdAt).toLocaleDateString()
+            })));
+        } catch (error) {
+            console.error('Failed to fetch data:', error);
+            toast.error('Failed to load delivery data');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const fetchUnassignedTasks = async () => {
+        try {
+            const res = await api.get('/admin/orders?deliveryPartner=unassigned');
+            const data = res.data.data.map(o => ({
+                id: o.orderId || o._id.substring(0, 8),
+                fullId: o._id,
+                type: o.status.includes('fabric') ? 'Pickup' : 'Delivery',
+                from: o.status.includes('fabric') ? o.customer?.name : o.tailor?.shopName || 'Tailor Shop',
+                to: o.status.includes('fabric') ? o.tailor?.shopName || 'Tailor Shop' : o.customer?.name,
+                timeSlot: 'ASAP',
+                status: o.status
+            }));
+            setUnassignedTasks(data);
+        } catch (err) {
+            console.error('Failed to fetch unassigned tasks:', err);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+        fetchUnassignedTasks();
+    }, []);
+
+    const handleApprove = async (id) => {
+        try {
+            await api.put(`/admin/delivery-partners/${id}/approve`);
+            setSelectedApp(null);
+            toast.success('Rider approved successfully');
+            fetchData();
+        } catch (error) {
+            console.error('Approval failed', error);
+            toast.error('Failed to approve rider');
+        }
+    };
+
+    const handleReject = async (id) => {
+        try {
+            await api.delete(`/admin/delivery-partners/${id}/reject`);
+            setSelectedApp(null);
+            toast.success('Rider application rejected');
+            fetchData();
+        } catch (error) {
+            console.error('Rejection failed', error);
+            toast.error('Failed to reject application');
+        }
+    };
+
+    const handleUpdateUserStatus = async (partnerId, isActive) => {
+        try {
+            await api.put(`/admin/users/${partnerId}/status`, { isActive });
+            toast.success(isActive ? 'Partner activated' : 'Partner suspended');
+            fetchData();
+            if (selectedPartner && selectedPartner.id === partnerId) {
+                setSelectedPartner(prev => ({ ...prev, status: isActive ? 'Online' : 'Offline' }));
+            }
+        } catch (error) {
+            console.error('Failed to update status', error);
+            toast.error('Failed to update status');
+        }
+    };
+
+    const handleAssignTask = async (orderId, partnerId) => {
+        if (!partnerId) return toast.error('Please select a partner');
+        setIsAssigning(true);
+        try {
+            await api.put(`/admin/orders/${orderId}/status`, { deliveryPartner: partnerId });
+            toast.success('Task assigned successfully');
+            
+            // Clear pending assignment for this order
+            setPendingAssignments(prev => {
+                const next = { ...prev };
+                delete next[orderId];
+                return next;
+            });
+
+            fetchUnassignedTasks();
+            fetchData();
+        } catch (err) {
+            console.error('Failed to assign task:', err);
+            toast.error('Failed to assign task');
+        } finally {
+            setIsAssigning(false);
+        }
+    };
+
+    const tabs = ['All Partners', 'Pending Applications', 'Manual Assignment'];
+
+    const filteredPartners = deliveryData.filter(p => 
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        p.phone.includes(searchQuery)
+    );
 
     const getStatusStyle = (status) => {
         switch (status) {
@@ -36,7 +175,12 @@ const AdminDelivery = () => {
                             {tab}
                             {tab === 'Manual Assignment' && (
                                 <span className={`px-1.5 py-0.5 rounded-full text-[9px] ${selectedTab === tab ? 'bg-orange-100 text-orange-600' : 'bg-gray-200 text-gray-500'}`}>
-                                    {unassignedOrders.length}
+                                    {unassignedTasks.length}
+                                </span>
+                            )}
+                            {tab === 'Pending Applications' && (
+                                <span className={`px-1.5 py-0.5 rounded-full text-[9px] ${selectedTab === tab ? 'bg-orange-100 text-orange-600' : 'bg-gray-200 text-gray-500'}`}>
+                                    {pendingData.length}
                                 </span>
                             )}
                         </button>
@@ -46,13 +190,24 @@ const AdminDelivery = () => {
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                     <div className="relative flex-1 sm:w-64">
                         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input type="text" placeholder="Search partners..." className="w-full pl-9 pr-4 py-2 text-xs font-semibold bg-gray-50 border border-transparent focus:border-gray-200 rounded-xl outline-none transition-all" />
+                        <input 
+                            type="text" 
+                            placeholder="Search partners..." 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-9 pr-4 py-2 text-xs font-semibold bg-gray-50 border border-transparent focus:border-gray-200 rounded-xl outline-none transition-all" 
+                        />
                     </div>
                 </div>
             </div>
 
             {/* Content Area */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex-1 overflow-hidden flex flex-col">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex-1 overflow-hidden flex flex-col relative">
+                {isLoading && (
+                     <div className="w-full h-1 bg-gray-100 overflow-hidden absolute top-0 left-0 z-10">
+                         <div className="h-full bg-[#1e3932] animate-pulse w-1/3"></div>
+                     </div>
+                )}
                 {selectedTab === 'All Partners' ? (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left whitespace-nowrap">
@@ -66,7 +221,7 @@ const AdminDelivery = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
-                                {deliveryPartners.map((partner) => (
+                                {filteredPartners.map((partner) => (
                                     <tr
                                         key={partner.id}
                                         onClick={() => setSelectedPartner(partner)}
@@ -78,7 +233,12 @@ const AdminDelivery = () => {
                                                     {partner.name.charAt(0)}
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-bold text-gray-900 group-hover:text-[#1e3932] transition-colors">{partner.name}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-sm font-bold text-gray-900 group-hover:text-[#1e3932] transition-colors">{partner.name}</span>
+                                                        {partner.isVerified && (
+                                                            <ShieldCheck size={12} className="text-emerald-700 fill-emerald-50" />
+                                                        )}
+                                                    </div>
                                                     <span className="text-[10px] text-gray-400 font-medium">{partner.phone}</span>
                                                 </div>
                                             </div>
@@ -110,14 +270,59 @@ const AdminDelivery = () => {
                             </tbody>
                         </table>
                     </div>
+                ) : selectedTab === 'Pending Applications' ? (
+                    <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto">
+                        {pendingData.map((app) => (
+                            <div key={app.id} className="bg-white border text-left border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                                <div>
+                                    <div className="flex justify-between items-start">
+                                        <div className="h-12 w-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-[#1e3932] font-black text-lg">
+                                            {app.name.charAt(0)}
+                                        </div>
+                                        <span className="px-2 py-1 rounded-lg text-[9px] font-black border uppercase tracking-wider bg-orange-100 text-orange-700 border-orange-200">
+                                            Pending Review
+                                        </span>
+                                    </div>
+                                    <h3 className="text-base font-black text-gray-900 mt-4">{app.name}</h3>
+                                    <div className="flex items-center gap-1.5 mt-1 text-xs text-gray-500 font-medium">
+                                        <Truck size={12} className="text-gray-400" /> {app.vehicle}
+                                    </div>
+                                    <div className="flex gap-4 mt-4 text-[10px] text-gray-400 font-bold">
+                                        <div className="flex items-center gap-1">
+                                            <Phone size={12} /> {app.phone}
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <Clock size={12} /> {app.submittedDate}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="mt-6">
+                                    <button onClick={() => setSelectedApp(app)} className="w-full py-2.5 bg-gray-50 text-[#1e3932] hover:bg-[#1e3932] hover:text-white transition-colors text-xs font-black uppercase tracking-widest rounded-xl border border-gray-100">
+                                        Review KYC
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                        {pendingData.length === 0 && (
+                            <div className="col-span-full py-20 text-center">
+                                <CheckCircle2 size={40} className="mx-auto text-gray-200 mb-4" />
+                                <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">No pending applications</p>
+                            </div>
+                        )}
+                    </div>
                 ) : (
                     <div className="p-6 overflow-y-auto space-y-4">
                         <div className="flex justify-between items-center mb-2">
                             <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Unassigned Tasks</h3>
                             <button className="text-xs font-bold text-[#1e3932] hover:underline">Auto-Assign All</button>
                         </div>
-                        {unassignedOrders.map((order) => (
-                            <div key={order.id} className="bg-white border text-left border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                        {unassignedTasks.length === 0 ? (
+                            <div className="text-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                                <Package size={40} className="mx-auto text-gray-300 mb-4" />
+                                <p className="text-sm font-bold text-gray-500">No unassigned tasks found</p>
+                            </div>
+                        ) : unassignedTasks.map((order) => (
+                            <div key={order.fullId} className="bg-white border text-left border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                                 <div>
                                     <div className="flex items-center gap-2 mb-2">
                                         <span className="text-[10px] font-black uppercase text-[#1e3932]">{order.id}</span>
@@ -145,13 +350,22 @@ const AdminDelivery = () => {
                                 </div>
                                 <div className="flex flex-col gap-3 min-w-[200px]">
                                     <p className="text-[10px] text-gray-500 font-bold flex items-center justify-end gap-1"><Clock size={12} /> {order.timeSlot}</p>
-                                    <select className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 outline-none w-full">
+                                    <select 
+                                        className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 outline-none w-full"
+                                        value={pendingAssignments[order.fullId] || ''}
+                                        onChange={(e) => setPendingAssignments(prev => ({ ...prev, [order.fullId]: e.target.value }))}
+                                    >
                                         <option value="">Select Partner</option>
-                                        <option value="DP-01">Rahul Kumar (0.5 km away)</option>
-                                        <option value="DP-03">Sanjay Verma (1.2 km away)</option>
+                                        {deliveryData.filter(p => p.status === 'Online').map(p => (
+                                            <option key={p.id} value={p.id}>{p.name} (Online)</option>
+                                        ))}
                                     </select>
-                                    <button className="w-full py-2 bg-[#1e3932] text-white text-[10px] font-black rounded-lg hover:bg-[#0a211e] transition-colors uppercase tracking-widest">
-                                        Assign Task
+                                    <button 
+                                        onClick={() => handleAssignTask(order.fullId, pendingAssignments[order.fullId])}
+                                        disabled={isAssigning || !pendingAssignments[order.fullId]}
+                                        className="w-full py-2 bg-[#1e3932] text-white text-[10px] font-black rounded-lg hover:bg-[#0a211e] transition-colors uppercase tracking-widest disabled:opacity-50"
+                                    >
+                                        {isAssigning ? 'Assigning...' : 'Assign Task'}
                                     </button>
                                 </div>
                             </div>
@@ -252,13 +466,118 @@ const AdminDelivery = () => {
 
                             {/* Actions */}
                             <div className="p-6 border-t border-gray-100 bg-white grid grid-cols-2 gap-3">
-                                <button className="px-4 py-3 border border-red-100 bg-red-50 text-red-600 text-xs font-black rounded-xl hover:bg-red-100 transition-colors uppercase tracking-widest flex items-center justify-center gap-2">
-                                    <Ban size={14} /> Suspend
+                                <button 
+                                    onClick={() => handleUpdateUserStatus(selectedPartner.id, selectedPartner.status === 'Offline')}
+                                    className={`px-4 py-3 border text-xs font-black rounded-xl transition-colors uppercase tracking-widest flex items-center justify-center gap-2 ${
+                                        selectedPartner.status === 'Offline' 
+                                        ? 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100' 
+                                        : 'bg-red-50 text-red-600 border-red-100 hover:bg-red-100'
+                                    }`}
+                                >
+                                    {selectedPartner.status === 'Offline' ? <CheckCircle2 size={14} /> : <Ban size={14} />}
+                                    {selectedPartner.status === 'Offline' ? 'Activate' : 'Suspend'}
                                 </button>
-                                <button className="px-4 py-3 bg-[#1e3932] text-white text-xs font-black rounded-xl hover:bg-[#0a211e] shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest flex items-center justify-center gap-2">
+                                <button 
+                                    onClick={() => toast.info('Tracking feature available in next update')}
+                                    className="px-4 py-3 bg-[#1e3932] text-white text-xs font-black rounded-xl hover:bg-[#0a211e] shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest flex items-center justify-center gap-2"
+                                >
                                     View Tracking
                                 </button>
                             </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+
+            {/* Application Review Modal */}
+            <AnimatePresence>
+                {selectedApp && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                            onClick={() => setSelectedApp(null)}
+                        >
+                            <motion.div
+                                initial={{ scale: 0.95, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.95, opacity: 0 }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+                            >
+                                <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                                    <h2 className="text-lg font-black tracking-tight text-gray-900">Review Rider Application</h2>
+                                    <button onClick={() => setSelectedApp(null)} className="p-2 bg-gray-50 text-gray-400 hover:text-gray-900 rounded-full transition-colors">
+                                        <X size={20} />
+                                    </button>
+                                </div>
+
+                                <div className="p-6 flex-1 overflow-y-auto space-y-8 custom-scrollbar">
+                                    <div className="flex items-center gap-6">
+                                        <div className="h-20 w-20 rounded-2xl bg-[#1e3932]/10 flex items-center justify-center text-[#1e3932] font-black text-3xl">
+                                            {selectedApp.name.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <h3 className="text-2xl font-black text-gray-900">{selectedApp.name}</h3>
+                                            <p className="text-sm font-bold text-[#1e3932] uppercase tracking-widest">{selectedApp.vehicle} Driver</p>
+                                            <div className="flex gap-4 mt-2">
+                                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                                                    <Truck size={14} /> {selectedApp.vehicleNumber || 'No Number'}
+                                                </div>
+                                            </div>
+                                            <p className="text-xs font-medium text-gray-400 mt-2">{selectedApp.phone}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">KYC Documents</h4>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            {selectedApp.documents && selectedApp.documents.length > 0 ? (
+                                                selectedApp.documents.map((doc, i) => (
+                                                    <div key={i} className="group relative">
+                                                        <div className="flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-xl">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="text-[#1e3932]/70"><FileText size={16} /></div>
+                                                                <span className="text-sm font-bold text-gray-700">{doc.name}</span>
+                                                            </div>
+                                                            <div className={`text-[10px] font-bold px-2 py-1 rounded ${
+                                                                doc.status === 'verified' ? 'bg-green-100 text-green-600' : 
+                                                                doc.status === 'rejected' ? 'bg-red-100 text-red-600' : 
+                                                                'bg-orange-100 text-orange-600'
+                                                            }`}>
+                                                                {doc.status}
+                                                            </div>
+                                                        </div>
+                                                        <a 
+                                                            href={doc.url} 
+                                                            target="_blank" 
+                                                            rel="noopener noreferrer"
+                                                            className="absolute inset-0 flex items-center justify-center bg-[#1e3932]/10 opacity-0 group-hover:opacity-100 backdrop-blur-[2px] rounded-xl transition-all font-black text-[10px] text-[#1e3932] uppercase tracking-widest"
+                                                        >
+                                                            View Document
+                                                        </a>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="col-span-full p-8 text-center bg-gray-50 border border-dashed border-gray-200 rounded-2xl">
+                                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">No documents uploaded</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="p-6 border-t border-gray-100 bg-gray-50 grid grid-cols-2 gap-4">
+                                    <button onClick={() => handleReject(selectedApp.id)} className="py-3 bg-white border border-gray-200 text-red-600 text-xs font-black rounded-xl hover:bg-red-50 hover:border-red-100 transition-colors uppercase tracking-widest">
+                                        Reject Application
+                                    </button>
+                                    <button onClick={() => handleApprove(selectedApp.id)} className="py-3 bg-[#1e3932] text-white text-xs font-black rounded-xl hover:bg-[#0a211e] shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest">
+                                        Approve Rider
+                                    </button>
+                                </div>
+                            </motion.div>
                         </motion.div>
                     </>
                 )}

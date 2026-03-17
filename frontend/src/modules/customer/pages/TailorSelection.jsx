@@ -1,23 +1,53 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Star, MapPin, ChevronRight } from 'lucide-react';
-import { TAILORS } from '../data/tailors';
+import { ArrowLeft, Star, MapPin, ChevronRight, Loader2 } from 'lucide-react';
+import api from '../../../utils/api';
 import useCheckoutStore from '../../../store/checkoutStore';
 
 const TailorSelection = () => {
     const navigate = useNavigate();
     const { serviceDetails, configuration, pricing, initializeCheckout } = useCheckoutStore();
+    const [tailors, setTailors] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchTailors = async () => {
+            try {
+                const response = await api.get('/customers/tailors');
+                if (response.data.success) {
+                    setTailors(response.data.data);
+                }
+            } catch (error) {
+                console.error('Error fetching tailors for selection:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchTailors();
+    }, []);
 
     const handleSelectTailor = (tailor) => {
+        // We use the tailor's User ID for the order assignment in the backend
+        const tailorUserId = tailor.user?._id || tailor.user?.id || tailor._id;
+        
         initializeCheckout({
             service: serviceDetails,
             config: configuration,
             pricing: pricing,
-            tailorId: tailor.id,
-            tailorName: tailor.name
+            tailorId: tailorUserId,
+            tailorName: tailor.shopName || tailor.user?.name
         });
         navigate('/checkout/address');
     };
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 text-center">
+                <Loader2 size={32} className="text-[#1e3932] animate-spin mb-4" />
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Finding Available Tailors...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20 font-sans">
@@ -52,27 +82,31 @@ const TailorSelection = () => {
 
             {/* Tailor List */}
             <div className="p-4 space-y-4">
-                {TAILORS.map(tailor => (
+                {tailors.length > 0 ? tailors.map(tailor => (
                     <div
-                        key={tailor.id}
+                        key={tailor._id}
                         onClick={() => handleSelectTailor(tailor)}
                         className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center gap-4 active:scale-[0.98] transition-all cursor-pointer group"
                     >
                         <div className="w-16 h-16 rounded-xl overflow-hidden border border-gray-100 shrink-0">
-                            <img src={tailor.image} alt={tailor.name} className="w-full h-full object-cover" />
+                            <img src={tailor.user?.profileImage || 'https://via.placeholder.com/150'} alt={tailor.shopName || tailor.user?.name} className="w-full h-full object-cover" />
                         </div>
                         <div className="flex-1">
-                            <h3 className="text-sm font-bold text-gray-900 group-hover:text-[#1e3932] transition-colors">{tailor.name}</h3>
-                            <p className="text-[10px] text-[#1e3932] font-bold mb-1">{tailor.specialty}</p>
+                            <h3 className="text-sm font-bold text-gray-900 group-hover:text-[#1e3932] transition-colors">{tailor.shopName || tailor.user?.name}</h3>
+                            <p className="text-[10px] text-[#1e3932] font-bold mb-1">{tailor.specializations?.[0] || 'Expert Tailor'}</p>
                             <div className="flex items-center gap-3 text-[10px] text-gray-500">
-                                <span className="flex items-center gap-0.5"><Star size={10} className="fill-yellow-400 text-yellow-400" /> {tailor.rating}</span>
-                                <span className="flex items-center gap-0.5"><MapPin size={10} /> {tailor.distance}</span>
-                                <span className="font-bold text-green-600 italic">{tailor.experience} Exp</span>
+                                <span className="flex items-center gap-0.5"><Star size={10} className="fill-yellow-400 text-yellow-400" /> {tailor.rating || 0}</span>
+                                <span className="flex items-center gap-0.5"><MapPin size={10} /> {tailor.distance || 'Near You'}</span>
+                                <span className="font-bold text-green-600 italic">{tailor.experienceInYears || 0}Y Exp</span>
                             </div>
                         </div>
                         <ChevronRight size={18} className="text-gray-300 mr-1" />
                     </div>
-                ))}
+                )) : (
+                    <div className="py-20 text-center opacity-40">
+                         <p className="text-sm font-bold uppercase tracking-widest">No available tailors found</p>
+                    </div>
+                )}
             </div>
 
             {/* Info Message */}

@@ -18,6 +18,10 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     const determineStatus = (tailorData) => {
+        // Check Admin managed isActive flag first
+        const isActive = tailorData?.user?.isActive || tailorData?.isActive;
+        if (isActive) return TAILOR_STATUS.APPROVED;
+        
         if (!tailorData || !tailorData.documents) return TAILOR_STATUS.PENDING_APPROVAL;
         
         const hasRejected = tailorData.documents.some(d => d.status === 'rejected');
@@ -25,6 +29,7 @@ export const AuthProvider = ({ children }) => {
         
         if (hasRejected) return TAILOR_STATUS.REJECTED;
         if (allVerified) return TAILOR_STATUS.APPROVED;
+        
         return TAILOR_STATUS.PENDING_APPROVAL;
     };
 
@@ -71,7 +76,8 @@ export const AuthProvider = ({ children }) => {
         // Determine status immediately from login payload
         let currentStatus = TAILOR_STATUS.NOT_REGISTERED;
         if (userData.role === 'tailor') {
-            currentStatus = determineStatus(userData.profile);
+            // Pass whole userData so determineStatus can see the isActive flag
+            currentStatus = determineStatus({ ...userData.profile, user: userData });
         }
 
         const enrichedUser = {

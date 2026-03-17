@@ -1,10 +1,13 @@
 const Order = require("../../../models/Order");
 const User = require("../../../models/User");
+const Tailor = require("../../../models/Tailor");
 const { getIO } = require("../../../config/socket");
 const crypto = require("crypto");
 const asyncHandler = require("../../../utils/asyncHandler");
 const ErrorResponse = require("../../../utils/errorResponse");
 const { sendNotification } = require("../../../utils/notification");
+
+const PromoCode = require("../../../models/PromoCode");
 
 /**
  * @desc    Create a new order
@@ -12,20 +15,31 @@ const { sendNotification } = require("../../../utils/notification");
  * @access  Private (Customer)
  */
 exports.createOrder = asyncHandler(async (req, res, next) => {
-  const { tailorId, items, totalAmount, deliveryAddress } = req.body;
+  const { tailorId, items, totalAmount, deliveryAddress, promoCode } = req.body;
 
-  // 1. Validation: Ensure tailor exists and is active
-  const tailor = await User.findOne({ _id: tailorId, role: "tailor" });
+  // 1. Validation: Ensure tailor exists and is active (Check both User and Tailor Profile IDs)
+  let tailor = await User.findOne({ _id: tailorId, role: "tailor" });
+  
   if (!tailor) {
-    return next(new ErrorResponse("Tailor not found or invalid", 404));
+    // If not found in User, check if it's a Tailor Profile ID
+    const tailorProfile = await Tailor.findById(tailorId).populate("user");
+    if (tailorProfile && tailorProfile.user) {
+      tailor = tailorProfile.user;
+    }
   }
+
+  if (!tailor) {
+    return next(new ErrorResponse("Tailor account not found or invalid", 404));
+  }
+
+  const targetTailorUserId = tailor._id;
 
   // 2. Optimization: Map items to ensure structure matches updated schema
   // In a real production environment, we would also verify basePrice and delivery charges here
   const formattedItems = items.map(item => ({
     product: item.product || null,
     service: item.service || null,
-    fabricSource: item.fabricSource || 'customer',
+    fabricSource: item.fabricSource || (item.product ? 'platform' : 'customer'),
     deliveryType: item.deliveryType || 'standard',
     selectedFabric: item.selectedFabric || null,
     quantity: item.quantity || 1,
@@ -36,24 +50,67 @@ exports.createOrder = asyncHandler(async (req, res, next) => {
   // 3. Generate unique order ID
   const orderId = `ORD-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
 
-  // 4. Create Order with optimized object
+  // 4. Check if fabric pickup is required
+  const fabricPickupRequired = formattedItems.some(item => item.fabricSource === 'customer');
+  const initialStatus = "pending";
+
+  // 5. Handle Promo Code / Coupon
+  let discountAmount = 0;
+  let finalAmount = totalAmount;
+
+  if (promoCode) {
+    const promo = await PromoCode.findOne({ code: promoCode, isActive: true });
+    if (promo) {
+      // Check dates
+      const now = new Date();
+      const isActive = promo.startDate <= now && (!promo.endDate || promo.endDate >= now);
+      const isWithinLimit = promo.usedCount < promo.usageLimit;
+      const isMinAmountMet = totalAmount >= promo.minOrderAmount;
+
+      if (isActive && isWithinLimit && isMinAmountMet) {
+        if (promo.discountType === "percentage") {
+          discountAmount = (totalAmount * promo.discountValue) / 100;
+          if (promo.maxDiscountAmount && discountAmount > promo.maxDiscountAmount) {
+            discountAmount = promo.maxDiscountAmount;
+          }
+        } else {
+          discountAmount = promo.discountValue;
+        }
+        finalAmount = totalAmount - discountAmount;
+        
+        // Increment used count
+        promo.usedCount += 1;
+        await promo.save();
+      }
+    }
+  }
+
+  // 6. Create Order with optimized object
   const order = await Order.create({
     orderId,
     customer: req.user.id,
-    tailor: tailorId,
+    tailor: targetTailorUserId,
     items: formattedItems,
-    totalAmount,
+    totalAmount: finalAmount,
+    discountAmount,
+    couponCode: promoCode,
     deliveryAddress,
-    status: "pending",
-    trackingHistory: [{ status: "pending", message: "Order placed successfully" }],
+    status: initialStatus,
+    fabricPickupRequired,
+    trackingHistory: [{ 
+        status: initialStatus, 
+        message: fabricPickupRequired 
+            ? "Order placed. Fabric pickup task created." 
+            : "Order placed successfully" 
+    }],
   });
 
-  // 5. Notify tailor via Persistent & Real-time Notification
+  // 6. Notify tailor via Persistent & Real-time Notification
   await sendNotification({
-    recipient: tailorId,
+    recipient: targetTailorUserId,
     type: "ORDER_CREATED",
     title: "New Request Received!",
-    message: `You have received a new order ${order.orderId} for ${order.items[0]?.service?.title || 'custom stitching'}.`,
+    message: `You have received a new order ${order.orderId}. ${fabricPickupRequired ? 'Wait for fabric delivery from customer.' : 'You can start processing once accepted.'}`,
     data: { orderId: order._id, targetUrl: "/partner/orders" }
   });
 
@@ -69,8 +126,21 @@ exports.createOrder = asyncHandler(async (req, res, next) => {
  * @access  Private (Customer)
  */
 exports.getMyOrders = asyncHandler(async (req, res, next) => {
-  const orders = await Order.find({ customer: req.user.id })
+  let query = {};
+
+  // Role-based filtering
+  if (req.user.role === "customer") {
+    query = { customer: req.user.id };
+  } else if (req.user.role === "tailor") {
+    query = { tailor: req.user.id };
+  } else if (req.user.role === "delivery") {
+    // Delivery partners see orders they are currently delivering
+    query = { deliveryPartner: req.user.id };
+  }
+
+  const orders = await Order.find(query)
     .populate("tailor", "name shopName profileImage")
+    .populate("customer", "name phoneNumber")
     .sort("-createdAt")
     .lean();
 
@@ -90,6 +160,7 @@ exports.getOrderDetails = asyncHandler(async (req, res, next) => {
   const order = await Order.findById(req.params.id)
     .populate("customer", "name phoneNumber")
     .populate("tailor", "name shopName phoneNumber")
+    .populate("deliveryPartner", "name phoneNumber profileImage")
     .lean();
 
   if (!order) {
@@ -98,8 +169,9 @@ exports.getOrderDetails = asyncHandler(async (req, res, next) => {
 
   // Check ownership
   if (
-    order.customer._id.toString() !== req.user.id &&
-    order.tailor._id.toString() !== req.user.id &&
+    order.customer?._id?.toString() !== req.user.id &&
+    order.tailor?._id?.toString() !== req.user.id &&
+    order.deliveryPartner?.toString() !== req.user.id &&
     req.user.role !== "admin"
   ) {
     return next(new ErrorResponse("Not authorized to view this order", 403));

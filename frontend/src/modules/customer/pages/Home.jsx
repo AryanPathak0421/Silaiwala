@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 // Components
 import HomeHeader from '../components/HomeHeader';
 import LocationBar from '../components/LocationBar';
@@ -13,17 +13,20 @@ import WhyChooseUs from '../components/WhyChooseUs';
 
 import useAuthStore from '../../../store/authStore';
 
+import useOrderStore from '../../../store/orderStore';
+
 const Home = () => {
     const user = useAuthStore((state) => state.user);
+    const { orders, fetchOrders } = useOrderStore();
 
-    // Mock active order (keep for now until order API is fully integrated)
-    const mockActiveOrder = {
-        id: '4821',
-        service: 'Kurti Stitching',
-        status: 'In Progress',
-        progress: 60,
-        deliveryDate: 'Feb 15'
-    };
+    useEffect(() => {
+        fetchOrders();
+    }, [fetchOrders]);
+
+    // Find the latest active order (not delivered or cancelled)
+    const activeOrder = orders.find(o => 
+        !['delivered', 'cancelled'].includes(o.status?.toLowerCase())
+    );
 
     return (
         <div className="min-h-screen bg-[#f8faf9] pb-24 font-sans selection:bg-[#1e3932] selection:text-white">
@@ -40,7 +43,7 @@ const Home = () => {
             <QuickActions />
 
             {/* 4. ACTIVE ORDER (High Visibility if exists) */}
-            <ActiveOrderBanner order={mockActiveOrder} />
+            {activeOrder && <ActiveOrderBanner order={activeOrder} />}
 
             {/* 5. PRIMARY ACTION: Tailors List (User's request: Direct tailors ki list) */}
             <div className="mt-4">

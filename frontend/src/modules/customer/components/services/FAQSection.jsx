@@ -1,44 +1,58 @@
-import React, { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
-
-const faqData = [
-    {
-        question: "What if my measurements are incorrect?",
-        answer: "We offer a 'Perfect Fit Guarantee'. If the fit isn't right, the first alteration is completely free within 7 days of delivery."
-    },
-    {
-        question: "Is Cash on Delivery (COD) available?",
-        answer: "Yes, you can pay via COD for orders up to ₹2000. For higher value orders, a partial advance payment is required."
-    },
-    {
-        question: "Can I cancel my order after pickup?",
-        answer: "You can cancel anytime before the fabric is cut. Once stitching begins, a cancellation fee may apply."
-    },
-    {
-        question: "Do you provide fabric as well?",
-        answer: "Currently, we only provide stitching services. You need to provide the fabric, which our executive will pick up."
-    },
-];
+import React, { useState, useEffect } from 'react';
+import { ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
+import api from '../../../../utils/api';
 
 const FAQSection = () => {
+    const [faqs, setFaqs] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [openIndex, setOpenIndex] = useState(null);
 
+    useEffect(() => {
+        const fetchFaqs = async () => {
+            try {
+                const res = await api.get('/cms/content?type=faq&category=customer');
+                if (res.data.success) {
+                    setFaqs(res.data.data);
+                }
+            } catch (error) {
+                console.error('Error fetching FAQs:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchFaqs();
+    }, []);
+
+    if (isLoading) return null;
+    if (faqs.length === 0) return null;
+
     return (
-        <div className="px-4 py-6 pb-24">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+        <div className="px-4 py-8 pb-24">
+            <div className="flex items-center gap-2 mb-6">
+                <div className="p-2 bg-[#1e3932]/10 rounded-lg">
+                    <HelpCircle size={18} className="text-[#1e3932]" />
+                </div>
+                <div>
+                    <h2 className="text-lg font-black text-gray-900 tracking-tight">Need Help?</h2>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Frequently Asked Questions</p>
+                </div>
+            </div>
+
             <div className="space-y-3">
-                {faqData.map((item, index) => (
-                    <div key={index} className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm">
+                {faqs.map((item, index) => (
+                    <div key={item._id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm transition-all hover:shadow-md">
                         <button
-                            className="w-full flex justify-between items-center p-4 text-left"
+                            className="w-full flex justify-between items-center p-4 text-left group"
                             onClick={() => setOpenIndex(openIndex === index ? null : index)}
                         >
-                            <span className="text-xs font-semibold text-gray-800">{item.question}</span>
-                            {openIndex === index ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
+                            <span className="text-xs font-bold text-gray-800 group-hover:text-[#1e3932] transition-colors">{item.title}</span>
+                            <div className={`p-1 rounded-lg transition-colors ${openIndex === index ? 'bg-[#1e3932]/10 text-[#1e3932]' : 'bg-gray-50 text-gray-400'}`}>
+                                {openIndex === index ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                            </div>
                         </button>
                         {openIndex === index && (
-                            <div className="px-4 pb-4 pt-0">
-                                <p className="text-[11px] text-gray-600 leading-relaxed border-t border-gray-100 pt-2">{item.answer}</p>
+                            <div className="px-4 pb-5 pt-0 animate-in fade-in slide-in-from-top-1 duration-300">
+                                <div className="text-[11px] text-gray-500 leading-relaxed font-medium border-t border-gray-50 pt-3" dangerouslySetInnerHTML={{ __html: item.content }} />
                             </div>
                         )}
                     </div>

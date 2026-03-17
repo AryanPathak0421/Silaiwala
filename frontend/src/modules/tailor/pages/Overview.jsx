@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTailorAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import api from '../services/api';
+import { io } from 'socket.io-client';
+import { SOCKET_URL } from '../../../config/constants';
 
 const Overview = () => {
     const { user } = useTailorAuth();
@@ -27,7 +29,22 @@ const Overview = () => {
 
     useEffect(() => {
         fetchDashboardData();
-    }, []);
+
+        const socket = io(SOCKET_URL);
+        
+        if (user?._id) {
+            socket.emit('join', `user_${user._id}`);
+        }
+
+        socket.on('new_order', (data) => {
+            console.log('New real-time order update for dashboard:', data);
+            fetchDashboardData();
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, [user?._id]);
 
     const summary = dashboardData?.summary || {
         totalEarnings: 0,

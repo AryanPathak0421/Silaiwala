@@ -3,25 +3,37 @@ import { Ruler, Upload, User, ChevronDown, ChevronUp, CheckCircle2 } from 'lucid
 import { cn } from '../../../../utils/cn';
 import SelfMeasureForm from './measurement-forms/SelfMeasureForm';
 import UploadSlip from './measurement-forms/UploadSlip';
+import useMeasurementStore from '../../../../store/measurementStore';
 
-const MeasurementSelector = ({ selectedType, onSelectType, onMeasurementComplete }) => {
+const MeasurementSelector = ({ selectedType, onSelectType, onMeasurementComplete, selectedSavedProfile, onSelectSavedProfile }) => {
+    const { measurements, fetchMeasurements, isLoading } = useMeasurementStore();
+    
     // Local state to track if a valid measurement has been provided for each type
     const [completedMeasurements, setCompletedMeasurements] = useState({
         new: false,
         upload: false,
-        saved: false
+        saved: !!selectedSavedProfile
     });
+
+    React.useEffect(() => {
+        fetchMeasurements();
+    }, [fetchMeasurements]);
 
     const handleSelfMeasureSave = (data) => {
         setCompletedMeasurements(prev => ({ ...prev, new: true }));
         onMeasurementComplete(data);
-        // We keep it open to show it's done, or maybe collapse?
-        // Let's keep the selection active but maybe show a success state
     };
 
     const handleUploadComplete = (data) => {
         setCompletedMeasurements(prev => ({ ...prev, upload: true }));
         onMeasurementComplete(data);
+    };
+
+    const handleSavedProfileSelect = (profile) => {
+        setCompletedMeasurements(prev => ({ ...prev, saved: true }));
+        onSelectType('saved');
+        onSelectSavedProfile(profile);
+        onMeasurementComplete(profile.measurements || profile);
     };
 
     return (
@@ -30,25 +42,33 @@ const MeasurementSelector = ({ selectedType, onSelectType, onMeasurementComplete
 
             <div className="space-y-3">
 
-                {/* 1. Saved Measurement (Placeholder for now) */}
-                <div
-                    onClick={() => onSelectType('saved')}
-                    className={cn(
-                        "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all relative overflow-hidden",
-                        selectedType === 'saved' ? "border-[#1e3932] bg-[#f2fcf9] shadow-sm" : "border-gray-100 hover:border-gray-200"
-                    )}
-                >
-                    <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 z-10">
-                        <User size={16} />
+                {/* 1. Saved Measurement Profiles */}
+                {measurements.length > 0 && (
+                    <div className="space-y-2">
+                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest px-1">Your Saved Profiles</p>
+                         {measurements.map(m => (
+                             <div
+                                key={m._id}
+                                onClick={() => handleSavedProfileSelect(m)}
+                                className={cn(
+                                    "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all relative overflow-hidden",
+                                    selectedSavedProfile?._id === m._id ? "border-[#1e3932] bg-[#f2fcf9] shadow-sm" : "border-gray-100 hover:border-gray-200"
+                                )}
+                            >
+                                <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 z-10">
+                                    <User size={16} />
+                                </div>
+                                <div className="flex-1 z-10">
+                                    <p className="text-sm font-semibold text-gray-900">{m.profileName}</p>
+                                    <p className="text-[10px] text-gray-500">{m.garmentType}</p>
+                                </div>
+                                <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center z-10", selectedSavedProfile?._id === m._id ? "border-[#1e3932]" : "border-gray-300")}>
+                                    {selectedSavedProfile?._id === m._id && <div className="w-2 h-2 rounded-full bg-[#1e3932]" />}
+                                </div>
+                            </div>
+                         ))}
                     </div>
-                    <div className="flex-1 z-10">
-                        <p className="text-sm font-semibold text-gray-900">Use Saved Profile</p>
-                        <p className="text-[10px] text-gray-500">Blair's Measurement Profile</p>
-                    </div>
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center z-10", selectedType === 'saved' ? "border-[#1e3932]" : "border-gray-300")}>
-                        {selectedType === 'saved' && <div className="w-2 h-2 rounded-full bg-[#1e3932]" />}
-                    </div>
-                </div>
+                )}
 
                 {/* 2. Enter New Measurement */}
                 <div className={cn(

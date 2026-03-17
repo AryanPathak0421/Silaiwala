@@ -13,19 +13,23 @@ const {
   getMyWorkSamples,
   createWorkSample,
   updateWorkSample,
-  deleteWorkSample
+  deleteWorkSample,
+  getTailorWorkSamples,
+  getAllWorkSamples
 } = require("../controllers/workSample.controller");
 const {
   getMyProducts,
   createProduct,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  getTailorFabrics
 } = require("../controllers/tailorProduct.controller");
 const {
   getMyServices,
   createService: createTailorService,
   updateService: updateTailorService,
-  deleteService: deleteTailorService
+  deleteService: deleteTailorService,
+  getTailorServices
 } = require("../controllers/tailorService.controller");
 const { protect, authorize } = require("../../../middlewares/auth.middleware");
 
@@ -33,6 +37,11 @@ const router = express.Router();
 
 // ─── PUBLIC LISTING ROUTE ───────────────────────────────────────────────────
 router.get("/", getTailors);
+
+router.get("/:tailorId/fabrics", getTailorFabrics);
+router.get("/:tailorId/work-samples", getTailorWorkSamples);
+router.get("/:tailorId/services", getTailorServices);
+router.get("/work-samples/feed", getAllWorkSamples);
 
 // ─── PROTECTED TAILOR ROUTES (STATIC PATHS FIRST) ───────────────────────────
 router.use(protect);
@@ -44,10 +53,6 @@ router.get("/orders", authorize("tailor"), getOrders);
 router.get("/work-samples", authorize("tailor"), getMyWorkSamples);
 router.get("/products", authorize("tailor"), getMyProducts);
 router.get("/services", authorize("tailor"), getMyServices);
-
-// ─── PUBLIC DETAILS ROUTE (DYNAMIC PATH) ────────────────────────────────────
-// Moving this AFTER the specific static routes to prevent shadowing
-router.get("/:id", getTailorDetails);
 
 // ─── OTHER PROTECTED TAILOR ACTIONS ──────────────────────────────────────────
 router.use(authorize("tailor"));
@@ -70,5 +75,9 @@ router.delete("/products/:id", deleteProduct);
 router.post("/services", createTailorService);
 router.patch("/services/:id", updateTailorService);
 router.delete("/services/:id", deleteTailorService);
+
+// ─── PUBLIC DETAILS ROUTE (DYNAMIC PATH) ────────────────────────────────────
+// Moving this to the VERY BOTTOM to prevent shadowing ANY other route
+router.get("/:id", getTailorDetails);
 
 module.exports = router;

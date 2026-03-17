@@ -86,7 +86,7 @@ const useUserStore = create((set, get) => ({
 
     getSelectedAddress: () => {
         const state = get();
-        return state.addresses.find(addr => addr.id === state.selectedAddressId) || state.addresses[0];
+        return state.addresses.find(addr => addr._id === state.selectedAddressId) || state.addresses[0];
     },
 
     referralStats: null,

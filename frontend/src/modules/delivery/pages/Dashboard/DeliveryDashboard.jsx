@@ -12,18 +12,35 @@ import {
     CheckCircle2,
     X,
     Navigation,
-    Loader2
+    Loader2,
+    Store,
+    AlertCircle,
+    User,
+    ChevronLeft,
+    ShieldCheck,
+    PhoneCall,
+    Info
 } from 'lucide-react';
-import deliveryService from '../../services/deliveryService';
+import { useNavigate, useOutletContext } from 'react-router-dom';
+import { SOCKET_URL } from '../../../../config/constants';
 import useAuthStore from '../../../../store/authStore';
+import deliveryService from '../../services/deliveryService';
+import { io } from 'socket.io-client';
+import { Power } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const DeliveryDashboard = () => {
+    const navigate = useNavigate();
+    const { isOnline } = useOutletContext() || { isOnline: true };
     const { user } = useAuthStore();
     const [showMapModal, setShowMapModal] = useState(false);
+    const [selectedAvailableTask, setSelectedAvailableTask] = useState(null);
+    const [isAccepting, setIsAccepting] = useState(false);
     const [loading, setLoading] = useState(true);
     const [dashboardData, setDashboardData] = useState({
         profile: null,
         activeOrders: [],
+        availableOrders: [],
         stats: {
             activeTasks: 0,
             earnings: 0,
@@ -31,38 +48,83 @@ const DeliveryDashboard = () => {
         }
     });
 
-    useEffect(() => {
-        const fetchDashboardData = async () => {
-            try {
-                const [statsRes, ordersRes] = await Promise.all([
-                    deliveryService.getStats(),
-                    deliveryService.getAssignedOrders()
-                ]);
+    const fetchDashboardData = async () => {
+        try {
+            const [statsRes, ordersRes, availableRes] = await Promise.all([
+                deliveryService.getStats(),
+                deliveryService.getAssignedOrders(),
+                deliveryService.getAvailableOrders()
+            ]);
 
-                if (statsRes.success && ordersRes.success) {
-                    setDashboardData({
-                        profile: {
-                            rating: statsRes.data.rating,
-                            isAvailable: statsRes.data.isAvailable,
-                            totalDeliveries: statsRes.data.totalDeliveries
-                        },
-                        activeOrders: ordersRes.data,
-                        stats: {
-                            activeTasks: statsRes.data.activeDeliveries,
-                            earnings: statsRes.data.totalEarnings,
-                            totalPickups: statsRes.data.totalDeliveries
-                        }
-                    });
-                }
-            } catch (error) {
-                console.error('Error fetching dashboard data:', error);
-            } finally {
-                setLoading(false);
+            if (statsRes.success && ordersRes.success && availableRes.success) {
+                setDashboardData({
+                    profile: {
+                        rating: statsRes.data.rating,
+                        isAvailable: statsRes.data.isAvailable,
+                        totalDeliveries: statsRes.data.totalDeliveries
+                    },
+                    activeOrders: ordersRes.data,
+                    availableOrders: availableRes.data,
+                    stats: {
+                        activeTasks: statsRes.data.activeDeliveries,
+                        earnings: statsRes.data.totalEarnings,
+                        totalPickups: statsRes.data.totalDeliveries
+                    }
+                });
             }
-        };
+        } catch (error) {
+            console.error('Error fetching dashboard data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchDashboardData();
-    }, []);
+
+        const socket = io(SOCKET_URL);
+        
+        // Join delivery fleet and personal room
+        socket.emit('join', 'delivery_partners');
+        if (user?._id) {
+            socket.emit('join', `user_${user._id}`);
+        }
+
+        socket.on('new_task', (data) => {
+            toast.success('New delivery task available!', { icon: '🚚' });
+            fetchDashboardData();
+        });
+
+        socket.on('new_notification', (data) => {
+            toast(data.message, { icon: '🔔' });
+            fetchDashboardData();
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, [user?._id]);
+
+    const handleAcceptTask = async (orderId) => {
+        setIsAccepting(true);
+        try {
+            const res = await deliveryService.acceptOrder(orderId);
+            if (res.success) {
+                toast.success('Task accepted successfully!');
+                setSelectedAvailableTask(null);
+                fetchDashboardData();
+                // Optionally navigate to tasks page
+                // navigate('/delivery/tasks');
+            } else {
+                toast.error(res.message || 'Failed to accept task');
+            }
+        } catch (error) {
+            console.error('Error accepting task:', error);
+            toast.error('Failed to accept task');
+        } finally {
+            setIsAccepting(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -73,7 +135,7 @@ const DeliveryDashboard = () => {
         );
     }
 
-    const { stats: dashboardStats, activeOrders, profile } = dashboardData;
+    const { stats: dashboardStats, activeOrders, availableOrders, profile } = dashboardData;
     
     const stats = [
         { label: 'Active Tasks', value: dashboardStats.activeTasks.toString().padStart(2, '0'), icon: Truck, color: 'bg-emerald-800', trend: 'In Progress' },
@@ -83,19 +145,29 @@ const DeliveryDashboard = () => {
 
     const formatAddress = (addr) => {
         if (!addr) return 'Address not specified';
-        return `${addr.street || ''} ${addr.city || ''}, ${addr.zipCode || ''}`.trim();
+        if (typeof addr === 'string') return addr;
+        const parts = [addr.street, addr.city, addr.state, addr.zipCode].filter(Boolean);
+        return parts.join(', ') || 'Address not specified';
     };
 
     const getTaskType = (status) => {
-        if (status === 'ready-for-pickup') return 'Fabric Pickup';
-        if (status === 'out-for-delivery') return 'Final Delivery';
+        if (status.includes('fabric')) return 'Fabric Pickup';
+        if (status === 'ready-for-pickup' || status === 'out-for-delivery') return 'Final Delivery';
         return 'General Task';
     };
 
+    const getTaskLabel = (status) => {
+        if (status === 'fabric-ready-for-pickup') return 'PICKUP FROM CUSTOMER';
+        if (status === 'ready-for-pickup') return 'PICKUP FROM TAILOR';
+        if (status === 'out-for-delivery') return 'DROP TO CUSTOMER';
+        return status.replace(/-/g, ' ').toUpperCase();
+    };
+
     const getTaskAddress = (task) => {
-        if (task.status === 'ready-for-pickup') return formatAddress(task.deliveryAddress); // Should be from customer
-        if (task.status === 'out-for-delivery') return formatAddress(task.deliveryAddress); // To customer
-        return 'Location Pending';
+        // If it's a fabric pickup, destination is the TAILOR (to deliver the fabric)
+        // If it's the final delivery, destination is the CUSTOMER
+        if (task.status.includes('fabric')) return formatAddress(task.tailor?.address) || 'Artisan Workshop';
+        return formatAddress(task.deliveryAddress);
     };
 
     const currentTask = activeOrders.length > 0 ? activeOrders[0] : null;
@@ -109,14 +181,35 @@ const DeliveryDashboard = () => {
                     <div className="h-px w-8 bg-emerald-200"></div>
                     <span className="text-[11px] font-black tracking-[0.2em] opacity-80 uppercase">Partner Command</span>
                 </div>
-                <h1 className="text-3xl font-black text-slate-900 tracking-tighter">
-                    Ready to <span className="text-slate-400">Move</span>, <br />
-                    Partner {user?.name.split(' ')[0] || 'Partner'}?
+                <h1 className="text-3xl font-black text-slate-900 tracking-tighter flex items-center gap-3">
+                    <div>
+                        Ready to <span className="text-slate-400">Move</span>, <br />
+                        Partner {user?.name.split(' ')[0] || 'Partner'}?
+                    </div>
+                    {user?.isVerified && (
+                        <div className="bg-emerald-50 p-2 rounded-2xl border border-emerald-100 shadow-sm self-start mt-1">
+                            <ShieldCheck size={20} className="text-emerald-800 fill-white" />
+                        </div>
+                    )}
                 </h1>
             </div>
 
-            {/* Quick Pulse Stats */}
-            <div className="grid grid-cols-1">
+            {!isOnline && (
+                <div className="bg-white p-10 rounded-[2.5rem] border-2 border-dashed border-slate-200 text-center space-y-6 shadow-sm animate-in fade-in zoom-in duration-700">
+                    <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center text-slate-300 mx-auto border border-slate-100 shadow-inner">
+                        <Power size={40} className="opacity-40" />
+                    </div>
+                    <div className="space-y-2">
+                        <h3 className="text-xl font-black text-slate-900 tracking-tight">System Hibernated</h3>
+                        <p className="text-slate-500 text-sm font-medium tracking-wide leading-relaxed max-w-[240px] mx-auto">Toggle your status to <span className="text-emerald-800 font-bold">ONLINE</span> in the header to start receiving dispatch requests.</p>
+                    </div>
+                </div>
+            )}
+
+            {isOnline && (
+                <>
+                {/* Quick Pulse Stats */}
+                <div className="grid grid-cols-1">
                 <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                     {stats.map((stat, idx) => (
                         <motion.div
@@ -169,14 +262,29 @@ const DeliveryDashboard = () => {
                                         <div className="w-px h-6 bg-emerald-800/30 border-dashed border-l border-emerald-800/40"></div>
                                         <div className="w-3.5 h-3.5 rounded-full bg-emerald-800 z-10 border-2 border-emerald-800/30"></div>
                                     </div>
-                                    <div className="flex-1 space-y-3">
-                                        <div>
-                                            <p className="text-[10px] font-bold text-slate-400 capitalize tracking-wider leading-none mb-1.5">Destination</p>
-                                            <p className="text-[14px] font-bold text-white leading-snug capitalize truncate max-w-[200px]">{getTaskAddress(currentTask)}</p>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
+                                            <span className="text-[9px] font-black text-white/50 uppercase tracking-widest leading-none">
+                                                {currentTask.status === 'out-for-delivery' ? 'Recipient' : 'Source'}
+                                            </span>
                                         </div>
-                                        <div className="pb-0 mb-3">
-                                            <p className="text-[10px] font-bold text-slate-400 capitalize tracking-wider leading-none mb-1.5">Customer</p>
-                                            <p className="text-[14px] font-bold text-white tracking-wide capitalize">{currentTask.customer?.name || 'Customer'}</p>
+                                        <p className="text-[15px] font-black text-white truncate leading-none mb-1.5">
+                                            {currentTask.status === 'out-for-delivery' 
+                                                ? currentTask.customer?.name 
+                                                : (currentTask.status === 'fabric-ready-for-pickup' ? currentTask.customer?.name : currentTask.tailor?.shopName)}
+                                        </p>
+                                        <div className="flex flex-col gap-0.5">
+                                            <p className="text-[10px] text-white/50 font-bold truncate leading-tight">
+                                                {currentTask.status === 'out-for-delivery' 
+                                                    ? formatAddress(currentTask.deliveryAddress) 
+                                                    : (currentTask.status === 'fabric-ready-for-pickup' ? formatAddress(currentTask.customer?.address) : formatAddress(currentTask.tailor?.address))}
+                                            </p>
+                                            <p className="text-[10px] text-emerald-400/80 font-black tracking-widest mt-1">
+                                                {currentTask.status === 'out-for-delivery' 
+                                                    ? currentTask.customer?.phoneNumber 
+                                                    : (currentTask.status === 'fabric-ready-for-pickup' ? currentTask.customer?.phoneNumber : currentTask.tailor?.phone)}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -198,12 +306,66 @@ const DeliveryDashboard = () => {
                     </div>
                 </div>
             ) : (
-                <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-[1.25rem] p-8 text-center">
+                <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-[1.25rem] p-8 text-center overscroll-none">
                     <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-slate-300 mx-auto mb-3 shadow-sm">
                         <Package size={24} />
                     </div>
-                    <p className="text-slate-500 font-bold text-sm">No active tasks at the moment.</p>
-                    <p className="text-slate-400 text-xs mt-1">Check back later for new dispatches.</p>
+                    {availableOrders.length > 0 ? (
+                        <div className="space-y-4">
+                            <p className="text-slate-600 font-bold text-sm">You have no active tasks, but there are <span className="text-emerald-800">{availableOrders.length} live orders</span> waiting!</p>
+                            <button 
+                                onClick={() => navigate('/delivery/tasks')}
+                                className="px-6 py-2 bg-emerald-800 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-emerald-900 transition-all shadow-lg shadow-emerald-900/20"
+                            >
+                                View Live Pool
+                            </button>
+                        </div>
+                    ) : (
+                        <>
+                            <p className="text-slate-500 font-bold text-sm">No active tasks at the moment.</p>
+                            <p className="text-slate-400 text-xs mt-1">Check back later for new dispatches.</p>
+                        </>
+                    )}
+                </div>
+            )}
+
+            {/* Live Orders Available section (Horizontal scroll) */}
+            {isOnline && availableOrders.length > 0 && (
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between px-1">
+                        <div className="flex items-center gap-2">
+                             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                             <h2 className="text-lg font-black text-slate-900 tracking-tight capitalize">Live <span className="text-emerald-800">Available</span> Tasks</h2>
+                        </div>
+                        <button onClick={() => navigate('/delivery/tasks')} className="text-[10px] font-black text-emerald-800 uppercase tracking-widest hover:underline">See All</button>
+                    </div>
+                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide px-1 -mx-1">
+                        {availableOrders.slice(0, 5).map((order) => (
+                            <motion.div 
+                                key={order._id}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => setSelectedAvailableTask(order)}
+                                className="min-w-[240px] bg-gradient-to-br from-white to-slate-50/50 p-4 rounded-[1.25rem] border border-slate-200 shadow-sm flex flex-col justify-between cursor-pointer group hover:border-emerald-200 hover:shadow-md transition-all"
+                            >
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-start">
+                                        <span className="text-[9px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded uppercase tracking-wider">{getTaskType(order.status)}</span>
+                                        <span className="text-[9px] font-bold text-slate-400">₹{order.totalAmount || '--'}</span>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Pickup From</p>
+                                        <p className="text-xs font-bold text-slate-800 truncate">{order.status.includes('fabric') ? order.customer?.name : order.tailor?.shopName}</p>
+                                    </div>
+                                </div>
+                                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500">
+                                        <Navigation size={12} className="text-emerald-800" /> Nearby
+                                    </div>
+                                    <span className="text-[10px] font-black text-emerald-800 group-hover:translate-x-1 transition-transform">View Details →</span>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
                 </div>
             )}
 
@@ -330,7 +492,150 @@ const DeliveryDashboard = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
+            </>
+            )}
+            {/* Available Task Detail Modal */}
+            <AnimatePresence>
+                {selectedAvailableTask && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+                        onClick={() => setSelectedAvailableTask(null)}
+                    >
+                        <motion.div
+                            initial={{ y: "100%", opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: "100%", opacity: 0 }}
+                            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] w-full max-w-md p-6 sm:p-8 shadow-2xl relative max-h-[85vh] overflow-y-auto"
+                        >
+                            <button
+                                onClick={() => setSelectedAvailableTask(null)}
+                                className="absolute top-5 right-5 w-8 h-8 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center hover:bg-slate-200 hover:text-slate-600 transition-all z-20"
+                            >
+                                <X size={16} />
+                            </button>
 
+                            <div className="mb-8">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${selectedAvailableTask.status.includes('fabric') ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-emerald-50 text-emerald-800 border border-emerald-100'}`}>
+                                        {getTaskType(selectedAvailableTask.status)}
+                                    </div>
+                                    <h2 className="text-xl font-black text-slate-900">₹{selectedAvailableTask.totalAmount}</h2>
+                                </div>
+                                <h3 className="text-2xl font-black text-slate-900 tracking-tight">Order #{selectedAvailableTask.orderId?.slice(-6) || selectedAvailableTask._id.slice(-6)}</h3>
+                                <p className="text-xs font-bold text-slate-400 tracking-widest mt-1 uppercase">Dispatch Available Now</p>
+                            </div>
+
+                            <div className="space-y-6 mb-8">
+                                {/* Route Info */}
+                                <div className="relative pl-6 space-y-6">
+                                    <div className="absolute left-[7px] top-[10px] bottom-[10px] w-0.5 border-l-2 border-dashed border-slate-100"></div>
+                                    
+                                    <div className="relative">
+                                        <div className="absolute -left-[23px] top-1 w-4 h-4 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
+                                        </div>
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Pickup From ({selectedAvailableTask.status.includes('fabric') ? 'Customer' : 'Artisan'})</p>
+                                                <p className="text-sm font-bold text-slate-800">
+                                                    {selectedAvailableTask.status.includes('fabric') 
+                                                        ? selectedAvailableTask.customer?.name 
+                                                        : selectedAvailableTask.tailor?.shopName}
+                                                </p>
+                                                <p className="text-xs text-slate-500 mt-0.5 italic">
+                                                    {selectedAvailableTask.status.includes('fabric') 
+                                                        ? formatAddress(selectedAvailableTask.customer?.address) 
+                                                        : formatAddress(selectedAvailableTask.tailor?.address)}
+                                                </p>
+                                            </div>
+                                            {(selectedAvailableTask.status.includes('fabric') ? selectedAvailableTask.customer?.phoneNumber : selectedAvailableTask.tailor?.phone) && (
+                                                <div className="text-right">
+                                                    <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Contact</p>
+                                                    <p className="text-[10px] font-bold text-slate-600">
+                                                        {selectedAvailableTask.status.includes('fabric') ? selectedAvailableTask.customer.phoneNumber : selectedAvailableTask.tailor.phone}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="relative">
+                                        <div className="absolute -left-[23px] top-1 w-4 h-4 rounded-full bg-white border-2 border-emerald-800 flex items-center justify-center">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-800"></div>
+                                        </div>
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Drop To ({selectedAvailableTask.status.includes('fabric') ? 'Artisan' : 'Customer'})</p>
+                                                <p className="text-sm font-bold text-slate-800">
+                                                    {selectedAvailableTask.status.includes('fabric') 
+                                                        ? selectedAvailableTask.tailor?.shopName 
+                                                        : selectedAvailableTask.customer?.name}
+                                                </p>
+                                                <p className="text-xs text-slate-500 mt-0.5 italic">
+                                                    {selectedAvailableTask.status.includes('fabric') 
+                                                        ? formatAddress(selectedAvailableTask.tailor?.address) 
+                                                        : formatAddress(selectedAvailableTask.deliveryAddress)}
+                                                </p>
+                                            </div>
+                                            {(selectedAvailableTask.status.includes('fabric') ? selectedAvailableTask.tailor?.phone : selectedAvailableTask.customer?.phoneNumber) && (
+                                                <div className="text-right">
+                                                    <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Contact</p>
+                                                    <p className="text-[10px] font-bold text-slate-600">
+                                                        {selectedAvailableTask.status.includes('fabric') ? selectedAvailableTask.tailor.phone : selectedAvailableTask.customer.phoneNumber}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Order Content */}
+                                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <Package size={14} className="text-slate-400" />
+                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Order Content</span>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {selectedAvailableTask.items.map((item, i) => (
+                                            <div key={i} className="flex justify-between items-center text-xs font-bold text-slate-800">
+                                                <span>{item.service?.title || item.product?.name || 'Item'}</span>
+                                                <span className="text-slate-400 font-medium">x{item.quantity}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => handleAcceptTask(selectedAvailableTask._id)}
+                                disabled={isAccepting}
+                                className="w-full bg-slate-900 text-white rounded-2xl p-4 font-black tracking-widest text-xs hover:bg-black active:scale-95 transition-all shadow-xl flex items-center justify-center gap-3 uppercase disabled:opacity-50"
+                            >
+                                {isAccepting ? (
+                                    <>
+                                        <Loader2 size={16} className="animate-spin" />
+                                        Processing...
+                                    </>
+                                ) : (
+                                    <>
+                                        <CheckCircle2 size={16} className="text-emerald-400" />
+                                        Accept This Task
+                                    </>
+                                )}
+                            </button>
+
+                            <p className="text-center mt-4 text-[9px] font-black text-slate-300 uppercase tracking-widest leading-relaxed">
+                                Please reach pickup location within 15 mins.<br />Earnings will be credited after delivery.
+                            </p>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

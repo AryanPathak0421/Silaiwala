@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft, ArrowRight, CreditCard, Lock, ShieldCheck, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../../utils/api';
 import useCheckoutStore from '../../../store/checkoutStore';
 import useAddressStore from '../../../store/userStore';
 import useCartStore from '../../../store/cartStore';
@@ -37,7 +38,7 @@ const CheckoutSummary = () => {
         }
     }, [isServiceCheckout, isCartCheckout, selectedAddress, navigate, isProcessing]);
 
-    if (!isServiceCheckout && !isCartCheckout && !isProcessing) return null;
+    if ((!isServiceCheckout && !isCartCheckout && !isProcessing) || !selectedAddress) return null;
 
     const currentPricing = isServiceCheckout ? pricing : {
         total: getTotalPrice(),
@@ -50,37 +51,76 @@ const CheckoutSummary = () => {
     // For simplicity, reusing logic
     const finalTotal = isServiceCheckout ? pricing.total + 10 : currentPricing.total + currentPricing.delivery;
 
-    const handlePayment = () => {
+    const handlePayment = async () => {
         setIsProcessing(true);
-        // Mock Payment Processing
-        setTimeout(() => {
+        try {
+            let payload;
             if (isServiceCheckout) {
-                const newOrder = {
-                    serviceTitle: serviceDetails.title,
-                    totalAmount: finalTotal,
-                    deliveryType: configuration.deliveryType === 'express' ? 'Express' : 'Standard',
-                    imageUrl: serviceDetails.image,
-                    status: 'Placed',
+                payload = {
                     tailorId: serviceDetails.tailorId,
-                    tailorName: serviceDetails.tailorName
-                };
-                addOrder(newOrder);
-                clearCheckout();
-            } else {
-                // Cart Order
-                const newOrder = {
-                    serviceTitle: `Order #${Math.floor(Math.random() * 1000)} (${cartItems.length} Items)`,
+                    items: [{
+                        service: serviceDetails.id,
+                        fabricSource: configuration.fabricSource,
+                        deliveryType: configuration.deliveryType,
+                        selectedFabric: configuration.selectedFabric?._id,
+                        quantity: 1,
+                        price: pricing.base,
+                        measurements: configuration.measurements
+                    }],
                     totalAmount: finalTotal,
-                    deliveryType: 'Standard',
-                    imageUrl: cartItems[0]?.image || cartItems[0]?.images[0],
-                    status: 'Placed',
-                    items: cartItems // Store items for future use if needed
+                    deliveryAddress: {
+                        street: selectedAddress.street,
+                        city: selectedAddress.city,
+                        state: selectedAddress.state || '',
+                        zipCode: selectedAddress.zipCode
+                    }
                 };
-                addOrder(newOrder);
-                clearCart();
+            } else {
+                // Cart Order (Products)
+                // For cart orders, we assume items might be from different tailors, 
+                // but the current Order model requires a single tailor field.
+                // As a simplification, we use the tailor from the first item or a platform default.
+                const firstItemTailor = cartItems[0]?.tailor; 
+                
+                payload = {
+                    tailorId: firstItemTailor,
+                    items: cartItems.map(item => ({
+                        product: item._id,
+                        quantity: item.quantity,
+                        price: item.price
+                    })),
+                    totalAmount: finalTotal,
+                    deliveryAddress: {
+                        street: selectedAddress.street,
+                        city: selectedAddress.city,
+                        state: selectedAddress.state || '',
+                        zipCode: selectedAddress.zipCode
+                    }
+                };
             }
-            navigate('/checkout/success');
-        }, 1500);
+
+            const response = await api.post('/orders', payload);
+            
+            if (response.data.success) {
+                const order = response.data.data;
+                if (isServiceCheckout) {
+                    clearCheckout();
+                } else {
+                    clearCart();
+                }
+                navigate('/checkout/success', { 
+                    state: { 
+                        orderId: order._id, 
+                        orderNumber: order.orderId 
+                    } 
+                });
+            }
+        } catch (error) {
+            console.error('Payment failed:', error);
+            alert(error.response?.data?.message || 'Order placement failed. Please try again.');
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     return (
@@ -143,9 +183,9 @@ const CheckoutSummary = () => {
                     </div>
                     {/* Render minimal address view */}
                     <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-xs text-gray-600 leading-relaxed">
-                        <p className="font-bold text-gray-900 mb-1">{selectedAddress.name} ({selectedAddress.type})</p>
-                        <p>{selectedAddress.addressLine1}, {selectedAddress.city} - {selectedAddress.pincode}</p>
-                        <p className="mt-1 font-medium">Phone: {selectedAddress.phone}</p>
+                        <p className="font-bold text-gray-900 mb-1">{selectedAddress?.receiverName} ({selectedAddress?.type})</p>
+                        <p>{selectedAddress?.street}, {selectedAddress?.city} - {selectedAddress?.zipCode}</p>
+                        <p className="mt-1 font-medium">Phone: {selectedAddress?.phone}</p>
                     </div>
                 </div>
 

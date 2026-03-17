@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import BookingStepper from '../components/BookingStepper';
 import { ArrowLeft, ChevronDown, ChevronUp, ChevronRight, Clock, ShoppingBag, Ruler, CheckCircle2, ShieldCheck, Info, Tag, Scissors } from 'lucide-react';
@@ -11,9 +11,7 @@ import FabricSelector from '../components/service-detail/FabricSelector';
 import DesignUpload from '../components/service-detail/DesignUpload';
 import PriceSummary from '../components/service-detail/PriceSummary';
 import useCheckoutStore from '../../../store/checkoutStore';
-
-import { SERVICES } from '../data/services';
-import { TAILORS } from '../data/tailors';
+import api from '../../../utils/api';
 
 const FAQItem = ({ question, answer }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -43,21 +41,59 @@ const ServiceDetail = () => {
     const location = useLocation();
     const { initializeCheckout, serviceDetails: storedDetails } = useCheckoutStore(state => state);
 
+    const [isLoading, setIsLoading] = useState(true);
+    const [serviceData, setServiceData] = useState(null);
+    const [preSelectedTailor, setPreSelectedTailor] = useState(null);
+
     // Initial check for current step based on selections
     const [currentStep, setCurrentStep] = useState('fabric'); // fabric -> details -> review
 
-    // Check pre-selected data
-    const storedTailorId = location.state?.tailorId || storedDetails?.tailorId;
-    const preSelectedTailor = TAILORS.find(t => t.id === parseInt(storedTailorId)) || null;
-    const preSelectedFabric = location.state?.selectedFabric || null;
-
-    const serviceData = SERVICES.find(s => s.id === parseInt(id)) || SERVICES[0];
-
     const [deliveryType, setDeliveryType] = useState('standard');
     const [measurementType, setMeasurementType] = useState(null);
-    const [fabricSource, setFabricSource] = useState(preSelectedFabric ? 'platform' : (location.state?.fabricSource || 'customer'));
-    const [selectedFabric, setSelectedFabric] = useState(preSelectedFabric);
+    const [fabricSource, setFabricSource] = useState(location.state?.fabricSource || 'customer');
+    const [selectedFabric, setSelectedFabric] = useState(location.state?.selectedFabric || null);
+    const [selectedSavedProfile, setSelectedSavedProfile] = useState(null);
     const [measurements, setMeasurements] = useState(null);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                const results = await Promise.allSettled([
+                    api.get(`/services/${id}`),
+                    (location.state?.tailorId || storedDetails?.tailorId) ? 
+                        api.get(`/tailors/${location.state?.tailorId || storedDetails?.tailorId}`) : 
+                        Promise.resolve(null)
+                ]);
+
+                if (results[0].status === 'fulfilled') {
+                    setServiceData(results[0].value.data.data);
+                }
+                if (results[1].status === 'fulfilled' && results[1].value) {
+                    setPreSelectedTailor(results[1].value.data.data);
+                }
+                
+                if (location.state?.selectedFabric) {
+                    setFabricSource('platform');
+                    setSelectedFabric(location.state.selectedFabric);
+                }
+            } catch (error) {
+                console.error('Failed to fetch service/tailor detail:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchData();
+    }, [id, location.state]);
+
+    if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="w-10 h-10 border-4 border-[#1e3932] border-t-transparent rounded-full animate-spin" />
+    </div>;
+
+    if (!serviceData) return <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+        <h2 className="text-xl font-bold text-gray-900">Service Not Found</h2>
+        <button onClick={() => navigate(-1)} className="mt-4 text-[#1e3932] font-bold">Go Back</button>
+    </div>;
 
     // Pricing Logic
     const basePrice = serviceData.basePrice || 0;
@@ -78,8 +114,8 @@ const ServiceDetail = () => {
             service: serviceData,
             config: { deliveryType, fabricSource, selectedFabric, measurements },
             pricing: { base: basePrice, delivery: deliveryPrice, fabric: fabricPrice, taxes, total, deliveryDays: getDeliveryDays() },
-            tailorId: preSelectedTailor?.id || null,
-            tailorName: preSelectedTailor?.name || null
+            tailorId: preSelectedTailor?._id || null,
+            tailorName: preSelectedTailor?.shopName || preSelectedTailor?.user?.name || null
         });
 
         if (!preSelectedTailor) navigate('/checkout/tailor');
@@ -103,7 +139,7 @@ const ServiceDetail = () => {
                     {preSelectedTailor && (
                         <div className="flex items-center gap-2 bg-[#f2fcf9] px-3 py-1.5 rounded-xl border border-[#1e3932]/10">
                             <ShieldCheck size={14} className="text-[#1e3932]" />
-                            <span className="text-[10px] font-black text-[#1e3932] truncate max-w-[80px]">{preSelectedTailor.name}</span>
+                            <span className="text-[10px] font-black text-[#1e3932] truncate max-w-[80px]">{preSelectedTailor.shopName || preSelectedTailor.user?.name}</span>
                         </div>
                     )}
                 </div>
@@ -129,6 +165,8 @@ const ServiceDetail = () => {
                         selectedType={measurementType}
                         onSelectType={setMeasurementType}
                         onMeasurementComplete={setMeasurements}
+                        selectedSavedProfile={selectedSavedProfile}
+                        onSelectSavedProfile={setSelectedSavedProfile}
                     />
                 </section>
 

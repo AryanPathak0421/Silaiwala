@@ -1,0 +1,39 @@
+const Banner = require("../../../models/Banner");
+const CMSContent = require("../../../models/CMSContent");
+
+// --- PUBLIC CMS CONTROLLERS ---
+
+exports.getActiveBanners = async (req, res) => {
+  try {
+    const banners = await Banner.find({ status: "Active" }).sort("-createdAt");
+    res.status(200).json({ success: true, count: banners.length, data: banners });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getCMSContent = async (req, res) => {
+  try {
+    const { type, category } = req.query;
+    const query = { isActive: true };
+    if (type) query.type = type;
+    if (category) query.category = category;
+
+    const content = await CMSContent.find(query).sort("title");
+    res.status(200).json({ success: true, count: content.length, data: content });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getCMSContentBySlug = async (req, res) => {
+  try {
+    const content = await CMSContent.findOne({ slug: req.params.slug, isActive: true });
+    if (!content) {
+      return res.status(404).json({ success: false, message: "Content not found" });
+    }
+    res.status(200).json({ success: true, data: content });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

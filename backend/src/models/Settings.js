@@ -1,0 +1,57 @@
+const mongoose = require("mongoose");
+
+const settingsSchema = new mongoose.Schema(
+  {
+    general: {
+      platformName: { type: String, default: "Silaiwala" },
+      supportEmail: { type: String, default: "support@silaiwala.com" },
+      supportPhone: { type: String, default: "+91 1800 123 4567" },
+      currencyDefault: { type: String, default: "INR" },
+    },
+    maintenanceMode: {
+      enabled: { type: Boolean, default: false },
+      message: { type: String, default: "App will be temporarily unavailable to users." },
+    },
+    notifications: {
+      emailEnabled: { type: Boolean, default: true },
+      smsEnabled: { type: Boolean, default: false },
+      smtpSettings: {
+        host: String,
+        port: Number,
+        user: String,
+        pass: String,
+      }
+    },
+    paymentGateways: {
+      razorpay: {
+        enabled: { type: Boolean, default: true },
+        keyId: String,
+        keySecret: String,
+      },
+      stripe: {
+        enabled: { type: Boolean, default: false },
+        publishableKey: String,
+        secretKey: String,
+      }
+    },
+    appConfig: {
+      androidVersion: { type: String, default: "1.0.0" },
+      iosVersion: { type: String, default: "1.0.0" },
+      forceUpdate: { type: Boolean, default: false },
+    }
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// We only want ONE settings document
+settingsSchema.statics.getSettings = async function() {
+  let settings = await this.findOne();
+  if (!settings) {
+    settings = await this.create({});
+  }
+  return settings;
+};
+
+module.exports = mongoose.model("Settings", settingsSchema);

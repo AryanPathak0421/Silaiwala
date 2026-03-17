@@ -1,18 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Search, Filter, Star, MapPin, Heart, ShieldCheck, Clock, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Search, Filter, Star, MapPin, Heart, ShieldCheck, Clock, ChevronRight, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-import { TAILORS } from '../data/tailors';
+import api from '../../../utils/api';
 
 const TailorListing = () => {
     const navigate = useNavigate();
     const [search, setSearch] = useState("");
+    const [tailors, setTailors] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const filteredTailors = TAILORS.filter(t =>
-        t.name.toLowerCase().includes(search.toLowerCase()) ||
-        t.specialty.toLowerCase().includes(search.toLowerCase())
+    useEffect(() => {
+        const fetchTailors = async () => {
+            try {
+                const response = await api.get('/customers/tailors');
+                if (response.data.success) {
+                    setTailors(response.data.data);
+                }
+            } catch (error) {
+                console.error('Error fetching tailors:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchTailors();
+    }, []);
+
+    const filteredTailors = tailors.filter(t =>
+        (t.shopName || t.user?.name || "").toLowerCase().includes(search.toLowerCase()) ||
+        (t.specializations || []).some(s => s.toLowerCase().includes(search.toLowerCase()))
     );
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 text-center">
+                <Loader2 size={40} className="text-[#1e3932] animate-spin mb-4" />
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Searching Experts...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[#f8faf9] pb-24 font-sans">
@@ -68,13 +94,13 @@ const TailorListing = () => {
                     {filteredTailors.length > 0 ? (
                         filteredTailors.map((tailor, index) => (
                             <motion.div
-                                key={tailor.id}
+                                key={tailor._id}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.05 }}
                             >
                                 <Link
-                                    to={`/tailor/${tailor.id}`}
+                                    to={`/tailor/${tailor._id}`}
                                     className="block bg-white rounded-[2rem] p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all active:scale-[0.98] group relative overflow-hidden"
                                 >
                                     {/* Subtle Gradient Hover Effect */}
@@ -84,7 +110,7 @@ const TailorListing = () => {
                                         {/* Profile Picture with Status Ring */}
                                         <div className="relative shrink-0">
                                             <div className="w-22 h-22 rounded-[1.5rem] overflow-hidden border-2 border-white shadow-xl rotate-3 group-hover:rotate-0 transition-transform duration-500">
-                                                <img src={tailor.image} alt={tailor.name} className="w-full h-full object-cover scale-110" />
+                                                <img src={tailor.user?.profileImage || 'https://via.placeholder.com/150'} alt={tailor.shopName || tailor.user?.name} className="w-full h-full object-cover scale-110" />
                                             </div>
                                             <div className="absolute -bottom-1 -right-1 bg-green-500 w-4 h-4 rounded-full border-2 border-white shadow-sm ring-2 ring-green-500/20"></div>
                                         </div>
@@ -93,29 +119,29 @@ const TailorListing = () => {
                                         <div className="flex-1 min-w-0 pt-1">
                                             <div className="flex justify-between items-start mb-1">
                                                 <div className="flex items-center gap-1.5 min-w-0">
-                                                    <h3 className="font-black text-gray-900 truncate tracking-tight">{tailor.name}</h3>
+                                                    <h3 className="font-black text-gray-900 truncate tracking-tight">{tailor.shopName || tailor.user?.name}</h3>
                                                     <ShieldCheck size={14} className="text-[#1e3932] shrink-0" />
                                                 </div>
                                                 <div className="flex items-center gap-1 px-1.5 py-0.5 bg-[#f2fcf9] text-[#1e3932] rounded-lg text-[10px] font-black border border-[#1e3932]/10">
-                                                    {tailor.rating} <Star size={8} className="fill-[#1e3932] text-[#1e3932]" />
+                                                    {tailor.rating || 0} <Star size={8} className="fill-[#1e3932] text-[#1e3932]" />
                                                 </div>
                                             </div>
 
                                             <div className="flex items-center gap-2 mb-2">
                                                 <p className="text-[11px] text-[#1e3932] font-bold bg-[#1e3932]/5 px-2 py-0.5 rounded-md">
-                                                    {tailor.specialty}
+                                                    {tailor.specializations?.[0] || 'Expert Tailor'}
                                                 </p>
-                                                {tailor.fabrics && tailor.fabrics.length > 0 && (
+                                                {tailor.isAvailable && (
                                                     <div className="flex items-center gap-1 text-[9px] bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded-md font-black border border-amber-100 shadow-sm animate-pulse">
-                                                        <Clock size={8} /> FABRICS READY
+                                                        <Clock size={8} /> AVAILABLE
                                                     </div>
                                                 )}
                                             </div>
 
                                             <div className="flex items-center gap-4 text-[10px] text-gray-400 font-bold uppercase tracking-tighter">
-                                                <span className="flex items-center gap-1.5"><MapPin size={12} className="text-gray-300" /> {tailor.distance}</span>
+                                                <span className="flex items-center gap-1.5"><MapPin size={12} className="text-gray-300" /> {tailor.distance || 'Near You'}</span>
                                                 <span className="text-gray-200">|</span>
-                                                <span>{tailor.reviews} Reviews</span>
+                                                <span>{tailor.totalReviews || 0} Reviews</span>
                                             </div>
                                         </div>
                                     </div>
@@ -123,7 +149,7 @@ const TailorListing = () => {
                                     {/* Action Footnote */}
                                     <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between">
                                         <div className="flex gap-2">
-                                            {tailor.tags.slice(0, 2).map((tag, i) => (
+                                            {(tailor.specializations || []).slice(0, 2).map((tag, i) => (
                                                 <span key={i} className="text-[9px] font-black text-gray-400 bg-gray-50 px-2 py-1 rounded-full uppercase">
                                                     {tag}
                                                 </span>

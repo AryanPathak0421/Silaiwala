@@ -1,47 +1,39 @@
 import React, { useEffect, useState } from 'react';
 import ProductCard from './ProductCard';
+import api from '../../../../utils/api';
 
-import { PRODUCTS } from '../../data/products';
-
-const ProductGrid = ({ filters, category, searchQuery }) => {
+const ProductGrid = ({ filters, categoryId, categoryName, searchQuery }) => {
     const [items, setItems] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    useEffect(() => {
+    const fetchProducts = async () => {
         setIsLoading(true);
-        // Simulate API call with filter
-        // Cancel previous timeout if necessary but for now just clear
-        const timeout = setTimeout(() => {
-            let all = [...PRODUCTS];
-
-            // Category Filter
-            if (category && category !== 'All') {
-                all = all.filter(p => p.category === category);
-            } else {
-                // Ensure fabrics aren't shown "directly" in the global store unless explicitly searched or in category
-                all = all.filter(p => p.category !== 'Fabrics' && p.category !== 'Unstitched');
+        try {
+            const params = {
+                category: categoryId || undefined,
+                search: searchQuery || undefined,
+                productType: 'fabric', // Only show fabrics in the store refactor
+                ...filters
+            };
+            const response = await api.get('/products', { params });
+            if (response.data.success) {
+                setItems(response.data.data);
             }
-
-            // Search Filter
-            if (searchQuery) {
-                const q = searchQuery.toLowerCase();
-                all = all.filter(p =>
-                    p.name.toLowerCase().includes(q) ||
-                    p.category.toLowerCase().includes(q)
-                );
-            }
-
-            setItems(all);
+        } catch (error) {
+            console.error('Error fetching products:', error);
+        } finally {
             setIsLoading(false);
-        }, 500); // 500ms debounce
+        }
+    };
 
-        return () => clearTimeout(timeout);
-    }, [category, filters, searchQuery]);
+    useEffect(() => {
+        fetchProducts();
+    }, [categoryId, filters, searchQuery]);
 
     return (
         <div className="bg-gray-50 pb-8 min-h-[50vh]">
             <h2 className="text-xl font-bold text-[#1e3932] px-4 py-4">
-                {category && category !== 'All' ? `${category} Collection` : 'Explore Collection'}
+                {categoryName && categoryName !== 'All' ? `${categoryName} Collection` : 'Explore Fabrics'}
             </h2>
 
             {items.length === 0 && !isLoading ? (

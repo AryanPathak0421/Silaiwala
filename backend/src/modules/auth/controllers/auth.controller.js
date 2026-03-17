@@ -34,13 +34,16 @@ exports.register = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(`A user with this ${conflictField} already exists`, 400));
   }
 
-  // 3. Create User
+  // 3. Create User - Tailors and Delivery partners are inactive until approved
+  const isAutoActive = !["tailor", "delivery"].includes(finalRole.toLowerCase());
+  
   const user = await User.create({
     name,
     email,
     phoneNumber,
     password,
     role: finalRole,
+    isActive: isAutoActive
   });
 
   let profile = null;
@@ -62,7 +65,8 @@ exports.register = asyncHandler(async (req, res, next) => {
           location: {
             type: "Point",
             coordinates: coordinates || [0, 0] // [longitude, latitude]
-          }
+          },
+          documents: req.body.documents || [] // Save documents if provided
         });
         break;
       case "delivery":
@@ -72,7 +76,8 @@ exports.register = asyncHandler(async (req, res, next) => {
           currentLocation: {
             type: "Point",
             coordinates: coordinates || [0, 0]
-          }
+          },
+          documents: req.body.documents || [] // Save documents if provided
         });
         break;
     }
@@ -138,6 +143,7 @@ exports.login = asyncHandler(async (req, res, next) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      isActive: user.isActive,
       profile: profile
     },
   });

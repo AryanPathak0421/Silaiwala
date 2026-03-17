@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
     User, ShoppingBag, MapPin, Ruler, Grid, LogOut,
-    Settings, Headset, ChevronRight, Share2, Heart, MessageSquare
+    Settings, Headset, ChevronRight, Share2, Heart, MessageSquare, FileText, Shield
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../../store/authStore';
@@ -10,6 +10,46 @@ import ProfileHeader from '../components/profile/ProfileHeader';
 import MenuOption from '../components/profile/MenuOption';
 
 import useUserStore from '../../../store/userStore';
+import api from '../../../utils/api';
+
+const LegalLinks = () => {
+    const [docs, setDocs] = useState([]);
+    useEffect(() => {
+        const fetchDocs = async () => {
+            try {
+                const res = await api.get('/cms/content?type=legal');
+                if (res.data.success) setDocs(res.data.data);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        fetchDocs();
+    }, []);
+
+    if (docs.length === 0) return null;
+
+    return (
+        <div className="mt-8 space-y-4">
+            <div className="flex items-center gap-2 mb-2 px-1">
+                <div className="p-1 px-1.5 bg-[#1e3932] rounded text-white italic">
+                    <FileText size={10} strokeWidth={3} />
+                </div>
+                <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] italic">Legal & Policies</h3>
+            </div>
+            <div className="space-y-3">
+                {docs.map((doc, idx) => (
+                    <MenuOption
+                        key={doc._id}
+                        icon={Shield}
+                        label={doc.title}
+                        subLabel={`Official ${doc.title} document`}
+                        to={`/legal/${doc.slug}`}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+};
 
 const ProfilePage = () => {
     const navigate = useNavigate();
@@ -97,6 +137,8 @@ const ProfilePage = () => {
                     subLabel="Invite friends, get discounts"
                     to="/refer"
                 />
+
+                <LegalLinks />
 
                 <button
                     onClick={handleLogout}

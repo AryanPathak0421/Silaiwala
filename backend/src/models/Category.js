@@ -10,6 +10,11 @@ const categorySchema = new mongoose.Schema(
     },
     description: String,
     image: String,
+    parentCategory: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      default: null,
+    },
     type: {
       type: String,
       enum: ["product", "service"],
@@ -18,6 +23,12 @@ const categorySchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
+    },
+    basePrice: {
+      type: Number,
+    },
+    deliveryTime: {
+      type: String,
     },
   },
   {

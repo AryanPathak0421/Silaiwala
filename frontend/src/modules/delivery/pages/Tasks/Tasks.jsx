@@ -14,12 +14,19 @@ import {
     User,
     Loader2,
     Search,
-    RefreshCw
+    RefreshCw,
+    X,
+    Power
 } from 'lucide-react';
 import deliveryService from '../../services/deliveryService';
 import { toast } from 'react-hot-toast';
+import { io } from 'socket.io-client';
+import { useNavigate, useOutletContext } from 'react-router-dom';
+import { SOCKET_URL } from '../../../../config/constants';
+import useAuthStore from '../../../../store/authStore';
 
 const Tasks = () => {
+    const { isOnline } = useOutletContext() || { isOnline: true };
     const [activeTab, setActiveTab] = useState('assigned'); // 'assigned' or 'available'
     const [loading, setLoading] = useState(true);
     const [tasks, setTasks] = useState([]);
@@ -53,10 +60,52 @@ const Tasks = () => {
 
     useEffect(() => {
         fetchTasks();
+
+        const socket = io(SOCKET_URL);
+        
+        // Join general delivery fleet room and personal room
+        socket.emit('join', 'delivery_partners');
+        const user = useAuthStore.getState().user;
+        if (user?._id) {
+            socket.emit('join', `user_${user._id}`);
+        }
+
+        socket.on('new_task', (data) => {
+            console.log('New task received:', data);
+            toast.success('New delivery task available!', {
+                icon: '🚚',
+                duration: 5000
+            });
+            fetchTasks(); // Refresh lists
+        });
+
+        socket.on('new_notification', (data) => {
+             if (data.type === 'TASK_ASSIGNED' || data.type === 'NEW_DELIVERY_TASK') {
+                 toast.success(data.message || 'New delivery task available!', {
+                    icon: '🚚',
+                    duration: 6000
+                 });
+             } else {
+                 toast(data.message, {
+                    icon: '🔔',
+                 });
+             }
+             fetchTasks();
+        });
+
+        socket.on('task_claimed', (data) => {
+            console.log('Task claimed by another partner:', data.orderId);
+            setAvailableTasks(prev => prev.filter(t => t._id !== data.orderId));
+            setTasks(prev => prev.filter(t => t._id !== data.orderId)); // Also remove if it was assigned to them but then revoked/claimed?
+        });
+
+        return () => {
+            socket.disconnect();
+        };
     }, []);
 
     const activeTask = tasks.find(t => t._id === activeTaskId);
-    const pendingTasks = tasks.filter(t => t.status === 'ready-for-pickup');
+    const pendingTasks = tasks.filter(t => t.status === 'ready-for-pickup' || t.status === 'fabric-ready-for-pickup');
 
     const handleAcceptOrder = async (orderId) => {
         try {
@@ -102,18 +151,37 @@ const Tasks = () => {
     // Helper to format addresses
     const formatAddress = (addr) => {
         if (!addr) return 'Address not available';
-        return `${addr.street || ''} ${addr.city || ''}`.trim();
+        if (typeof addr === 'string') return addr;
+        const parts = [addr.street, addr.city, addr.state, addr.zipCode].filter(Boolean);
+        return parts.join(', ') || 'Address not available';
     };
 
     const getTaskType = (status) => {
-        if (status === 'ready-for-pickup') return 'Fabric Pickup';
-        if (status === 'out-for-delivery') return 'Final Delivery';
-        return 'General Dispatch';
+        if (status === 'fabric-ready-for-pickup') return 'PICKUP FROM CUSTOMER';
+        if (status === 'ready-for-pickup') return 'PICKUP FROM ARTISAN';
+        if (status === 'out-for-delivery') return 'DROP TO CUSTOMER';
+        return status.replace(/-/g, ' ').toUpperCase();
     };
 
     // Renders the bottom action area for the Active Task based on its current type and status
     const renderActiveTaskActions = (task) => {
         const btnClass = "w-full rounded-xl py-3 font-black tracking-[0.12em] text-[10px] uppercase flex items-center justify-center gap-2 transition-all shadow-md active:scale-95";
+
+        if (task.status === 'fabric-ready-for-pickup') {
+            return (
+                <button onClick={() => handleUpdateStatus(task._id, 'fabric-picked-up')} className={`${btnClass} bg-[#142921] text-white hover:bg-[#1C3E33] shadow-slate-100`}>
+                    <Navigation size={14} /> Confirm Fabric Picked Up
+                </button>
+            );
+        }
+
+        if (task.status === 'fabric-picked-up') {
+            return (
+                <button onClick={() => handleUpdateStatus(task._id, 'fabric-delivered')} className={`${btnClass} bg-emerald-700 text-white hover:bg-emerald-800 shadow-slate-100`}>
+                    <CheckCircle2 size={14} /> Delivered to Tailor
+                </button>
+            );
+        }
 
         if (task.status === 'ready-for-pickup') {
             return (
@@ -146,7 +214,7 @@ const Tasks = () => {
                                 </button>
                             </div>
                             <button
-                                onClick={() => handleUpdateStatus(task._id, 'delivered', null, taskProof)}
+                                onClick={() => handleUpdateStatus(task._id, 'delivered', 'Order successfully delivered', taskProof)}
                                 className={`${btnClass} bg-emerald-800 text-white hover:bg-emerald-900 shadow-emerald-100`}
                             >
                                 <CheckCircle2 size={14} /> Complete Delivery
@@ -189,34 +257,55 @@ const Tasks = () => {
                 )}
             </div>
 
-            {/* Tab Switcher */}
-            {!activeTask && (
-                <div className="flex p-1.5 bg-slate-100 rounded-2xl gap-1">
-                    <button
-                        onClick={() => setActiveTab('assigned')}
-                        className={`flex-1 py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'assigned' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+            {/* Online/Offline Block */}
+            {!isOnline && (
+                <div className="bg-white p-8 rounded-[2rem] border-2 border-dashed border-slate-200 text-center space-y-4 shadow-sm animate-in fade-in zoom-in duration-500">
+                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mx-auto">
+                        <Power size={32} className="opacity-50" />
+                    </div>
+                    <div className="space-y-1">
+                        <h3 className="text-lg font-black text-slate-900 tracking-tight">Currently Offline</h3>
+                        <p className="text-slate-500 text-xs font-medium tracking-wide leading-relaxed">You must be online to receive new <br/> delivery requests and manage your tasks.</p>
+                    </div>
+                    <button 
+                        onClick={() => window.location.href = '/delivery/profile'}
+                        className="text-[10px] font-black text-emerald-800 uppercase tracking-[0.2em] bg-emerald-50 px-6 py-3 rounded-xl hover:bg-emerald-100 transition-all active:scale-95"
                     >
-                        My Tasks ({tasks.length})
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('available')}
-                        className={`flex-1 py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'available' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                    >
-                        Find New ({availableTasks.length})
+                        Go To Availability Settings
                     </button>
                 </div>
             )}
 
-            <AnimatePresence mode="popLayout">
-                {/* ACTIVE TASK VIEW */}
-                {activeTask && (
-                    <motion.div
-                        key="active-task-view"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="bg-white rounded-[1.5rem] border border-slate-100 shadow-md overflow-hidden relative"
-                    >
+            {isOnline && (
+                <>
+                {/* Tab Switcher */}
+                {!activeTask && (
+                    <div className="flex p-1.5 bg-slate-100 rounded-2xl gap-1">
+                        <button
+                            onClick={() => setActiveTab('assigned')}
+                            className={`flex-1 py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'assigned' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                        >
+                            My Tasks ({tasks.length})
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('available')}
+                            className={`flex-1 py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'available' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                        >
+                            Find New ({availableTasks.length})
+                        </button>
+                    </div>
+                )}
+
+                <AnimatePresence mode="popLayout">
+                    {/* ACTIVE TASK VIEW */}
+                    {activeTask && (
+                        <motion.div
+                            key="active-task-view"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="bg-white rounded-[1.5rem] border border-slate-100 shadow-md overflow-hidden relative"
+                        >
                         <div className="absolute top-0 right-0 w-40 h-40 bg-slate-50 rounded-bl-[100px] -z-0"></div>
                         <div className="p-5 relative z-10 space-y-4">
 
@@ -237,30 +326,50 @@ const Tasks = () => {
 
                             {/* Address details */}
                             <div className="bg-slate-50 p-4 rounded-2xl space-y-3 border border-slate-100">
-                                <div className="flex gap-3">
-                                    <div className="w-7 h-7 rounded-full bg-slate-100 text-[#142921] flex items-center justify-center shrink-0">
-                                        <MapPin size={14} />
-                                    </div>
-                                    <div>
-                                        <p className="text-[9px] font-bold text-slate-400 capitalize tracking-wider leading-none mb-1">Pickup Location</p>
-                                        <p className="text-[13px] font-bold text-slate-700 leading-tight capitalize">{formatAddress(activeTask.deliveryAddress)}</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-2.5 items-center pt-2.5 border-t border-slate-200/60 mt-1">
-                                    <div className="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 shadow-sm">
-                                        <User size={13} className="text-slate-400" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-1.5 mb-0.5">
-                                            <p className="text-[12px] font-black text-slate-800 capitalize leading-none">{activeTask.customer?.name || 'Customer'}</p>
-                                            <span className="text-[7px] font-black bg-slate-100 text-[#142921] px-1 py-0.5 rounded uppercase tracking-tighter">Recipient</span>
-                                        </div>
-                                        <p className="text-[10px] font-bold text-slate-400 tracking-wide leading-none">{activeTask.customer?.phoneNumber || 'No Phone'}</p>
-                                    </div>
-                                    <a href={`tel:${activeTask.customer?.phoneNumber}`} className="w-8 h-8 bg-slate-50 text-[#142921] rounded-lg flex items-center justify-center hover:bg-slate-100 active:scale-90 transition-all shadow-sm">
-                                        <Phone size={13} />
-                                    </a>
-                                </div>
+                                {(() => {
+                                    const isPickup = ['fabric-ready-for-pickup', 'ready-for-pickup'].includes(activeTask.status);
+                                    const isFabric = activeTask.status.includes('fabric');
+                                    
+                                    const stopLabel = isPickup ? "Pickup Stop" : "Drop-off Stop";
+                                    const address = isPickup 
+                                        ? (isFabric ? activeTask.deliveryAddress : activeTask.tailor?.location?.address) 
+                                        : (isFabric ? activeTask.tailor?.location?.address : activeTask.deliveryAddress);
+                                    const contactName = isPickup
+                                        ? (isFabric ? activeTask.customer?.name : activeTask.tailor?.shopName)
+                                        : (isFabric ? activeTask.tailor?.shopName : activeTask.customer?.name);
+                                    const contactPhone = isPickup
+                                        ? (isFabric ? activeTask.customer?.phoneNumber : activeTask.tailor?.phone)
+                                        : (isFabric ? activeTask.tailor?.phone : activeTask.customer?.phoneNumber);
+
+                                    return (
+                                        <>
+                                            <div className="flex gap-3">
+                                                <div className="w-7 h-7 rounded-full bg-slate-100 text-[#142921] flex items-center justify-center shrink-0">
+                                                    <MapPin size={14} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[9px] font-bold text-slate-400 capitalize tracking-wider leading-none mb-1">{stopLabel}</p>
+                                                    <p className="text-[13px] font-bold text-slate-700 leading-tight capitalize">{formatAddress(address)}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-2.5 items-center pt-2.5 border-t border-slate-200/60 mt-1">
+                                                <div className="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 shadow-sm">
+                                                    <User size={13} className="text-slate-400" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-1.5 mb-0.5">
+                                                        <p className="text-[12px] font-black text-slate-800 capitalize leading-none">{contactName || 'Contact'}</p>
+                                                        <span className="text-[7px] font-black bg-slate-100 text-[#142921] px-1 py-0.5 rounded uppercase tracking-tighter">Verified</span>
+                                                    </div>
+                                                    <p className="text-[10px] font-bold text-slate-400 tracking-wide leading-none">{contactPhone || 'No Phone'}</p>
+                                                </div>
+                                                <a href={`tel:${contactPhone}`} className="w-8 h-8 bg-slate-50 text-[#142921] rounded-lg flex items-center justify-center hover:bg-slate-100 active:scale-90 transition-all shadow-sm">
+                                                    <Phone size={13} />
+                                                </a>
+                                            </div>
+                                        </>
+                                    );
+                                })()}
                             </div>
 
                             {/* Execution Area */}
@@ -339,19 +448,46 @@ const Tasks = () => {
                                         
                                         <div className="relative z-10 space-y-4">
                                             <div className="flex justify-between items-start">
-                                                <div className="space-y-1">
+                                                 <div className="space-y-1">
+                                                    <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest mb-1 ${task.status.includes('fabric') ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                                                        {task.status.includes('fabric') ? 'Fabric Collection' : 'Final Delivery'}
+                                                    </div>
                                                     <p className="text-[15px] font-black text-slate-900 tracking-tight capitalize">Available Dispatch</p>
-                                                    <p className="text-[11px] font-bold text-slate-400 tracking-wide italic">Potential Reward: ₹20</p>
+                                                    <p className="text-[11px] font-bold text-slate-400 tracking-wide italic leading-none mt-1">Potential Reward: ₹20</p>
                                                 </div>
                                                 <div className="w-12 h-12 bg-emerald-800 rounded-2xl flex items-center justify-center text-white shadow-lg">
                                                     <Truck size={20} />
                                                 </div>
                                             </div>
 
-                                            <div className="bg-slate-50 p-3.5 rounded-2xl space-y-2.5">
-                                                <div className="flex gap-2">
-                                                    <MapPin size={14} className="text-[#142921] mt-0.5 shrink-0" />
-                                                    <p className="text-[12px] font-bold text-[#142921] opacity-80 leading-snug">{formatAddress(task.deliveryAddress)}</p>
+                                             <div className="bg-slate-50 p-3.5 rounded-2xl space-y-3 border border-slate-100">
+                                                <div className="space-y-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-800"></div>
+                                                        <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Pickup</span>
+                                                    </div>
+                                                    <div className="flex gap-2 pl-3">
+                                                        <MapPin size={12} className="text-[#142921] mt-0.5 shrink-0" />
+                                                        <p className="text-[11px] font-bold text-[#142921] leading-snug">
+                                                            {task.status.includes('fabric') 
+                                                                ? formatAddress(task.deliveryAddress) 
+                                                                : (task.tailor?.shopName || 'Tailor Workshop')}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2 pt-2 border-t border-slate-200/50">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
+                                                        <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Drop-off</span>
+                                                    </div>
+                                                    <div className="flex gap-2 pl-3">
+                                                        <Store size={12} className="text-[#142921] mt-0.5 shrink-0" />
+                                                        <p className="text-[11px] font-bold text-[#142921] leading-snug opacity-80">
+                                                            {task.status.includes('fabric')
+                                                                ? (task.tailor?.shopName || 'Tailor Workshop')
+                                                                : formatAddress(task.deliveryAddress)}
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
 
@@ -378,7 +514,9 @@ const Tasks = () => {
                         )}
                     </motion.div>
                 )}
-            </AnimatePresence>
+                </AnimatePresence>
+                </>
+            )}
         </div>
     );
 };

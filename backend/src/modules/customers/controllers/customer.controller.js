@@ -41,8 +41,9 @@ exports.getProfile = asyncHandler(async (req, res, next) => {
       stats: {
         totalOrders,
         pendingOrders,
-        rewardPoints: referralsCount * 50, // 50 points per referral
-        savedAmount: referralsCount * 50 // Assuming 1 point = 1 rupee saved
+        rewardPoints: customerProfile?.walletBalance || 0,
+        savedAmount: customerProfile?.referralEarnings || 0,
+        referredCount: customerProfile?.referredCount || 0
       }
     },
   });
@@ -88,6 +89,7 @@ exports.getTailors = asyncHandler(async (req, res, next) => {
 
   let query = {};
 
+  /* Temporarily disabled location filtering
   if (lat && lng) {
     query.location = {
       $near: {
@@ -99,6 +101,7 @@ exports.getTailors = asyncHandler(async (req, res, next) => {
       },
     };
   }
+  */
 
   const tailors = await Tailor.find(query).populate("user", "name email profileImage").lean();
 
@@ -225,8 +228,9 @@ exports.getReferralStats = asyncHandler(async (req, res, next) => {
     success: true,
     data: {
       referralCode: customer.referralCode || "NOT_GENERATED",
-      totalReferrals: referralsCount,
-      rewardPoints: referralsCount * 50, // Example logic: 50 points per referral
+      totalReferrals: customer.referredCount || 0,
+      rewardPoints: customer.walletBalance || 0,
+      referralEarnings: customer.referralEarnings || 0,
     },
   });
 });

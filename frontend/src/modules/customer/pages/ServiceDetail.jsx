@@ -11,6 +11,7 @@ import FabricSelector from '../components/service-detail/FabricSelector';
 import DesignUpload from '../components/service-detail/DesignUpload';
 import PriceSummary from '../components/service-detail/PriceSummary';
 import useCheckoutStore from '../../../store/checkoutStore';
+import useMeasurementStore from '../../../store/measurementStore';
 import api from '../../../utils/api';
 
 const FAQItem = ({ question, answer }) => {
@@ -40,6 +41,7 @@ const ServiceDetail = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { initializeCheckout, serviceDetails: storedDetails } = useCheckoutStore(state => state);
+    const addMeasurement = useMeasurementStore(state => state.addMeasurement);
 
     const [isLoading, setIsLoading] = useState(true);
     const [serviceData, setServiceData] = useState(null);
@@ -109,10 +111,35 @@ const ServiceDetail = () => {
         return 15;
     }
 
-    const handleProceed = () => {
+
+
+    const handleProceed = async () => {
+        let finalMeasurements = measurements;
+
+        // If user requested to save this measurement profile
+        if (measurements?.saveProfile) {
+            try {
+                await addMeasurement({
+                    profileName: measurements.saveProfile.name,
+                    garmentType: serviceData.category || "Other",
+                    measurements: measurements.data,
+                    notes: measurements.data.notes
+                });
+                // Remove saveProfile flag from order object but keep the data
+                finalMeasurements = measurements.data;
+            } catch (err) {
+                console.error("Failed to save measurement profile:", err);
+            }
+        } else if (measurements?.type === 'self') {
+            finalMeasurements = measurements.data;
+        } else if (measurements?.type === 'slip' || measurements?.type === 'saved') {
+            // For slip and saved, we use the object as is (it already has the values)
+            finalMeasurements = measurements.type === 'saved' ? measurements.measurements : measurements;
+        }
+
         initializeCheckout({
             service: serviceData,
-            config: { deliveryType, fabricSource, selectedFabric, measurements },
+            config: { deliveryType, fabricSource, selectedFabric, measurements: finalMeasurements },
             pricing: { base: basePrice, delivery: deliveryPrice, fabric: fabricPrice, taxes, total, deliveryDays: getDeliveryDays() },
             tailorId: preSelectedTailor?._id || null,
             tailorName: preSelectedTailor?.shopName || preSelectedTailor?.user?.name || null

@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import ProductCard from './ProductCard';
 import api from '../../../../utils/api';
+import useGeoLocation from '../../../../hooks/useLocation';
 
 const ProductGrid = ({ filters, categoryId, categoryName, searchQuery }) => {
     const [items, setItems] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+
 
     const fetchProducts = async () => {
         setIsLoading(true);
@@ -12,7 +14,7 @@ const ProductGrid = ({ filters, categoryId, categoryName, searchQuery }) => {
             const params = {
                 category: categoryId || undefined,
                 search: searchQuery || undefined,
-                productType: 'fabric', // Only show fabrics in the store refactor
+                productType: 'fabric',
                 ...filters
             };
             const response = await api.get('/products', { params });

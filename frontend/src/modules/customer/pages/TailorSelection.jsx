@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Star, MapPin, ChevronRight, Loader2 } from 'lucide-react';
 import api from '../../../utils/api';
 import useCheckoutStore from '../../../store/checkoutStore';
+import useLocationStore from '../../../store/locationStore';
+import SafeImage from '../../../components/Common/SafeImage';
 
 const TailorSelection = () => {
     const navigate = useNavigate();
@@ -10,6 +12,8 @@ const TailorSelection = () => {
     const [tailors, setTailors] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    const { coordinates } = useLocationStore();
+    
     useEffect(() => {
         const fetchTailors = async () => {
             try {
@@ -89,7 +93,7 @@ const TailorSelection = () => {
                         className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center gap-4 active:scale-[0.98] transition-all cursor-pointer group"
                     >
                         <div className="w-16 h-16 rounded-xl overflow-hidden border border-gray-100 shrink-0">
-                            <img src={tailor.user?.profileImage || 'https://via.placeholder.com/150'} alt={tailor.shopName || tailor.user?.name} className="w-full h-full object-cover" />
+                            <SafeImage src={tailor.user?.profileImage} alt={tailor.shopName || tailor.user?.name} className="w-full h-full" />
                         </div>
                         <div className="flex-1">
                             <h3 className="text-sm font-bold text-gray-900 group-hover:text-[#1e3932] transition-colors">{tailor.shopName || tailor.user?.name}</h3>

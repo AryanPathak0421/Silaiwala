@@ -127,10 +127,19 @@ exports.getAssignedOrders = asyncHandler(async (req, res, next) => {
     .populate("tailor", "shopName address location phone")
     .sort("-updatedAt");
 
+  // Add taskType for frontend clarity
+  const formattedOrders = orders.map(order => {
+    const isFabric = ["fabric-ready-for-pickup", "fabric-picked-up"].includes(order.status);
+    return {
+      ...order.toObject(),
+      taskType: isFabric ? "fabric-pickup" : "order-delivery"
+    };
+  });
+
   res.status(200).json({
     success: true,
     count: orders.length,
-    data: orders,
+    data: formattedOrders,
   });
 });
 
@@ -248,6 +257,14 @@ exports.updateDeliveryStatus = asyncHandler(async (req, res, next) => {
       message: `Your order ${order.orderId} has been successfully delivered.`,
       data: { orderId: order._id, targetUrl: "/orders" }
     });
+
+    // Distribute Earnings
+    const { distributeEarnings } = require("../../../utils/earningsEngine");
+    try {
+      await distributeEarnings(order._id);
+    } catch (err) {
+      console.error("Failed to distribute earnings automatically:", err);
+    }
   }
 
   // Notify for out-for-delivery
@@ -284,17 +301,26 @@ exports.updateDeliveryStatus = asyncHandler(async (req, res, next) => {
  */
 exports.getAvailableOrders = asyncHandler(async (req, res, next) => {
   const orders = await Order.find({
-    status: { $in: ["ready-for-pickup", "fabric-ready-for-pickup"] },
+    status: { $in: ["ready-for-pickup", "fabric-ready-for-pickup", "out-for-delivery"] },
     deliveryPartner: null,
   })
     .populate("customer", "name phoneNumber profileImage")
     .populate("tailor", "shopName address location phone")
     .sort("-updatedAt");
 
+  // Add taskType for frontend clarity
+  const formattedOrders = orders.map(order => {
+    const isFabric = order.status === "fabric-ready-for-pickup";
+    return {
+      ...order.toObject(),
+      taskType: isFabric ? "fabric-pickup" : "order-delivery"
+    };
+  });
+
   res.status(200).json({
     success: true,
     count: orders.length,
-    data: orders,
+    data: formattedOrders,
   });
 });
 
@@ -314,7 +340,7 @@ exports.acceptOrder = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Order already has a delivery partner", 400));
   }
 
-  if (!["ready-for-pickup", "fabric-ready-for-pickup"].includes(order.status)) {
+  if (!["ready-for-pickup", "fabric-ready-for-pickup", "out-for-delivery"].includes(order.status)) {
     return next(new ErrorResponse("Order is not available for pickup", 400));
   }
 

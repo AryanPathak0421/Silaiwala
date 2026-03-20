@@ -7,7 +7,8 @@ import {
     Truck,
     FileCheck,
     CreditCard,
-    UserCircle
+    UserCircle,
+    Wallet
 } from 'lucide-react';
 import AppContainer from '../components/Common/AppContainer';
 import { useTailorAuth } from '../modules/tailor/context/AuthContext';
@@ -20,6 +21,7 @@ const TailorLayout = () => {
     const menuItems = [
         { icon: <LayoutDashboard size={18} />, label: 'Overview', path: '/partner' },
         { icon: <ClipboardList size={18} />, label: 'Requests', path: '/partner/orders' },
+        { icon: <Wallet size={18} />, label: 'Wallet', path: '/partner/wallet' },
         { icon: <ShoppingBag size={18} />, label: 'Products', path: '/partner/products' },
         { icon: <Truck size={18} />, label: 'Delivery', path: '/partner/delivery' },
         { icon: <FileCheck size={18} />, label: 'Verification', path: '/partner/verification' },
@@ -62,7 +64,7 @@ const TailorLayout = () => {
 
             {/* Bottom Navigation for App-View */}
             <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[450px] bg-white border-t border-gray-100 px-4 py-3 flex items-center justify-between z-20 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] rounded-t-[1.75rem]">
-                {menuItems.slice(0, 4).map((item) => {
+                {menuItems.slice(0, 5).map((item) => {
                     // Injecting a slightly larger size if needed, but styling padding makes it larger
                     const isActive = location.pathname === item.path;
                     return (

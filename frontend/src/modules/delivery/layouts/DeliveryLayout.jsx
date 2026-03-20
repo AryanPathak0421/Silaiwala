@@ -9,10 +9,15 @@ import {
     Bell,
     Power,
     MapPin,
-    Navigation2
+    Navigation2,
+    Wallet
 } from 'lucide-react';
+import NewTaskAlert from '../components/NewTaskAlert';
 import deliveryService from '../services/deliveryService';
 import { toast } from 'react-hot-toast';
+import { io } from 'socket.io-client';
+import { SOCKET_URL } from '../../../config/constants';
+import useAuthStore from '../../../store/authStore';
 
 import silaiwalaLogo from '../../../assets/silaiwala-logo.png';
 
@@ -49,19 +54,87 @@ const DeliveryLayout = () => {
         }
     };
 
-    const notifications = [
-        { id: 1, title: 'Network Connected', desc: 'Secure connection established.', time: 'Just now', unread: true },
-    ];
+    const { user } = useAuthStore();
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    const fetchNotifications = async () => {
+        try {
+            const res = await deliveryService.getNotifications();
+            if (res.success) {
+                setNotifications(res.data);
+                setUnreadCount(res.unreadCount);
+            }
+        } catch (error) {
+            console.error('Failed to fetch notifications:', error);
+        }
+    };
+
+    const handleMarkAllRead = async () => {
+        try {
+            await deliveryService.markAllNotificationsRead();
+            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+            setUnreadCount(0);
+        } catch (error) {
+            toast.error('Failed to mark as read');
+        }
+    };
+
+    const handleMarkRead = async (id) => {
+        try {
+            await deliveryService.markNotificationAsRead(id);
+            setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+            setUnreadCount(prev => Math.max(0, prev - 1));
+        } catch (error) {
+            console.error('Failed to mark read:', error);
+        }
+    };
+
+    React.useEffect(() => {
+        fetchNotifications();
+
+        const socket = io(SOCKET_URL);
+        
+        socket.emit('join', 'delivery_partners');
+        if (user?._id) {
+            socket.emit('join', `user_${user._id}`);
+        }
+
+        socket.on('new_notification', (data) => {
+            setNotifications(prev => [data, ...prev]);
+            setUnreadCount(prev => prev + 1);
+            toast(data.message, { icon: '🔔' });
+        });
+
+        socket.on('new_task', (data) => {
+            // NewTaskAlert handles the UI, but we can also refresh notifications
+            fetchNotifications();
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, [user?._id]);
 
     const navItems = [
         { name: 'Home', icon: LayoutDashboard, path: '/delivery/dashboard' },
         { name: 'Tasks', icon: Truck, path: '/delivery/tasks' },
         { name: 'History', icon: History, path: '/delivery/history' },
+        { name: 'Wallet', icon: Wallet, path: '/delivery/wallet' },
         { name: 'Profile', icon: User, path: '/delivery/profile' },
     ];
 
     return (
         <div className="min-h-[100dvh] bg-[#FAFAFB] flex flex-col font-sans selection:bg-indigo-100 selection:text-indigo-700 overflow-x-clip">
+            {/* New Task Rapido-Style Alert */}
+            <NewTaskAlert onTaskAccepted={(orderId) => {
+                // Refresh data if we are on dashboard or tasks page
+                if (location.pathname.includes('dashboard') || location.pathname.includes('tasks')) {
+                    // We could trigger a global refresh event here or just navigate to tasks
+                   navigate('/delivery/tasks');
+                }
+            }} />
+
             {/* Notifications Overlay */}
             <AnimatePresence>
                 {showNotifications && (
@@ -91,19 +164,35 @@ const DeliveryLayout = () => {
                             </div>
 
                             <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                                {notifications.map(n => (
-                                    <div key={n.id} className={`p-4 rounded-2xl border transition-all ${n.unread ? 'bg-indigo-50/50 border-indigo-100' : 'bg-white border-slate-100'}`}>
-                                        <div className="flex justify-between items-start mb-1">
-                                            <h3 className={`text-sm font-black ${n.unread ? 'text-indigo-700' : 'text-slate-700'}`}>{n.title}</h3>
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{n.time}</span>
-                                        </div>
-                                        <p className="text-xs text-slate-500 font-medium leading-relaxed">{n.desc}</p>
+                                {notifications.length === 0 ? (
+                                    <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-3 opacity-40">
+                                        <Bell size={40} />
+                                        <p className="text-sm font-bold uppercase tracking-widest">No Alerts</p>
                                     </div>
-                                ))}
+                                ) : (
+                                    notifications.map(n => (
+                                        <div 
+                                            key={n._id} 
+                                            onClick={() => !n.isRead && handleMarkRead(n._id)}
+                                            className={`p-4 rounded-2xl border transition-all cursor-pointer ${!n.isRead ? 'bg-emerald-50/50 border-emerald-100' : 'bg-white border-slate-100'}`}
+                                        >
+                                            <div className="flex justify-between items-start mb-1">
+                                                <h3 className={`text-sm font-black ${!n.isRead ? 'text-emerald-800' : 'text-slate-700'}`}>{n.title}</h3>
+                                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                                                    {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </span>
+                                            </div>
+                                            <p className="text-xs text-slate-500 font-medium leading-relaxed">{n.message}</p>
+                                        </div>
+                                    ))
+                                )}
                             </div>
 
                             <div className="p-6 border-t border-slate-100">
-                                <button className="w-full py-3.5 bg-slate-900 text-white rounded-xl font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-slate-200 active:scale-95 transition-all">
+                                <button 
+                                    onClick={handleMarkAllRead}
+                                    className="w-full py-3.5 bg-slate-900 text-white rounded-xl font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-slate-200 active:scale-95 transition-all"
+                                >
                                     Mark All As Read
                                 </button>
                             </div>
@@ -141,9 +230,14 @@ const DeliveryLayout = () => {
 
                     <button
                         onClick={() => setShowNotifications(true)}
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${showNotifications ? 'bg-[#142921] text-white shadow-lg shadow-slate-200' : 'bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-900'}`}
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all relative ${showNotifications ? 'bg-[#142921] text-white shadow-lg shadow-slate-200' : 'bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-900'}`}
                     >
                         <Bell size={20} className={showNotifications ? 'animate-bounce' : ''} />
+                        {unreadCount > 0 && (
+                            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white">
+                                {unreadCount > 9 ? '9+' : unreadCount}
+                            </span>
+                        )}
                     </button>
                 </div>
             </header>

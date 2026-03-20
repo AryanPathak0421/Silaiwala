@@ -58,6 +58,15 @@ const deliverySchema = new mongoose.Schema(
       bankName: String,
       accountNumber: String,
       ifscCode: String,
+      upiId: String
+    },
+    walletBalance: {
+      type: Number,
+      default: 0,
+    },
+    totalWithdrawn: {
+      type: Number,
+      default: 0,
     },
     emergencyContact: {
       type: String,

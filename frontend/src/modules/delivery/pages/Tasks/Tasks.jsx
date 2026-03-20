@@ -156,11 +156,10 @@ const Tasks = () => {
         return parts.join(', ') || 'Address not available';
     };
 
-    const getTaskType = (status) => {
-        if (status === 'fabric-ready-for-pickup') return 'PICKUP FROM CUSTOMER';
-        if (status === 'ready-for-pickup') return 'PICKUP FROM ARTISAN';
-        if (status === 'out-for-delivery') return 'DROP TO CUSTOMER';
-        return status.replace(/-/g, ' ').toUpperCase();
+    const getTaskType = (task) => {
+        if (task.taskType === 'fabric-pickup') return 'Fabric Collection (C → T)';
+        if (task.taskType === 'order-delivery') return 'Final Delivery (T → C)';
+        return task.status.replace(/-/g, ' ').toUpperCase();
     };
 
     // Renders the bottom action area for the Active Task based on its current type and status
@@ -169,16 +168,16 @@ const Tasks = () => {
 
         if (task.status === 'fabric-ready-for-pickup') {
             return (
-                <button onClick={() => handleUpdateStatus(task._id, 'fabric-picked-up')} className={`${btnClass} bg-[#142921] text-white hover:bg-[#1C3E33] shadow-slate-100`}>
-                    <Navigation size={14} /> Confirm Fabric Picked Up
+                <button onClick={() => handleUpdateStatus(task._id, 'fabric-picked-up')} className={`${btnClass} bg-amber-600 text-white hover:bg-amber-700 shadow-amber-100`}>
+                    <Navigation size={14} /> Confirm Fabric Collected from Customer
                 </button>
             );
         }
 
         if (task.status === 'fabric-picked-up') {
             return (
-                <button onClick={() => handleUpdateStatus(task._id, 'fabric-delivered')} className={`${btnClass} bg-emerald-700 text-white hover:bg-emerald-800 shadow-slate-100`}>
-                    <CheckCircle2 size={14} /> Delivered to Tailor
+                <button onClick={() => handleUpdateStatus(task._id, 'fabric-delivered')} className={`${btnClass} bg-emerald-700 text-white hover:bg-emerald-800 shadow-emerald-100`}>
+                    <CheckCircle2 size={14} /> Delivered to Tailor Workshop
                 </button>
             );
         }
@@ -186,7 +185,7 @@ const Tasks = () => {
         if (task.status === 'ready-for-pickup') {
             return (
                 <button onClick={() => handleUpdateStatus(task._id, 'out-for-delivery')} className={`${btnClass} bg-[#142921] text-white hover:bg-[#1C3E33] shadow-slate-100`}>
-                    <Navigation size={14} /> Start Transit (Pick Up)
+                    <Package size={14} /> Picked Up from Artisan
                 </button>
             );
         }
@@ -312,9 +311,9 @@ const Tasks = () => {
                             {/* Header Info */}
                             <div className="flex justify-between items-start">
                                 <div className="space-y-1">
-                                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${activeTask.status === 'ready-for-pickup' ? 'bg-slate-50 text-[#142921]' : 'bg-emerald-100 text-emerald-800'}`}>
+                                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${activeTask.taskType === 'fabric-pickup' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
                                         <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse"></div>
-                                        {getTaskType(activeTask.status)}
+                                        {getTaskType(activeTask)}
                                     </div>
                                     <h3 className="text-lg font-black text-slate-900 tracking-tight capitalize">Task #{activeTask._id.slice(-6)}</h3>
                                 </div>
@@ -327,19 +326,21 @@ const Tasks = () => {
                             {/* Address details */}
                             <div className="bg-slate-50 p-4 rounded-2xl space-y-3 border border-slate-100">
                                 {(() => {
-                                    const isPickup = ['fabric-ready-for-pickup', 'ready-for-pickup'].includes(activeTask.status);
-                                    const isFabric = activeTask.status.includes('fabric');
+                                    const isFabricPickup = activeTask.taskType === 'fabric-pickup';
+                                    const isPickupStage = ['fabric-ready-for-pickup', 'ready-for-pickup'].includes(activeTask.status);
                                     
-                                    const stopLabel = isPickup ? "Pickup Stop" : "Drop-off Stop";
-                                    const address = isPickup 
-                                        ? (isFabric ? activeTask.deliveryAddress : activeTask.tailor?.location?.address) 
-                                        : (isFabric ? activeTask.tailor?.location?.address : activeTask.deliveryAddress);
-                                    const contactName = isPickup
-                                        ? (isFabric ? activeTask.customer?.name : activeTask.tailor?.shopName)
-                                        : (isFabric ? activeTask.tailor?.shopName : activeTask.customer?.name);
-                                    const contactPhone = isPickup
-                                        ? (isFabric ? activeTask.customer?.phoneNumber : activeTask.tailor?.phone)
-                                        : (isFabric ? activeTask.tailor?.phone : activeTask.customer?.phoneNumber);
+                                    const stopLabel = isPickupStage ? "Pickup Location" : "Delivery Location";
+                                    const address = isPickupStage 
+                                        ? (isFabricPickup ? activeTask.deliveryAddress : activeTask.tailor?.location?.address) 
+                                        : (isFabricPickup ? activeTask.tailor?.location?.address : activeTask.deliveryAddress);
+                                    
+                                    const contactName = isPickupStage
+                                        ? (isFabricPickup ? activeTask.customer?.name : activeTask.tailor?.shopName)
+                                        : (isFabricPickup ? activeTask.tailor?.shopName : activeTask.customer?.name);
+                                    
+                                    const contactPhone = isPickupStage
+                                        ? (isFabricPickup ? activeTask.customer?.phoneNumber : activeTask.tailor?.phone)
+                                        : (isFabricPickup ? activeTask.tailor?.phone : activeTask.customer?.phoneNumber);
 
                                     return (
                                         <>
@@ -402,10 +403,12 @@ const Tasks = () => {
                                         <div className="flex justify-between items-start mb-4">
                                             <div className="space-y-1">
                                                 <div className="flex items-center gap-2">
-                                                    <p className="text-[14px] font-black text-slate-800 tracking-tight capitalize">{getTaskType(task.status)}</p>
+                                                    <p className="text-[14px] font-black text-slate-800 tracking-tight capitalize">{getTaskType(task)}</p>
                                                     <span className="text-[10px] font-black text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded uppercase tracking-tighter italic">#{task._id.slice(-6)}</span>
                                                 </div>
-                                                <p className="text-[10px] font-bold text-slate-500 capitalize tracking-wide">{task.customer?.name}</p>
+                                                <p className="text-[10px] font-bold text-slate-500 capitalize tracking-wide">
+                                                    {task.taskType === 'fabric-pickup' ? `From: ${task.customer?.name}` : `From: ${task.tailor?.shopName}`}
+                                                </p>
                                             </div>
                                             <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-md bg-slate-100 text-slate-500">
                                                 Standard
@@ -417,7 +420,12 @@ const Tasks = () => {
                                                 <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center text-[#142921]">
                                                     <MapPin size={14} />
                                                 </div>
-                                                <p className="text-[12px] font-bold text-[#142921] leading-tight capitalize truncate max-w-[200px] mt-1">{formatAddress(task.deliveryAddress)}</p>
+                                                <div className="flex-1">
+                                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Pickup Location</p>
+                                                    <p className="text-[12px] font-bold text-[#142921] leading-tight capitalize">
+                                                        {task.taskType === 'fabric-pickup' ? formatAddress(task.deliveryAddress) : (task.tailor?.shopName || 'Tailor Workshop')}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
 
@@ -449,13 +457,13 @@ const Tasks = () => {
                                         <div className="relative z-10 space-y-4">
                                             <div className="flex justify-between items-start">
                                                  <div className="space-y-1">
-                                                    <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest mb-1 ${task.status.includes('fabric') ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
-                                                        {task.status.includes('fabric') ? 'Fabric Collection' : 'Final Delivery'}
+                                                    <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest mb-1 ${task.taskType === 'fabric-pickup' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                                                        {task.taskType === 'fabric-pickup' ? 'Fabric Collection' : 'Final Delivery'}
                                                     </div>
                                                     <p className="text-[15px] font-black text-slate-900 tracking-tight capitalize">Available Dispatch</p>
-                                                    <p className="text-[11px] font-bold text-slate-400 tracking-wide italic leading-none mt-1">Potential Reward: ₹20</p>
+                                                    <p className="text-[11px] font-bold text-slate-400 tracking-wide italic leading-none mt-1">Reward: ₹20</p>
                                                 </div>
-                                                <div className="w-12 h-12 bg-emerald-800 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg ${task.taskType === 'fabric-pickup' ? 'bg-amber-600' : 'bg-emerald-800'}`}>
                                                     <Truck size={20} />
                                                 </div>
                                             </div>
@@ -469,7 +477,7 @@ const Tasks = () => {
                                                     <div className="flex gap-2 pl-3">
                                                         <MapPin size={12} className="text-[#142921] mt-0.5 shrink-0" />
                                                         <p className="text-[11px] font-bold text-[#142921] leading-snug">
-                                                            {task.status.includes('fabric') 
+                                                            {task.taskType === 'fabric-pickup' 
                                                                 ? formatAddress(task.deliveryAddress) 
                                                                 : (task.tailor?.shopName || 'Tailor Workshop')}
                                                         </p>
@@ -483,7 +491,7 @@ const Tasks = () => {
                                                     <div className="flex gap-2 pl-3">
                                                         <Store size={12} className="text-[#142921] mt-0.5 shrink-0" />
                                                         <p className="text-[11px] font-bold text-[#142921] leading-snug opacity-80">
-                                                            {task.status.includes('fabric')
+                                                            {task.taskType === 'fabric-pickup'
                                                                 ? (task.tailor?.shopName || 'Tailor Workshop')
                                                                 : formatAddress(task.deliveryAddress)}
                                                         </p>

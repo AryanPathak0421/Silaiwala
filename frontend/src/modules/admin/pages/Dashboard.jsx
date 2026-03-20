@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
     TrendingUp,
@@ -15,31 +16,35 @@ import {
     Truck,
     CreditCard
 } from 'lucide-react';
-import { overviewStats, recentOrders, topTailors, revenueData } from '../data/mockData';
 import api from '../../../utils/api';
+import { io } from 'socket.io-client';
+import { SOCKET_URL } from '../../../config/constants';
 
 const AdminDashboard = () => {
     const [statsData, setStatsData] = useState({
-        totalRevenue: `₹${overviewStats.totalRevenue}`,
-        activeOrders: overviewStats.activeOrders,
-        totalTailors: overviewStats.totalTailors,
-        pendingPayouts: `₹${overviewStats.pendingPayouts}`,
+        totalRevenue: '₹0',
+        activeOrders: 0,
+        totalTailors: 0,
+        pendingPayouts: '₹0',
     });
     const [liveOrders, setLiveOrders] = useState([]);
+    const [topTailorsData, setTopTailorsData] = useState([]);
+    const [revenueChartData, setRevenueChartData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
                 const response = await api.get('/admin/dashboard');
-                const { stats, recentOrders: apiRecentOrders } = response.data;
-                const { totalRevenue, activeOrdersCount, totalTailors } = stats;
+                const { stats, recentOrders: apiRecentOrders, topTailors: apiTopTailors, revenueChart } = response.data;
+                const { totalRevenue, activeOrdersCount, totalTailors, pendingTailorsCount, pendingPayouts } = stats;
                 
                 setStatsData({
                     totalRevenue: `₹${totalRevenue.toLocaleString()}`,
                     activeOrders: activeOrdersCount,
                     totalTailors: totalTailors,
-                    pendingPayouts: '₹0', 
+                    pendingTailorsCount: pendingTailorsCount || 0,
+                    pendingPayouts: `₹${(pendingPayouts || 0).toLocaleString()}`, 
                 });
 
                 if (apiRecentOrders && apiRecentOrders.length > 0) {
@@ -53,6 +58,14 @@ const AdminDashboard = () => {
                     }));
                     setLiveOrders(formatted);
                 }
+
+                if (apiTopTailors && apiTopTailors.length > 0) {
+                    setTopTailorsData(apiTopTailors);
+                }
+
+                if (revenueChart && revenueChart.length > 0) {
+                    setRevenueChartData(revenueChart);
+                }
             } catch (error) {
                 console.error('Error fetching dashboard stats:', error);
             } finally {
@@ -61,13 +74,32 @@ const AdminDashboard = () => {
         };
 
         fetchDashboardData();
+
+        // Socket setup for real-time updates
+        const socket = io(SOCKET_URL);
+        
+        socket.on('new_order', () => {
+            fetchDashboardData();
+        });
+
+        socket.on('order_status_updated', () => {
+            fetchDashboardData();
+        });
+
+        socket.on('task_claimed', () => {
+             fetchDashboardData();
+        });
+
+        return () => {
+            socket.disconnect();
+        };
     }, []);
 
     const stats = [
-        { label: 'Total Revenue', value: statsData.totalRevenue, icon: <TrendingUp size={20} />, change: '+12.5%', positive: true },
-        { label: 'Platform Orders', value: statsData.activeOrders, icon: <ShoppingBag size={20} />, change: '+8.2%', positive: true },
-        { label: 'Total Tailors', value: statsData.totalTailors, icon: <Scissors size={20} />, change: '+2.4%', positive: true },
-        { label: 'Pending Payouts', value: statsData.pendingPayouts, icon: <CreditCard size={20} />, change: '+4.1%', positive: true },
+        { label: 'Total Revenue', value: statsData.totalRevenue, icon: <TrendingUp size={20} /> },
+        { label: 'Platform Orders', value: statsData.activeOrders, icon: <ShoppingBag size={20} /> },
+        { label: 'Total Tailors', value: statsData.totalTailors, icon: <Scissors size={20} /> },
+        { label: 'Pending Payouts', value: statsData.pendingPayouts, icon: <CreditCard size={20} /> },
     ];
 
     const getStatusStyle = (status) => {
@@ -81,7 +113,7 @@ const AdminDashboard = () => {
         return 'bg-gray-100 text-gray-700 border-gray-200';
     };
 
-    const maxRevenue = Math.max(...revenueData.map(d => d.revenue));
+    const maxRevenue = revenueChartData.length > 0 ? Math.max(...revenueChartData.map(d => d.revenue)) : 0;
 
     return (
         <div className="space-y-6 lg:space-y-10">
@@ -107,10 +139,12 @@ const AdminDashboard = () => {
                             <div className="p-3 bg-gray-50 text-[#1e3932] rounded-xl group-hover:bg-[#1e3932] group-hover:text-white transition-colors">
                                 {stat.icon}
                             </div>
-                            <div className={`flex items-center gap-1 text-[10px] lg:text-xs font-bold px-2 py-1 rounded-lg ${stat.positive ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`}>
-                                {stat.positive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                                {stat.change}
-                            </div>
+                            {stat.change && (
+                                <div className={`flex items-center gap-1 text-[10px] lg:text-xs font-bold px-2 py-1 rounded-lg ${stat.positive ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`}>
+                                    {stat.positive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                                    {stat.change}
+                                </div>
+                            )}
                         </div>
                         <div className="mt-4 lg:mt-5 relative z-10">
                             <h3 className="text-gray-400 font-bold text-[10px] uppercase tracking-widest">{stat.label}</h3>
@@ -155,12 +189,12 @@ const AdminDashboard = () => {
                                 ))}
                             </div>
 
-                            {revenueData.map((data, idx) => (
+                            {revenueChartData.map((data, idx) => (
                                 <div key={idx} className="flex flex-col items-center flex-1 z-10 group">
                                     <div className="relative w-full max-w-[40px] flex justify-center flex-1 items-end">
                                         <div
                                             className="w-full bg-[#d4e9e2] rounded-t-lg group-hover:bg-[#1e3932] transition-colors relative"
-                                            style={{ height: `${(data.revenue / maxRevenue) * 100}%` }}
+                                            style={{ height: `${(data.revenue / (maxRevenue || 1)) * 100}%` }}
                                         >
                                             <div className="opacity-0 group-hover:opacity-100 absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg pointer-events-none whitespace-nowrap transition-opacity">
                                                 ₹{data.revenue}
@@ -200,8 +234,8 @@ const AdminDashboard = () => {
                                         <th className="px-5 lg:px-8 py-4 text-right"></th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-50">
-                                    {(liveOrders.length > 0 ? liveOrders : recentOrders).map((order) => (
+                                <tbody>
+                                    {liveOrders.map((order) => (
                                         <tr key={order.id} className="hover:bg-gray-50/50 transition-colors group">
                                              <td className="px-5 lg:px-8 py-4 lg:py-5">
                                                  <div className="flex flex-col">
@@ -231,6 +265,13 @@ const AdminDashboard = () => {
                                              </td>
                                          </tr>
                                      ))}
+                                     {liveOrders.length === 0 && !isLoading && (
+                                         <tr>
+                                             <td colSpan="5" className="px-8 py-10 text-center text-gray-400 text-xs font-bold uppercase tracking-widest">
+                                                 No recent orders found
+                                             </td>
+                                         </tr>
+                                     )}
                                 </tbody>
                             </table>
                         </div>
@@ -255,10 +296,10 @@ const AdminDashboard = () => {
                             <Scissors size={80} />
                         </div>
                         <h4 className="text-base lg:text-lg font-black tracking-tight relative z-10">Tailor Applications</h4>
-                        <p className="text-white/60 text-[10px] lg:text-xs mt-2 font-medium relative z-10 max-w-[200px]">You have 5 new tailors waiting for document KYC verification.</p>
-                        <button className="mt-6 w-full py-3 bg-white text-[#1e3932] font-black rounded-xl text-[10px] lg:text-xs uppercase tracking-widest hover:shadow-[0_8px_30px_rgb(255,255,255,0.12)] transition-all active:scale-95 relative z-10">
+                        <p className="text-white/60 text-[10px] lg:text-xs mt-2 font-medium relative z-10 max-w-[200px]">You have {statsData.pendingTailorsCount || 0} new tailors waiting for document KYC verification.</p>
+                        <Link to="/admin/tailors" className="mt-6 w-full py-3 bg-white text-[#1e3932] font-black rounded-xl text-[10px] lg:text-xs uppercase tracking-widest hover:shadow-[0_8px_30px_rgb(255,255,255,0.12)] transition-all active:scale-95 relative z-10 flex items-center justify-center">
                             Review Applications
-                        </button>
+                        </Link>
                     </motion.div>
 
                     {/* Top Tailors */}
@@ -268,7 +309,7 @@ const AdminDashboard = () => {
                             <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest cursor-pointer hover:text-[#1e3932]">View All</span>
                         </h4>
                         <div className="mt-6 space-y-4">
-                            {topTailors.map((tailor, idx) => (
+                            {topTailorsData.map((tailor, idx) => (
                                 <div key={idx} className="flex items-center justify-between group">
                                     <div className="flex items-center gap-3">
                                         <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center text-[#1e3932] font-bold text-xs lg:text-sm group-hover:bg-[#1e3932] group-hover:text-white transition-colors">
@@ -284,6 +325,9 @@ const AdminDashboard = () => {
                                     </div>
                                 </div>
                             ))}
+                            {topTailorsData.length === 0 && !isLoading && (
+                                <p className="text-center text-[10px] font-bold text-gray-400 py-4 uppercase tracking-widest">No top performers yet</p>
+                            )}
                         </div>
                     </div>
 

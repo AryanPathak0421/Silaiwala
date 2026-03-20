@@ -20,10 +20,37 @@ import {
 
 import silaiwalaLogo from '../assets/silaiwala-logo.png';
 import useAuthStore from '../store/authStore';
+import { io } from 'socket.io-client';
+import { SOCKET_URL } from '../config/constants';
+import { toast } from 'react-hot-toast';
 
 const AdminLayout = () => {
     const location = useLocation();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [hasUnread, setHasUnread] = useState(false);
+
+    React.useEffect(() => {
+        const socket = io(SOCKET_URL);
+        
+        socket.on('new_order', (data) => {
+            setHasUnread(true);
+            toast.success(`New Order Received: ${data.orderId || 'Check dashboard'}`, {
+                icon: '🛍️',
+                position: 'top-right'
+            });
+        });
+
+        socket.on('order_status_updated', (data) => {
+             setHasUnread(true);
+             toast(`Order ${data.orderId} updated to ${data.status}`, {
+                 icon: '🔄',
+                 position: 'top-right'
+             });
+        });
+
+        return () => socket.disconnect();
+    }, []);
 
     const menuItems = [
         { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/admin' },
@@ -123,9 +150,14 @@ const AdminLayout = () => {
                             <span className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></span>
                             <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">System Live</span>
                         </div>
-                        <button className="relative p-2.5 text-gray-400 hover:text-[#1e3932] hover:bg-gray-50 rounded-full transition-all">
+                        <button 
+                            onClick={() => setHasUnread(false)}
+                            className="relative p-2.5 text-gray-400 hover:text-[#1e3932] hover:bg-gray-50 rounded-full transition-all"
+                        >
                             <Bell size={20} />
-                            <span className="absolute top-2 right-2 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                            {hasUnread && (
+                                <span className="absolute top-2 right-2 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-white animate-bounce"></span>
+                            )}
                         </button>
                         <div className="flex items-center gap-3 lg:gap-4 pl-3 lg:pl-6 border-l border-gray-100">
                             <div className="text-right hidden lg:block">
@@ -135,6 +167,16 @@ const AdminLayout = () => {
                             <div className="h-10 w-10 lg:h-11 lg:w-11 rounded-xl bg-gradient-to-br from-[#1e3932] to-[#0a211e] flex items-center justify-center text-white font-bold shadow-lg shadow-green-900/10 shrink-0">
                                 SA
                             </div>
+                            <button 
+                                onClick={() => {
+                                    useAuthStore.getState().logout();
+                                    window.location.href = '/admin/login';
+                                }}
+                                title="Sign Out"
+                                className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all ml-1"
+                            >
+                                <LogOut size={20} />
+                            </button>
                         </div>
                     </div>
                 </header>

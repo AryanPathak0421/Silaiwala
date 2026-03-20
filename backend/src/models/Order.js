@@ -97,7 +97,19 @@ const orderSchema = new mongoose.Schema(
       default: 0
     },
     acceptedAt: Date,
+    deliveryFee: {
+      type: Number,
+      default: 0,
+    },
+    platformFee: {
+      type: Number,
+      default: 0,
+    },
     deliveredAt: Date,
+    isReviewed: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

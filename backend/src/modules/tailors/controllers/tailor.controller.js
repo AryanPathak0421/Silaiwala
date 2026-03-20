@@ -341,6 +341,10 @@ exports.getOrders = asyncHandler(async (req, res, next) => {
       path: 'items.service',
       select: 'title image'
     })
+    .populate({
+      path: 'items.selectedFabric',
+      select: 'title image'
+    })
     .sort('-createdAt')
     .skip(skip)
     .limit(Number(limit))
@@ -353,6 +357,65 @@ exports.getOrders = asyncHandler(async (req, res, next) => {
     total,
     count: orders.length,
     data: orders,
+  });
+});
+
+/**
+ * @desc    Get active delivery details and history for the tailor
+ * @route   GET /api/v1/tailors/delivery-details
+ * @access  Private (Tailor)
+ */
+exports.getDeliveryDetails = asyncHandler(async (req, res, next) => {
+  const tailorId = req.user.id;
+
+  // Active deliveries (those assigned to a partner and NOT delivered yet)
+  const activeOrders = await Order.find({
+    tailor: tailorId,
+    deliveryPartner: { $exists: true, $ne: null },
+    status: { $in: ["fabric-ready-for-pickup", "fabric-picked-up", "ready-for-pickup", "out-for-delivery"] }
+  })
+  .populate("customer", "name phoneNumber")
+  .populate("deliveryPartner", "name phoneNumber profileImage email")
+  .sort("-updatedAt");
+
+  // Recent history (already delivered)
+  const history = await Order.find({
+    tailor: tailorId,
+    status: "delivered"
+  })
+  .populate("deliveryPartner", "name phoneNumber")
+  .sort("-deliveredAt")
+  .limit(10);
+
+  // Get active courier (the one from the most recent active order)
+  const activePartner = activeOrders.length > 0 ? activeOrders[0].deliveryPartner : null;
+
+  res.status(200).json({
+    success: true,
+    data: {
+      activePartner: activePartner ? {
+        id: activePartner._id,
+        name: activePartner.name,
+        phone: activePartner.phoneNumber,
+        email: activePartner.email,
+        profileImage: activePartner.profileImage,
+        task: activeOrders[0].status.replace(/-/g, ' ').toUpperCase(),
+        orderId: activeOrders[0].orderId
+      } : null,
+      activeTasks: activeOrders.map(order => ({
+          orderId: order.orderId,
+          status: order.status,
+          customerName: order.customer?.name,
+          updatedAt: order.updatedAt
+      })),
+      history: history.map(h => ({
+          orderId: h.orderId,
+          partnerName: h.deliveryPartner?.name || 'Assigned Rider',
+          deliveredAt: h.deliveredAt,
+          status: "COMPLETED",
+          task: "Final Delivery"
+      }))
+    }
   });
 });
 
@@ -397,9 +460,18 @@ exports.updateOrderStatus = asyncHandler(async (req, res, next) => {
   });
 
   await order.save();
+
+  // Notify Customer about status update
+  await sendNotification({
+    recipient: order.customer,
+    type: "ORDER_STATUS_UPDATED",
+    title: "Order Update",
+    message: `Your order ${order.orderId} status has been updated to ${finalStatus.replace(/-/g, ' ')}.`,
+    data: { orderId: order._id, targetUrl: `/orders/${order._id}/track` }
+  });
   
   // Real-time notification for Delivery Partners if a task is now ready
-  if (finalStatus === "fabric-ready-for-pickup" || finalStatus === "ready-for-pickup") {
+  if (finalStatus === "fabric-ready-for-pickup" || finalStatus === "ready-for-pickup" || finalStatus === "out-for-delivery") {
     const Delivery = require("../../../models/Delivery");
     const tailorProfile = await Tailor.findOne({ user: req.user.id });
     
@@ -419,22 +491,36 @@ exports.updateOrderStatus = asyncHandler(async (req, res, next) => {
     if (nearbyRiders.length > 0) {
        // Target specific nearby riders
        for (const rider of nearbyRiders) {
+          const isFabric = finalStatus === "fabric-ready-for-pickup";
+          const pickupFrom = isFabric ? "Customer" : (tailorProfile.shopName || "Artisan Workshop");
+          
           await sendNotification({
             recipient: rider.user._id,
             type: "NEW_DELIVERY_TASK",
-            title: `New Task Near You! 📍`,
-            message: `Order ${order.orderId} is ready for ${finalStatus.includes('fabric') ? 'fabric pickup' : 'final delivery'} at ${tailorProfile.shopName || 'Artisan Workshop'}.`,
-            data: { orderId: order._id, type: finalStatus, targetUrl: "/delivery/tasks" }
+            title: `New ${isFabric ? 'Fabric' : 'Delivery'} Task! 📍`,
+            message: `Order ${order.orderId} is ready for ${isFabric ? 'fabric pickup from Customer' : 'final delivery from Tailor'}.`,
+            data: { 
+              orderId: order._id, 
+              type: finalStatus, 
+              taskType: isFabric ? 'fabric-pickup' : 'order-delivery',
+              targetUrl: "/delivery/tasks" 
+            }
           });
        }
     } else {
-       // Fallback: Notify all delivery partners if no one is explicitly "near" (or location missing)
+       // Fallback: Notify all delivery partners
+       const isFabric = finalStatus === "fabric-ready-for-pickup";
        await sendNotification({
          recipient: "delivery_partners",
          type: "NEW_DELIVERY_TASK",
-         title: "New Dispatch Available! 🚚",
-         message: `A new ${finalStatus.includes('fabric') ? 'fabric pickup' : 'final delivery'} task for order ${order.orderId} is available in your area.`,
-         data: { orderId: order._id, type: finalStatus, targetUrl: "/delivery/tasks" }
+         title: `New Dispatch Available! 🚚`,
+         message: `A new ${isFabric ? 'fabric pickup' : 'final delivery'} task for order ${order.orderId} is available in your area.`,
+         data: { 
+            orderId: order._id, 
+            type: finalStatus, 
+            taskType: isFabric ? 'fabric-pickup' : 'order-delivery',
+            targetUrl: "/delivery/tasks" 
+         }
        });
     }
   }

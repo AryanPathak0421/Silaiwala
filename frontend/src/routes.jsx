@@ -25,6 +25,7 @@ import SubscriptionSettings from './modules/tailor/pages/Subscription';
 import ProfileSettings from './modules/tailor/pages/ProfileSettings';
 import TailorWithdraw from './modules/tailor/pages/Withdraw';
 import TailorNotifications from './modules/tailor/pages/Notifications';
+import WalletPage from './modules/common/pages/WalletPage';
 
 // Customer Pages
 import CustomerHome from './modules/customer/pages/Home';
@@ -56,6 +57,7 @@ import DeliveryLogin from './modules/delivery/pages/Login';
 import DeliverySignup from './modules/delivery/pages/Signup';
 import DeliveryLayout from './modules/delivery/layouts/DeliveryLayout';
 import DeliveryProtectedRoute from './modules/delivery/components/DeliveryProtectedRoute';
+import DeliveryWallet from './modules/delivery/pages/Wallet/DeliveryWallet';
 
 // Admin Pages
 import AdminDashboard from './modules/admin/pages/Dashboard';
@@ -78,6 +80,8 @@ import Measurements from './modules/customer/pages/Measurements'; // NEW
 import SavedAddresses from './modules/customer/pages/SavedAddresses'; // NEW
 import Support from './modules/customer/pages/Support'; // NEW
 import CMSContent from './modules/customer/pages/CMSContent'; // NEW
+import Embellishments from './modules/customer/pages/Embellishments'; // NEW
+import MyReviews from './modules/customer/pages/MyReviews'; // NEW
 
 const AppRoutes = () => {
     return (
@@ -98,6 +102,7 @@ const AppRoutes = () => {
                     <Route index element={<CustomerHome />} />
                     <Route path="/services" element={<ServicesPage />} />
                     <Route path="/services/:id" element={<ServiceDetailPage />} />
+                    <Route path="/embellishments" element={<Embellishments />} />
 
                     {/* New Store & Nav Routes */}
                     <Route path="/store" element={<StorePage />} />
@@ -124,6 +129,7 @@ const AppRoutes = () => {
 
                     <Route path="/cart" element={<CartPage />} />
                     <Route path="/wishlist" element={<WishlistPage />} />
+                    <Route path="/reviews" element={<MyReviews />} />
                 </Route>
             </Route>
 
@@ -139,7 +145,8 @@ const AppRoutes = () => {
                     <Route path="/partner" element={<TailorOverview />} />
                     <Route path="/partner/orders" element={<TailorOrders />} />
                     <Route path="/partner/portfolio" element={<TailorProducts />} />
-                    <Route path="/partner/earnings" element={<TailorOverview />} />
+                    <Route path="/partner/earnings" element={<WalletPage />} />
+                    <Route path="/partner/wallet" element={<WalletPage />} />
                     <Route path="/partner/products" element={<TailorProducts />} />
                     <Route path="/partner/delivery" element={<DeliveryDetails />} />
                     <Route path="/partner/verification" element={<VerificationStatus />} />
@@ -158,6 +165,7 @@ const AppRoutes = () => {
                     <Route path="/delivery/dashboard" element={<DeliveryDashboard />} />
                     <Route path="/delivery/tasks" element={<DeliveryTasks />} />
                     <Route path="/delivery/history" element={<DeliveryHistory />} />
+                    <Route path="/delivery/wallet" element={<DeliveryWallet />} />
                     <Route path="/delivery/profile" element={<DeliveryProfile />} />
                 </Route>
             </Route>

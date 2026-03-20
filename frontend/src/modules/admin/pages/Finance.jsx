@@ -310,8 +310,13 @@ const AdminFinance = () => {
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <div className="flex flex-col">
-                                                            <span className="text-xs font-black text-gray-900">{payout.tailor?.name}</span>
-                                                            <span className="text-[9px] font-bold text-gray-400 uppercase mt-0.5">{payout.tailor?.shopName || 'Independent'}</span>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-xs font-black text-gray-900">{payout.tailor?.name}</span>
+                                                                <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded border ${payout.tailor?.role === 'delivery' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`}>
+                                                                    {payout.tailor?.role}
+                                                                </span>
+                                                            </div>
+                                                            <span className="text-[9px] font-bold text-gray-400 uppercase mt-0.5">{payout.tailor?.shopName || payout.tailor?.email}</span>
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4">

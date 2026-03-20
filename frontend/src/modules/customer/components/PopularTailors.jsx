@@ -3,9 +3,12 @@ import { Star, MapPin, ChevronRight, ShieldCheck, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import useTailorStore from '../../../store/tailorStore';
+import useLocationStore from '../../../store/locationStore';
+import SafeImage from '../../../components/Common/SafeImage';
 
 const PopularTailors = () => {
     const { tailors, fetchTailors, isLoading } = useTailorStore();
+    const { coordinates } = useLocationStore();
 
     React.useEffect(() => {
         fetchTailors();
@@ -52,10 +55,10 @@ const PopularTailors = () => {
 
                             <div className="relative shrink-0">
                                 <div className="h-20 w-20 rounded-2xl overflow-hidden border border-gray-100 shadow-sm group-hover:rotate-2 transition-transform">
-                                    <img
-                                        src={tailor.user?.profileImage || 'https://via.placeholder.com/150'}
+                                    <SafeImage
+                                        src={tailor.user?.profileImage}
                                         alt={tailor.user?.name}
-                                        className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                        className="h-full w-full group-hover:scale-110 transition-transform duration-500"
                                     />
                                 </div>
                                 <div className="absolute -bottom-1 -right-1 bg-[#1e3932] text-white p-1 rounded-lg border-2 border-white shadow-sm">

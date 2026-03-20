@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import ProductCard from '../components/store/ProductCard';
 import useCheckoutStore from '../../../store/checkoutStore';
 import api from '../../../utils/api';
+import SafeImage from '../../../components/Common/SafeImage';
 
 // Mock Products for portfolio
 const TAILOR_PRODUCTS = [
@@ -56,15 +57,26 @@ const TailorProfile = () => {
                 setFabrics(fabricsRes.data.data);
                 
                 // Merge work samples and services for the portfolio view
-                const allWork = [
-                    ...(samplesRes.data.data || []),
-                    ...(servicesRes.data.data || []).map(s => ({
-                        ...s,
-                        isBookable: true,
-                        laborPrice: s.basePrice // unify field name
-                    }))
-                ];
-                setWorkSamples(allWork);
+                const uniqueContent = new Map();
+
+                // Add work samples first
+                (samplesRes.data.data || []).forEach(item => {
+                    uniqueContent.set(item._id, { ...item, type: 'sample' });
+                });
+
+                // Add services, mapping basePrice to laborPrice
+                (servicesRes.data.data || []).forEach(item => {
+                    if (!uniqueContent.has(item._id)) {
+                        uniqueContent.set(item._id, {
+                            ...item,
+                            type: 'service',
+                            isBookable: true,
+                            laborPrice: item.basePrice
+                        });
+                    }
+                });
+
+                setWorkSamples(Array.from(uniqueContent.values()));
             } catch (error) {
                 console.error('Failed to fetch tailor data:', error);
             } finally {
@@ -88,10 +100,11 @@ const TailorProfile = () => {
             {/* 1. Dynamic Header with Parallax-like feel */}
             <div className="relative h-48 w-full overflow-hidden bg-[#1e3932]">
                 <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/10 z-10"></div>
-                <img
-                    src={tailor.user?.profileImage || 'https://images.unsplash.com/photo-1556760544-74c6974b89e0?w=800'}
+                <SafeImage
+                    src={tailor.user?.profileImage}
+                    fallback='https://images.unsplash.com/photo-1556760544-74c6974b89e0?w=800'
                     alt="Cover"
-                    className="w-full h-full object-cover blur-sm scale-110 opacity-60"
+                    className="w-full h-full opacity-60 blur-sm scale-110"
                 />
 
                 <div className="absolute top-0 left-0 right-0 z-20 p-4 pt-safe flex justify-between items-center">
@@ -125,7 +138,7 @@ const TailorProfile = () => {
                     <div className="flex gap-5 items-start">
                         <div className="relative shrink-0">
                             <div className="w-24 h-24 rounded-[2rem] overflow-hidden border-4 border-white shadow-2xl rotate-2 group">
-                                <img src={tailor.user?.profileImage || 'https://via.placeholder.com/150'} alt={tailor.shopName} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                <SafeImage src={tailor.user?.profileImage} alt={tailor.shopName} className="w-full h-full group-hover:scale-110 transition-transform duration-700" />
                             </div>
                             {tailor.isApproved && (
                                 <div className="absolute -bottom-1 -right-1 bg-[#1e3932] p-1.5 rounded-full border-2 border-white shadow-lg ring-4 ring-[#1e3932]/10">
@@ -226,7 +239,7 @@ const TailorProfile = () => {
                             >
                                 <div className="bg-white rounded-[2.5rem] p-3 shadow-md border border-gray-100 group cursor-pointer hover:shadow-xl transition-all duration-500 overflow-hidden">
                                     <div className="aspect-[3/4] rounded-[2rem] overflow-hidden mb-3 relative shadow-inner">
-                                        <img src={fabric.images?.[0] || 'https://images.unsplash.com/photo-1590736704728-f4730bb30770?w=400'} alt={fabric.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
+                                        <SafeImage src={fabric.images?.[0] || fabric.image} alt={fabric.name} className="w-full h-full group-hover:scale-110 transition-transform duration-1000" />
                                         <div className="absolute top-3 left-3">
                                             <div className="bg-white/90 backdrop-blur-md px-2 py-1 rounded-lg border border-white shadow-sm">
                                                 <span className="text-[8px] font-black text-[#1e3932] uppercase">{fabric.category?.name || 'Fabric'}</span>
@@ -271,7 +284,7 @@ const TailorProfile = () => {
                         >
                             <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 group">
                                 <div className="aspect-[4/5] overflow-hidden">
-                                    <img src={sample.image} alt={sample.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                                    <SafeImage src={sample.image} alt={sample.title} className="w-full h-full group-hover:scale-105 transition-transform duration-700" />
                                 </div>
                                 <div className="p-3">
                                     <h4 className="text-xs font-black text-gray-900 truncate">{sample.title}</h4>

@@ -10,6 +10,7 @@ import api from '../../../utils/api';
 import TrackingTimeline from '../components/orders/TrackingTimeline';
 import { io } from 'socket.io-client';
 import { SOCKET_URL } from '../../../config/constants';
+import ReviewModal from '../components/orders/ReviewModal';
 
 const OrderTracking = () => {
     const { id } = useParams();
@@ -17,6 +18,8 @@ const OrderTracking = () => {
     const [order, setOrder] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+    const [isReviewed, setIsReviewed] = useState(false);
 
     const fetchOrderDetails = async () => {
         try {
@@ -299,9 +302,14 @@ const OrderTracking = () => {
                                 </div>
                                 <div className="flex-1">
                                     <p className="text-sm font-black text-gray-900 leading-none mb-1">{order.deliveryPartner.name}</p>
-                                    <div className="flex items-center gap-1">
-                                        <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse"></div>
-                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">On the way</p>
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-1 px-1.5 py-0.5 bg-amber-50 rounded-lg border border-amber-100">
+                                            <Star size={8} className="fill-amber-600 text-amber-600" />
+                                            <span className="text-[9px] font-black text-amber-800">{order.deliveryPartner.rating?.toFixed(1) || '0.0'}</span>
+                                        </div>
+                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">
+                                            {order.deliveryPartner.totalDeliveries || 0} Deliveries
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -316,6 +324,47 @@ const OrderTracking = () => {
                         </div>
                     </div>
                 )}
+
+                {/* 7. Review Section (If Delivered) */}
+                {order.status === 'delivered' && !order.isReviewed && !isReviewed && (
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="bg-gradient-to-br from-[#1e3932] to-[#142921] rounded-[2rem] p-8 text-center text-white shadow-2xl relative overflow-hidden"
+                    >
+                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                            <Star size={80} className="fill-white" />
+                        </div>
+                        <div className="relative z-10">
+                            <h3 className="text-xl font-black italic tracking-tighter mb-2 uppercase">How was your Experience?</h3>
+                            <p className="text-xs text-white/70 font-medium mb-8 leading-relaxed max-w-[200px] mx-auto">Help us improve the community by sharing your feedback for the Artisan & Rider.</p>
+                            <button 
+                                onClick={() => setIsReviewModalOpen(true)}
+                                className="px-10 py-4 bg-white text-[#1e3932] rounded-full font-black text-xs uppercase shadow-xl hover:bg-gray-50 active:scale-95 transition-all outline-none"
+                            >
+                                Rate Experience
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+
+                {(order.isReviewed || isReviewed) && (
+                    <div className="bg-emerald-50 rounded-[2rem] p-6 text-center border border-emerald-100 italic font-bold text-emerald-800 text-xs">
+                        Thank you for your valuable feedback! 💚
+                    </div>
+                )}
+
+                <ReviewModal
+                    isOpen={isReviewModalOpen}
+                    onClose={() => setIsReviewModalOpen(false)}
+                    orderId={order._id}
+                    tailorId={order.tailor?.user?._id || order.tailor?.user}
+                    deliveryPartnerId={order.deliveryPartner?.user?._id || order.deliveryPartner?.user}
+                    onSuccess={() => {
+                        setIsReviewed(true);
+                        fetchOrderDetails();
+                    }}
+                />
 
             </div>
         </div>

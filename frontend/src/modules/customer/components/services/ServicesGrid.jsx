@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, CheckCircle2, Star, Loader2 } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation as useRouteLocation } from 'react-router-dom';
 import api from '../../../../utils/api';
+import useGeoLocation from '../../../../hooks/useLocation';
 
 const ServiceCard = ({ service }) => {
     const navigate = useNavigate();
-    const location = useLocation();
+    const location = useRouteLocation(); // Changed to useRouteLocation as per import alias
 
     const handleNavigate = () => {
         // Forward existing state (like tailor selection) to the detail page
@@ -86,8 +87,10 @@ const ServicesGrid = () => {
     const [services, setServices] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
+
     useEffect(() => {
         const fetchServices = async () => {
+            setIsLoading(true);
             try {
                 const response = await api.get('/services');
                 if (response.data.success) {

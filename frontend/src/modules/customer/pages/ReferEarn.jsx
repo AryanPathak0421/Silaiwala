@@ -41,7 +41,7 @@ const ReferEarn = () => {
                     <Gift size={80} className="text-yellow-400 drop-shadow-lg" />
                 </motion.div>
                 <h2 className="text-2xl font-black mb-2 uppercase tracking-tighter">Refer a Friend</h2>
-                <p className="text-white/80 text-sm font-medium">Earn ₹200 for every friend who places their first order. Your friend gets 20% OFF!</p>
+                <p className="text-white/80 text-sm font-medium">Earn ₹50 for every friend who places their first order. Your friend gets ₹25 welcome bonus!</p>
             </div>
 
             {/* 3. Referral Code Card */}
@@ -84,7 +84,7 @@ const ReferEarn = () => {
                         </div>
                         <div>
                             <h4 className="font-bold text-sm mb-1">Friend Orders</h4>
-                            <p className="text-xs text-gray-500 leading-relaxed">Your friend uses your code to get 20% OFF on their first stitching order.</p>
+                            <p className="text-xs text-gray-500 leading-relaxed">Your friend uses your code to get ₹25 bonus on their first stitching order.</p>
                         </div>
                     </div>
                     <div className="flex gap-6">
@@ -93,7 +93,7 @@ const ReferEarn = () => {
                         </div>
                         <div>
                             <h4 className="font-bold text-sm mb-1">Get Reward</h4>
-                            <p className="text-xs text-gray-500 leading-relaxed">Once the order is delivered, ₹200 will be credited to your Silaiwala Wallet.</p>
+                            <p className="text-xs text-gray-500 leading-relaxed">Once the order is paid, ₹50 will be credited to your Silaiwala Wallet.</p>
                         </div>
                     </div>
                 </div>
@@ -107,7 +107,7 @@ const ReferEarn = () => {
                     </div>
                     <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Total Earned Credits</p>
                     <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-black">₹{referralStats?.rewardPoints || 0}</span>
+                        <span className="text-3xl font-black">₹{referralStats?.referralEarnings || 0}</span>
                         <span className="text-xs text-green-400 font-bold flex items-center gap-1">
                             <CheckCircle2 size={12} /> Verified
                         </span>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, MoreHorizontal, X, User, MapPin, CheckCircle2, Package, Scissors, CreditCard, ChevronRight, Truck, Clock } from 'lucide-react';
 import api from '../../../utils/api';
+import { toast } from 'react-hot-toast';
 
 const AdminOrders = () => {
     const [selectedTab, setSelectedTab] = useState('All Orders');
@@ -98,6 +99,23 @@ const AdminOrders = () => {
             }
         } catch (err) {
             console.error('Failed to update status:', err);
+        } finally {
+            setIsUpdatingStatus(false);
+        }
+    };
+
+    const handleUpdatePaymentStatus = async (orderId, newPaymentStatus) => {
+        setIsUpdatingStatus(true);
+        try {
+            await api.put(`/admin/orders/${orderId}/status`, { paymentStatus: newPaymentStatus });
+            fetchOrders();
+            if (selectedOrder && selectedOrder.fullId === orderId) {
+                setSelectedOrder(prev => ({ ...prev, paymentStatus: newPaymentStatus }));
+            }
+            toast.success(`Payment status updated to ${newPaymentStatus}`);
+        } catch (err) {
+            console.error('Failed to update payment status:', err);
+            toast.error('Failed to update payment status');
         } finally {
             setIsUpdatingStatus(false);
         }
@@ -387,6 +405,14 @@ const AdminOrders = () => {
                                             {selectedOrder.paymentStatus.toLowerCase() === 'paid' ? <CheckCircle2 size={14} className="text-green-500" /> : <div className="w-2 h-2 rounded-full bg-orange-400" />}
                                             <p className="text-xs font-bold text-gray-900 capitalize">{selectedOrder.paymentStatus}</p>
                                         </div>
+                                        {selectedOrder.paymentStatus.toLowerCase() !== 'paid' && (
+                                            <button 
+                                                onClick={() => handleUpdatePaymentStatus(selectedOrder.fullId, 'paid')}
+                                                className="mt-2 text-[10px] font-black uppercase text-green-600 bg-green-50 px-3 py-1.5 rounded-lg hover:bg-green-600 hover:text-white transition-all w-full flex items-center justify-center gap-1"
+                                            >
+                                                <CheckCircle2 size={10} /> Mark as Paid
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
 

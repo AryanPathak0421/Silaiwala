@@ -214,9 +214,29 @@ const Orders = () => {
                         <div className="space-y-4 pt-4 border-t border-gray-50">
                             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Configuration</p>
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-gray-50 p-3 rounded-2xl">
-                                    <p className="text-[9px] text-gray-400 font-bold uppercase">Fabric</p>
-                                    <p className="text-xs font-black text-[#1e3932]">{order.items[0]?.fabricSource}</p>
+                                <div className="bg-gray-50 p-3 rounded-2xl flex items-center gap-3">
+                                    {(order.items[0]?.fabricSource?.toLowerCase() === 'platform') && order.items[0]?.selectedFabric ? (
+                                        <>
+                                            <div className="w-10 h-10 rounded-lg overflow-hidden border border-gray-100 shrink-0 bg-white">
+                                                <img 
+                                                    src={order.items[0].selectedFabric.image || (order.items[0].selectedFabric.images && order.items[0].selectedFabric.images[0])} 
+                                                    alt="Fabric" 
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                            <div className="flex-1 min-w-0 text-left">
+                                                <p className="text-[8px] text-gray-400 font-bold uppercase mb-0.5">Platform Fabric</p>
+                                                <p className="text-[10px] font-black text-[#1e3932] truncate">{order.items[0].selectedFabric.title}</p>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="flex-1 text-left">
+                                            <p className="text-[8px] text-gray-400 font-bold uppercase mb-0.5">Fabric</p>
+                                            <p className="text-[10px] font-black text-[#1e3932] uppercase">
+                                                {order.items[0]?.fabricSource?.toLowerCase() === 'customer' ? 'Customer Provides' : order.items[0]?.fabricSource}
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="bg-gray-50 p-3 rounded-2xl">
                                     <p className="text-[9px] text-gray-400 font-bold uppercase">Delivery</p>
@@ -252,8 +272,58 @@ const Orders = () => {
                             <div className="pt-4 border-t border-gray-50">
                                 <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Shipment Address</p>
                                 <p className="text-xs text-gray-600 leading-relaxed font-medium">
-                                    {order.deliveryAddress.street}, {order.deliveryAddress.city}, {order.deliveryAddress.state} - {order.deliveryAddress.zipCode}
+                                    {[order.deliveryAddress.street, order.deliveryAddress.city, order.deliveryAddress.state, order.deliveryAddress.zipCode]
+                                        .filter(val => val && val.trim() !== '')
+                                        .join(', ')}
                                 </p>
+                            </div>
+                        )}
+
+                        {order.items[0]?.measurements && (
+                            <div className="pt-4 border-t border-gray-50">
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-3">Customer Measurements</p>
+                                
+                                {order.items[0].measurements.type === 'slip' ? (
+                                    <div className="space-y-3">
+                                        <div className="relative aspect-video rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 group">
+                                            <img 
+                                                src={order.items[0].measurements.image} 
+                                                alt="Measurement Slip" 
+                                                className="w-full h-full object-contain"
+                                            />
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                <button 
+                                                    onClick={() => window.open(order.items[0].measurements.image, '_blank')}
+                                                    className="px-4 py-2 bg-white text-[#1e3932] text-[10px] font-black uppercase rounded-xl"
+                                                >
+                                                    View Full Image
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <p className="text-[10px] text-gray-500 font-medium text-center italic mt-1">Uploaded Measurement Slip Image</p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {Object.entries(order.items[0].measurements).map(([key, val]) => (
+                                            !['type', 'notes', '_id', 'image'].includes(key) && val && (
+                                                <div key={key} className="bg-white border border-gray-100 p-2 rounded-xl text-center">
+                                                    <p className="text-[8px] text-gray-400 font-bold uppercase truncate">{key.replace(/([A-Z])/g, ' $1')}</p>
+                                                    <p className="text-xs font-black text-gray-900">{val}"</p>
+                                                </div>
+                                            )
+                                        ))}
+                                    </div>
+                                )}
+
+                                {order.items[0].measurements.notes && (
+                                    <div className="mt-4 p-4 bg-amber-50 rounded-2xl border border-amber-100/50">
+                                        <div className="flex items-center gap-2 mb-1.5">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                                            <p className="text-[9px] text-amber-600 font-black uppercase tracking-widest">Master Note</p>
+                                        </div>
+                                        <p className="text-[11px] text-gray-800 leading-relaxed font-medium">"{order.items[0].measurements.notes}"</p>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>

@@ -19,6 +19,7 @@ const Signup = () => {
         phoneNumber: '',
         password: '',
         confirmPassword: '',
+        referralCode: '',
     });
     const [error, setError] = useState('');
 
@@ -141,6 +142,21 @@ const Signup = () => {
                             required
                         />
                     </div>
+
+                    {selectedRole === 'customer' && (
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700 font-bold flex items-center gap-2">
+                                Referral Code <span className="text-[10px] bg-emerald-100 text-[#1e3932] px-2 py-0.5 rounded-full font-black uppercase tracking-widest">Optional</span>
+                            </label>
+                            <Input
+                                name="referralCode"
+                                placeholder="TRXXXXXX"
+                                value={formData.referralCode}
+                                onChange={handleChange}
+                                className="border-emerald-100 focus:border-[#1e3932] uppercase placeholder:normal-case font-bold tracking-widest"
+                            />
+                        </div>
+                    )}
 
                     <div className="flex gap-3 pt-2">
                         <Button

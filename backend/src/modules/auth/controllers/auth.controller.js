@@ -21,7 +21,7 @@ const generateToken = (id) => {
  * @access  Public
  */
 exports.register = asyncHandler(async (req, res, next) => {
-  const { name, email, phoneNumber, password, role, shopName, experienceInYears, coordinates, specializations } = req.body;
+  const { name, email, phoneNumber, password, role, shopName, experienceInYears, coordinates, specializations, referralCode } = req.body;
 
   // 1. Validate Role
   const allowedRoles = ["customer", "tailor", "delivery"];
@@ -52,8 +52,19 @@ exports.register = asyncHandler(async (req, res, next) => {
   try {
     switch (finalRole) {
       case "customer":
+        let referredBy = null;
+        if (referralCode) {
+          const referrer = await Customer.findOne({ referralCode });
+          if (referrer) {
+            referredBy = referrer.user;
+            // Increment referrer's referredCount
+            referrer.referredCount += 1;
+            await referrer.save();
+          }
+        }
         profile = await Customer.create({ 
-          user: user._id 
+          user: user._id,
+          referredBy
         });
         break;
       case "tailor":

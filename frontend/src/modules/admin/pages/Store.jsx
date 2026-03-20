@@ -103,8 +103,7 @@ const AdminStore = () => {
                 if (!newProduct.name || !newProduct.price || !newProduct.category) return toast.error('Check required fields');
                 endpoint = isEditing ? `/admin/store/products/${editId}` : '/admin/store/products';
                 payload = newProduct;
-                // Add a dummy tailor ID if missing since backend requires it
-                if (!payload.tailor) payload.tailor = "65f1a2b3c4d5e6f7a8b9c0d1"; 
+                // Tailor ID is now handled by the backend if missing
             } else if (isCategory) {
                 if (!newCategory.name) return toast.error('Name is required');
                 endpoint = isEditing ? `/admin/categories/${editId}` : '/admin/categories';

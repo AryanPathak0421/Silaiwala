@@ -8,30 +8,54 @@ const ErrorResponse = require("../../../utils/errorResponse");
  * @access  Public
  */
 exports.getServices = asyncHandler(async (req, res, next) => {
-  // Convert string 'true'/'false' to boolean, default to true
+  const { lat, lng, radius = 20000 } = req.query; // Default radius 20km
   const isActive = req.query.isActive === 'false' ? false : true;
   
   let query = { isActive };
 
-  if (req.query.tailor) query.tailor = req.query.tailor;
+  // 1. Handle Location Based Filtering (Temporarily Disabled)
+  /*
+  if (lat && lng) {
+    const Tailor = require("../../../models/Tailor");
+    const nearbyTailors = await Tailor.find({
+      location: {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [parseFloat(lng), parseFloat(lat)],
+          },
+          $maxDistance: parseInt(radius),
+        },
+      },
+      isAvailable: true
+    }).select("_id");
+
+    const nearbyIds = nearbyTailors.map(t => t._id);
+    query.tailor = { $in: nearbyIds };
+  } else 
+  */
+  if (req.query.tailor) {
+    query.tailor = req.query.tailor;
+  }
+
   if (req.query.category) query.category = req.query.category;
 
-  // We want to only show services from ACTIVE and VERIFIED tailors
+  // 2. Fetch Services
   const services = await Service.find(query)
     .populate({
       path: "tailor",
-      match: { isAvailable: true }, // Only populate if tailor is available
+      match: { isAvailable: true },
       select: "shopName rating location user",
       populate: { 
         path: "user", 
-        match: { isActive: true }, // Only populate if user is active
+        match: { isActive: true },
         select: "name profileImage" 
       }
     })
     .populate("category", "name")
     .lean();
 
-  // Filter out services where tailor or tailor's user was not found due to match conditions
+  // 3. Final Filter and Response
   const filteredServices = services.filter(service => 
     service.tailor && service.tailor.user
   );

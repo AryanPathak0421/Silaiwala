@@ -21,16 +21,20 @@ const reviewSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    // Target can be a Product or a Tailor profile
+    // Target can be a Product, Tailor, or Delivery Partner
     targetType: {
       type: String,
       required: true,
-      enum: ["Product", "Tailor"],
+      enum: ["Product", "Tailor", "DeliveryPartner", "Order"],
     },
     targetId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
       refPath: "targetType",
+    },
+    order: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Order",
     },
   },
   {

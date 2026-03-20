@@ -14,23 +14,27 @@ const sendNotification = async (options) => {
   try {
     const { recipient, type, title, message, data } = options;
 
-    // 1. Save to Database
-    const notification = await Notification.create({
-      recipient,
-      type,
-      title,
-      message,
-      data
-    });
+    // 1. Save to Database (Skip if broadcast to delivery_partners)
+    let notification = null;
+    if (recipient !== "delivery_partners") {
+      notification = await Notification.create({
+        recipient,
+        type,
+        title,
+        message,
+        data
+      });
+    }
 
     // 2. Emit Real-time via Socket.io
     const io = getIO();
     if (io) {
-      io.to(`user_${recipient}`).emit("new_notification", notification);
+      const recipientId = recipient.toString();
+      io.to(`user_${recipientId}`).emit("new_notification", notification);
       
       // Also emit specific type events if needed
       if (type === "ORDER_CREATED") {
-          io.to(`user_${recipient}`).emit("new_order", {
+          io.to(`user_${recipientId}`).emit("new_order", {
               orderId: data?.orderId,
               message: title
           });

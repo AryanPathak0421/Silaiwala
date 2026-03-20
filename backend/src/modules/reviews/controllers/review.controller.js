@@ -1,6 +1,8 @@
 const Review = require("../../../models/Review");
 const Product = require("../../../models/Product");
 const Tailor = require("../../../models/Tailor");
+const Delivery = require("../../../models/Delivery");
+const Order = require("../../../models/Order");
 const asyncHandler = require("../../../utils/asyncHandler");
 const ErrorResponse = require("../../../utils/errorResponse");
 
@@ -10,7 +12,7 @@ const ErrorResponse = require("../../../utils/errorResponse");
  * @access  Private
  */
 exports.createReview = asyncHandler(async (req, res, next) => {
-  const { rating, comment, targetType, targetId } = req.body;
+  const { rating, comment, targetType, targetId, orderId } = req.body;
 
   // Check if review already exists from this user for this target
   const existingReview = await Review.findOne({
@@ -30,6 +32,7 @@ exports.createReview = asyncHandler(async (req, res, next) => {
     comment,
     targetType,
     targetId,
+    order: orderId || null
   });
 
   // Update average rating for Product or Tailor
@@ -49,6 +52,19 @@ exports.createReview = asyncHandler(async (req, res, next) => {
       tailor.rating = reviews.reduce((acc, item) => item.rating + acc, 0) / reviews.length;
       await tailor.save();
     }
+  } else if (targetType === "DeliveryPartner") {
+    const delivery = await Delivery.findOne({ user: targetId });
+    if (delivery) {
+      const reviews = await Review.find({ targetId, targetType: "DeliveryPartner" });
+      delivery.totalReviews = reviews.length; // Ensure this field exists or just use count
+      delivery.rating = reviews.reduce((acc, item) => item.rating + acc, 0) / reviews.length;
+      await delivery.save();
+    }
+  }
+
+  // If linked to an order, we could mark the order as reviewed (optional logic)
+  if (orderId) {
+      await Order.findByIdAndUpdate(orderId, { isReviewed: true });
   }
 
   res.status(201).json({
@@ -66,6 +82,25 @@ exports.getReviews = asyncHandler(async (req, res, next) => {
   const { targetType, targetId } = req.params;
   const reviews = await Review.find({ targetType, targetId })
     .populate("user", "name profileImage")
+    .sort("-createdAt")
+    .lean();
+
+  res.status(200).json({
+    success: true,
+    count: reviews.length,
+    data: reviews,
+  });
+});
+
+/**
+ * @desc    Get current user's reviews
+ * @route   GET /api/v1/reviews/my-reviews
+ * @access  Private
+ */
+exports.getMyReviews = asyncHandler(async (req, res, next) => {
+  const reviews = await Review.find({ user: req.user.id })
+    .populate("targetId")
+    .populate("order", "orderId createdAt")
     .sort("-createdAt")
     .lean();
 

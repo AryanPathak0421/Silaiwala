@@ -35,6 +35,18 @@ const customerSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+    walletBalance: {
+      type: Number,
+      default: 0,
+    },
+    referralEarnings: {
+      type: Number,
+      default: 0,
+    },
+    referredCount: {
+      type: Number,
+      default: 0,
+    },
     totalOrders: {
       type: Number,
       default: 0,

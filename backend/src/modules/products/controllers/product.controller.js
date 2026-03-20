@@ -5,34 +5,58 @@ const asyncHandler = require("../../../utils/asyncHandler");
 const ErrorResponse = require("../../../utils/errorResponse");
 
 exports.getProducts = asyncHandler(async (req, res, next) => {
-  const { category, search, minPrice, maxPrice, sort, page = 1, limit = 10 } = req.query;
+  const { category, search, minPrice, maxPrice, sort, lat, lng, radius = 20000, page = 1, limit = 10 } = req.query;
 
   let query = { isActive: true };
 
-  // 1. Advanced Search (Text Index)
+  // 1. Geo-Spatial Search
+  if (lat && lng) {
+    const Tailor = require("../../../models/Tailor");
+    const nearbyTailors = await Tailor.find({
+      location: {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [parseFloat(lng), parseFloat(lat)],
+          },
+          $maxDistance: parseInt(radius),
+        },
+      },
+      isAvailable: true
+    }).select("_id");
+
+    const nearbyIds = nearbyTailors.map(t => t._id);
+    query.tailor = { $in: nearbyIds };
+  }
+
+  // 2. Advanced Search (Text Index)
   if (search) {
     query.$text = { $search: search };
   }
 
-  // 2. Category Filtering (Handles both Name and Slug if added later)
+  // 3. Category Filtering
   if (category && category !== "All") {
     const categoryDoc = await Category.findOne({ name: category });
     if (categoryDoc) query.category = categoryDoc._id;
   }
 
-  // 3. Optimized Price Range
+  // 4. Optimized Price Range
   if (minPrice || maxPrice) {
     query.price = {};
     if (minPrice) query.price.$gte = Number(minPrice);
     if (maxPrice) query.price.$lte = Number(maxPrice);
   }
 
-  // 4. Pagination Logic
+  // 5. Pagination Logic
   const skip = (page - 1) * limit;
 
   let productQuery = Product.find(query)
     .populate("category", "name")
-    .populate("tailor", "name shopName")
+    .populate({
+      path: "tailor",
+      select: "shopName",
+      populate: { path: "user", select: "name profileImage" }
+    })
     .skip(skip)
     .limit(Number(limit));
 

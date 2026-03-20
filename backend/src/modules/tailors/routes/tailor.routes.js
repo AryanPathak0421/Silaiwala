@@ -6,6 +6,7 @@ const {
   updateProfile, 
   getDashboardData, 
   getOrders,
+  getDeliveryDetails,
   updateOrderStatus,
   withdrawFunds
 } = require("../controllers/tailor.controller");
@@ -43,19 +44,23 @@ router.get("/:tailorId/work-samples", getTailorWorkSamples);
 router.get("/:tailorId/services", getTailorServices);
 router.get("/work-samples/feed", getAllWorkSamples);
 
-// ─── PROTECTED TAILOR ROUTES (STATIC PATHS FIRST) ───────────────────────────
-router.use(protect);
+// ─── PROTECTED TAILOR GET ROUTES (STATIC PATHS FIRST) ─────────────────────
+// We need these BEFORE /:id to avoid shadowing, and we add protect manually
+// so we can keep /:id public at the end.
+router.get("/me", protect, authorize("tailor"), getMyProfile);
+router.get("/dashboard", protect, authorize("tailor"), getDashboardData);
+router.get("/orders", protect, authorize("tailor"), getOrders);
+router.get("/work-samples", protect, authorize("tailor"), getMyWorkSamples);
+router.get("/products", protect, authorize("tailor"), getMyProducts);
+router.get("/services", protect, authorize("tailor"), getMyServices);
+router.get("/delivery-details", protect, authorize("tailor"), getDeliveryDetails);
 
-// Specific GET routes MUST come before /:id
-router.get("/me", authorize("tailor"), getMyProfile);
-router.get("/dashboard", authorize("tailor"), getDashboardData);
-router.get("/orders", authorize("tailor"), getOrders);
-router.get("/work-samples", authorize("tailor"), getMyWorkSamples);
-router.get("/products", authorize("tailor"), getMyProducts);
-router.get("/services", authorize("tailor"), getMyServices);
+// ─── PUBLIC DETAILS ROUTE (DYNAMIC PATH) ────────────────────────────────────
+// MUST come after static routes but BEFORE the global protect middleware below
+router.get("/:id", getTailorDetails);
 
 // ─── OTHER PROTECTED TAILOR ACTIONS ──────────────────────────────────────────
-router.use(authorize("tailor"));
+router.use(protect, authorize("tailor"));
 
 router.patch("/profile", updateProfile);
 router.post("/withdraw", withdrawFunds);
@@ -76,8 +81,6 @@ router.post("/services", createTailorService);
 router.patch("/services/:id", updateTailorService);
 router.delete("/services/:id", deleteTailorService);
 
-// ─── PUBLIC DETAILS ROUTE (DYNAMIC PATH) ────────────────────────────────────
-// Moving this to the VERY BOTTOM to prevent shadowing ANY other route
-router.get("/:id", getTailorDetails);
+// Final fallback routes if any
 
 module.exports = router;

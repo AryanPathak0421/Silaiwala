@@ -62,6 +62,13 @@ const tailorSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    bankDetails: {
+      accountName: String,
+      bankName: String,
+      accountNumber: String,
+      ifscCode: String,
+      upiId: String
+    },
     documents: [
       {
         name: String,

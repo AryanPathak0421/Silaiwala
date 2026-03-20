@@ -2,21 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { MapPin, ChevronDown, Check, Loader2, Navigation, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import useLocationStore from '../../../store/locationStore';
+
 const LocationBar = () => {
-    const [location, setLocation] = useState('Srinagar, Kashmir - 190001');
+    const { address: location, setLocation, coordinates } = useLocationStore();
     const [isEditing, setIsEditing] = useState(false);
     const [tempLocation, setTempLocation] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
-    useEffect(() => {
-        const savedLocation = localStorage.getItem('user-location');
-        if (savedLocation) setLocation(savedLocation);
-    }, []);
-
     const handleSave = () => {
         if (tempLocation.trim()) {
-            setLocation(tempLocation);
-            localStorage.setItem('user-location', tempLocation);
+            // Mock random coords for manual entry for now
+            const mockLat = 34.0837 + (Math.random() - 0.5) * 0.01;
+            const mockLng = 74.7973 + (Math.random() - 0.5) * 0.01;
+            setLocation(tempLocation, mockLat, mockLng);
             setIsEditing(false);
         }
     };
@@ -25,10 +24,11 @@ const LocationBar = () => {
         setIsLoading(true);
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(async (position) => {
+                const { latitude, longitude } = position.coords;
+                // Reverse geocoding would happen here, showing mock for now
                 setTimeout(() => {
                     const mockAddress = "HSR Layout, Bangalore - 560102";
-                    setLocation(mockAddress);
-                    localStorage.setItem('user-location', mockAddress);
+                    setLocation(mockAddress, latitude, longitude);
                     setIsLoading(false);
                     setIsEditing(false);
                 }, 1500);

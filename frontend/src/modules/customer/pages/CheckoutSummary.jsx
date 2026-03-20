@@ -49,11 +49,12 @@ const CheckoutSummary = () => {
 
     // Recalculate total for cart (including delivery/platform fee if needed)
     // For simplicity, reusing logic
-    const finalTotal = isServiceCheckout ? pricing.total + 10 : currentPricing.total + currentPricing.delivery;
+    const finalTotal = Math.round(isServiceCheckout ? pricing.total + 10 : currentPricing.total + currentPricing.delivery);
 
     const handlePayment = async () => {
         setIsProcessing(true);
         try {
+            // 1. Create order payload
             let payload;
             if (isServiceCheckout) {
                 payload = {
@@ -76,12 +77,7 @@ const CheckoutSummary = () => {
                     }
                 };
             } else {
-                // Cart Order (Products)
-                // For cart orders, we assume items might be from different tailors, 
-                // but the current Order model requires a single tailor field.
-                // As a simplification, we use the tailor from the first item or a platform default.
                 const firstItemTailor = cartItems[0]?.tailor; 
-                
                 payload = {
                     tailorId: firstItemTailor,
                     items: cartItems.map(item => ({
@@ -99,25 +95,65 @@ const CheckoutSummary = () => {
                 };
             }
 
-            const response = await api.post('/orders', payload);
-            
-            if (response.data.success) {
-                const order = response.data.data;
-                if (isServiceCheckout) {
-                    clearCheckout();
-                } else {
-                    clearCart();
+            // 2. Create Order in Backend (Pending status)
+            const orderRes = await api.post('/orders', payload);
+            if (!orderRes.data.success) throw new Error('Order creation failed');
+            const order = orderRes.data.data;
+
+            // 3. Create Razorpay Order
+            const rzpOrderRes = await api.post('/orders/razorpay/create', { amount: finalTotal });
+            if (!rzpOrderRes.data.success) throw new Error('Razorpay order creation failed');
+            const rzpOrder = rzpOrderRes.data.data;
+
+            // 4. Open Razorpay Modal
+            const options = {
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_8sYbzHWidwe5Zw',
+                amount: rzpOrder.amount,
+                currency: rzpOrder.currency,
+                name: "SilaiWala",
+                description: "Order Payment",
+                order_id: rzpOrder.id,
+                handler: async function (response) {
+                    try {
+                        // 5. Verify Payment in Backend
+                        const verifyRes = await api.post('/orders/razorpay/verify', {
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                            orderObjectId: order._id
+                        });
+
+                        if (verifyRes.data.success) {
+                            if (isServiceCheckout) clearCheckout();
+                            else clearCart();
+                            
+                            navigate('/checkout/success', { 
+                                state: { orderId: order._id, orderNumber: order.orderId } 
+                            });
+                        }
+                    } catch (err) {
+                        console.error('Verification failed:', err);
+                        alert('Payment verification failed. Please contact support.');
+                    }
+                },
+                prefill: {
+                    name: selectedAddress?.receiverName || "",
+                    contact: selectedAddress?.phone || ""
+                },
+                theme: {
+                    color: "#1e3932"
                 }
-                navigate('/checkout/success', { 
-                    state: { 
-                        orderId: order._id, 
-                        orderNumber: order.orderId 
-                    } 
-                });
-            }
+            };
+
+            const rzp = new window.Razorpay(options);
+            rzp.on('payment.failed', function (response) {
+                alert('Payment failed: ' + response.error.description);
+            });
+            rzp.open();
+
         } catch (error) {
-            console.error('Payment failed:', error);
-            alert(error.response?.data?.message || 'Order placement failed. Please try again.');
+            console.error('Payment process failed:', error);
+            alert(error.response?.data?.message || 'Payment initialization failed. Please try again.');
         } finally {
             setIsProcessing(false);
         }
@@ -184,7 +220,7 @@ const CheckoutSummary = () => {
                     {/* Render minimal address view */}
                     <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-xs text-gray-600 leading-relaxed">
                         <p className="font-bold text-gray-900 mb-1">{selectedAddress?.receiverName} ({selectedAddress?.type})</p>
-                        <p>{selectedAddress?.street}, {selectedAddress?.city} - {selectedAddress?.zipCode}</p>
+                        <p>{selectedAddress?.street}, {selectedAddress?.city}, {selectedAddress?.state} - {selectedAddress?.zipCode}</p>
                         <p className="mt-1 font-medium">Phone: {selectedAddress?.phone}</p>
                     </div>
                 </div>

@@ -26,7 +26,7 @@ const AddressCard = ({ address, isSelected, onSelect }) => {
                         <Icon size={14} />
                     </div>
                     <div>
-                        <h4 className="text-sm font-bold text-gray-900">{address.name}</h4>
+                        <h4 className="text-sm font-bold text-gray-900">{address.receiverName}</h4>
                         <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider">{address.type}</span>
                     </div>
                 </div>
@@ -41,8 +41,8 @@ const AddressCard = ({ address, isSelected, onSelect }) => {
             </div>
 
             <p className="text-xs text-gray-600 leading-relaxed mb-3 pl-10">
-                {address.addressLine1}, {address.addressLine2 ? `${address.addressLine2}, ` : ''}<br />
-                {address.city} - {address.pincode}, {address.state}
+                {address.street}<br />
+                {address.city} - {address.zipCode}, {address.state}
             </p>
 
             <div className="text-xs font-medium text-gray-800 pl-10">

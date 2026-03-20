@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowRight, Star, Loader2 } from 'lucide-react';
 import api from '../../../utils/api';
+import SafeImage from '../../../components/Common/SafeImage';
 
 const ServiceGrid = () => {
     const navigate = useNavigate();
@@ -57,10 +58,10 @@ const ServiceGrid = () => {
                         className="bg-white rounded-2xl p-2 shadow-sm border border-gray-100 group cursor-pointer hover:shadow-md transition-shadow"
                     >
                         <div className="aspect-[3/4] rounded-xl overflow-hidden mb-3 relative bg-gray-50">
-                            <img
-                                src={service.image || 'https://images.unsplash.com/photo-1556760544-74c6974b89e0?w=800'}
+                            <SafeImage
+                                src={service.image}
                                 alt={service.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                className="w-full h-full group-hover:scale-105 transition-transform duration-300"
                             />
                             <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 text-[10px] font-bold shadow-sm">
                                 <Star size={10} className="fill-yellow-400 text-yellow-400" />

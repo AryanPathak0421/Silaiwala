@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Search, Filter, Star, MapPin, Heart, ShieldCheck, Clock, ChevronRight, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../../utils/api';
+import useLocationStore from '../../../store/locationStore';
+import SafeImage from '../../../components/Common/SafeImage';
 
 const TailorListing = () => {
     const navigate = useNavigate();
@@ -10,6 +12,8 @@ const TailorListing = () => {
     const [tailors, setTailors] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    const { coordinates } = useLocationStore();
+    
     useEffect(() => {
         const fetchTailors = async () => {
             try {
@@ -110,7 +114,7 @@ const TailorListing = () => {
                                         {/* Profile Picture with Status Ring */}
                                         <div className="relative shrink-0">
                                             <div className="w-22 h-22 rounded-[1.5rem] overflow-hidden border-2 border-white shadow-xl rotate-3 group-hover:rotate-0 transition-transform duration-500">
-                                                <img src={tailor.user?.profileImage || 'https://via.placeholder.com/150'} alt={tailor.shopName || tailor.user?.name} className="w-full h-full object-cover scale-110" />
+                                                <SafeImage src={tailor.user?.profileImage} alt={tailor.shopName || tailor.user?.name} className="w-full h-full scale-110" />
                                             </div>
                                             <div className="absolute -bottom-1 -right-1 bg-green-500 w-4 h-4 rounded-full border-2 border-white shadow-sm ring-2 ring-green-500/20"></div>
                                         </div>

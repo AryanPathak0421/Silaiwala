@@ -31,13 +31,81 @@ exports.getDashboardStats = async (req, res) => {
     // Active orders are any orders not delivered or cancelled
     const activeOrdersCount = await Order.countDocuments({ status: { $nin: ["delivered", "cancelled"] } });
 
+    // Pending Tailor applications
+    const pendingTailorsCount = await User.countDocuments({ role: "tailor", isVerified: false });
+
+    // Pending Payouts calculation
+    const pendingPayoutsData = await Payout.aggregate([
+      { $match: { status: { $in: ["pending", "processing"] } } },
+      { $group: { _id: null, total: { $sum: "$amount" } } }
+    ]);
+    const pendingPayouts = pendingPayoutsData.length > 0 ? pendingPayoutsData[0].total : 0;
+
     // Recent 5 orders
     const recentOrders = await Order.find()
       .populate("customer", "name")
       .populate("items.service", "title")
       .populate("items.product", "name")
+      .populate("tailor", "name")
       .sort("-createdAt")
       .limit(5);
+
+    // Get Top 5 Tailors by completed orders
+    const topTailors = await Order.aggregate([
+      { $match: { status: "delivered" } },
+      { $group: { _id: "$tailor", completedOrders: { $sum: 1 } } },
+      { $sort: { completedOrders: -1 } },
+      { $limit: 5 },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "userDetails"
+        }
+      },
+      {
+        $lookup: {
+          from: "tailors",
+          localField: "_id",
+          foreignField: "user",
+          as: "tailorProfile"
+        }
+      },
+      {
+        $project: {
+          name: { $arrayElemAt: ["$userDetails.name", 0] },
+          completedOrders: 1,
+          rating: { $ifNull: [{ $arrayElemAt: ["$tailorProfile.rating", 0] }, 5.0] }
+        }
+      }
+    ]);
+
+    // Financial stats for the chart (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const chartData = await Order.aggregate([
+      { 
+        $match: { 
+          status: "delivered",
+          createdAt: { $gte: sevenDaysAgo }
+        } 
+      },
+      {
+        $group: {
+          _id: { $dayOfWeek: "$createdAt" },
+          revenue: { $sum: "$totalAmount" }
+        }
+      },
+      { $sort: { "_id": 1 } }
+    ]);
+
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const formattedChartData = chartData.map(d => ({
+      name: days[d._id - 1],
+      revenue: d.revenue
+    }));
 
     res.status(200).json({
       success: true,
@@ -48,9 +116,13 @@ exports.getDashboardStats = async (req, res) => {
         totalDeliveries,
         totalOrdersCount,
         activeOrdersCount,
-        totalRevenue
+        totalRevenue,
+        pendingTailorsCount,
+        pendingPayouts
       },
-      recentOrders
+      recentOrders,
+      topTailors,
+      revenueChart: formattedChartData
     });
   } catch (error) {
     console.error("Error in getAllUsers:", error);
@@ -476,6 +548,38 @@ exports.updateOrderStatus = async (req, res) => {
       { new: true, runValidators: true }
     ).populate("customer tailor deliveryPartner items.service items.product");
     
+    if (order && status && status !== oldOrder.status) {
+        // Earnings Distribution
+        if (status === 'delivered') {
+          const { distributeEarnings } = require("../../../utils/earningsEngine");
+          try {
+            await distributeEarnings(order._id);
+          } catch (err) {
+            console.error("Failed to distribute earnings via admin update:", err);
+          }
+        }
+
+        // Notify Customer
+        await sendNotification({
+            recipient: order.customer?._id || order.customer,
+            type: "ORDER_STATUS_UPDATED",
+            title: "Order Status Changed!",
+            message: `Admin has updated your order ${order.orderId} to: ${status.replace(/-/g, ' ')}`,
+            data: { orderId: order._id, targetUrl: "/profile/orders" }
+        });
+
+        // Notify Tailor if not already notified by tailor change
+        if (!tailor || tailor === oldOrder.tailor?.toString()) {
+            await sendNotification({
+                recipient: order.tailor?._id || order.tailor,
+                type: "ORDER_STATUS_UPDATED",
+                title: "Job Status Updated",
+                message: `Admin updated order ${order.orderId} status to: ${status.replace(/-/g, ' ')}`,
+                data: { orderId: order._id, targetUrl: "/partner/orders" }
+            });
+        }
+    }
+
     res.status(200).json({ success: true, data: order });
   } catch (error) {
     console.error("Error in getAllUsers:", error);
@@ -700,8 +804,25 @@ exports.getAllProducts = async (req, res) => {
 
 exports.createProduct = async (req, res) => {
   try {
-    // If Admin is creating, we might need a default tailor or a specific one from req.body
-    const product = await Product.create(req.body);
+    const payload = { ...req.body };
+    
+    // If Admin is creating and no tailor is specified, assign Silaiwala Central Store tailor
+    if (!payload.tailor) {
+      const systemTailor = await Tailor.findOne({ shopName: /Silaiwala Central Store/i });
+      if (systemTailor) {
+        payload.tailor = systemTailor._id;
+      } else {
+        // Fallback to any existing tailor if system tailor isn't found
+        const anyTailor = await Tailor.findOne();
+        if (anyTailor) payload.tailor = anyTailor._id;
+      }
+    }
+
+    if (!payload.tailor) {
+      return res.status(400).json({ success: false, message: "A tailor ID is required to create a product. Please seed or create a tailor first." });
+    }
+
+    const product = await Product.create(payload);
     res.status(201).json({ success: true, data: product });
   } catch (error) {
     console.error("Error in createProduct:", error);
@@ -740,7 +861,10 @@ exports.updateInventory = async (req, res) => {
     
     const product = await Product.findByIdAndUpdate(
       id, 
-      { stock, inStock: stock > 0 ? inStock : false }, 
+      { 
+        stock, 
+        inStock: inStock !== undefined ? inStock : (stock > 0) 
+      }, 
       { new: true }
     );
     
@@ -897,7 +1021,7 @@ exports.getTransactions = async (req, res) => {
 exports.getAllPayouts = async (req, res) => {
   try {
     const payouts = await Payout.find()
-      .populate("tailor", "name shopName")
+      .populate("tailor", "name shopName role email")
       .sort("-createdAt");
     res.status(200).json({ success: true, data: payouts });
   } catch (error) {
@@ -907,25 +1031,80 @@ exports.getAllPayouts = async (req, res) => {
 };
 
 exports.updatePayoutStatus = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     const { id } = req.params;
-    const { status, transactionReference } = req.body;
+    const { status, transactionReference, notes } = req.body;
     
-    const payout = await Payout.findByIdAndUpdate(
-      id, 
-      { 
-        status, 
-        transactionReference,
-        processedAt: status === 'completed' ? Date.now() : undefined 
-      }, 
-      { new: true }
-    );
+    const payout = await Payout.findById(id).session(session);
+    if (!payout) {
+      await session.abortTransaction();
+      return res.status(404).json({ success: false, message: "Payout not found" });
+    }
+
+    const oldStatus = payout.status;
+    payout.status = status;
+    if (transactionReference) payout.transactionReference = transactionReference;
+    if (notes) payout.notes = notes;
+    if (status === 'completed') payout.processedAt = Date.now();
     
-    if (!payout) return res.status(404).json({ success: false, message: "Payout not found" });
+    await payout.save({ session });
+
+    // Handle Wallet Transaction Update
+    const WalletTransaction = require("../../../models/WalletTransaction");
+    const transaction = await WalletTransaction.findOne({ 
+      user: payout.tailor, // Payout model uses 'tailor' for user ref
+      amount: payout.amount,
+      type: "debit",
+      category: "withdrawal",
+      status: "pending"
+    }).session(session);
+
+    if (transaction) {
+      transaction.status = status === 'completed' ? 'completed' : (status === 'failed' ? 'failed' : 'pending');
+      await transaction.save({ session });
+    }
+
+    // Refund logic if payout failed and it was previously pending/processing
+    if (status === 'failed' && oldStatus !== 'failed' && oldStatus !== 'completed') {
+      const User = require("../../../models/User");
+      const user = await User.findById(payout.tailor);
+      
+      let profile;
+      if (user.role === 'tailor') {
+        const Tailor = require("../../../models/Tailor");
+        profile = await Tailor.findOne({ user: user._id }).session(session);
+      } else if (user.role === 'delivery') {
+        const Delivery = require("../../../models/Delivery");
+        profile = await Delivery.findOne({ user: user._id }).session(session);
+      }
+
+      if (profile) {
+        profile.walletBalance += payout.amount;
+        await profile.save({ session });
+
+        // Create a credit transaction for the refund
+        await WalletTransaction.create([{
+          user: user._id,
+          amount: payout.amount,
+          type: "credit",
+          category: "withdrawal", // Or maybe 'refund'
+          status: "completed",
+          description: `Refund for failed payout ${payout.payoutId}`
+        }], { session });
+      }
+    }
+
+    await session.commitTransaction();
     res.status(200).json({ success: true, data: payout });
   } catch (error) {
+    await session.abortTransaction();
     console.error("Error in updatePayoutStatus:", error);
     res.status(500).json({ success: false, message: error.message });
+  } finally {
+    session.endSession();
   }
 };
 

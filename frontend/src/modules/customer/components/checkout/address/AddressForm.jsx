@@ -24,19 +24,18 @@ const AddressForm = ({ onCancel, onSuccess }) => {
     const addAddress = useAddressStore((state) => state.addAddress);
 
     const [form, setForm] = useState({
-        name: '', phone: '', pincode: '',
-        addressLine1: '', addressLine2: '',
-        city: '', state: '', type: 'Home'
+        receiverName: '', phone: '', zipCode: '',
+        street: '', city: '', state: '', type: 'Home'
     });
 
     const [errors, setErrors] = useState({});
 
     const validate = () => {
         const newErrors = {};
-        if (!form.name.trim()) newErrors.name = "Required";
+        if (!form.receiverName.trim()) newErrors.receiverName = "Required";
         if (!form.phone.match(/^\d{10}$/)) newErrors.phone = "Invalid Phone";
-        if (!form.pincode.match(/^\d{6}$/)) newErrors.pincode = "Invalid Pin";
-        if (!form.addressLine1.trim()) newErrors.addressLine1 = "Required";
+        if (!form.zipCode.match(/^\d{6}$/)) newErrors.zipCode = "Invalid Pin";
+        if (!form.street.trim()) newErrors.street = "Required";
         if (!form.city.trim()) newErrors.city = "Required";
 
         setErrors(newErrors);
@@ -61,17 +60,17 @@ const AddressForm = ({ onCancel, onSuccess }) => {
 
             <form onSubmit={handleSubmit}>
                 <div className="grid grid-cols-2 gap-3">
-                    <InputField label="Contact Name" name="name" placeholder="John Doe" required form={form} errors={errors} setForm={setForm} setErrors={setErrors} />
+                    <InputField label="Contact Name" name="receiverName" placeholder="John Doe" required form={form} errors={errors} setForm={setForm} setErrors={setErrors} />
                     <InputField label="Phone Number" name="phone" placeholder="9876543210" required form={form} errors={errors} setForm={setForm} setErrors={setErrors} />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                    <InputField label="Pincode" name="pincode" placeholder="110001" required form={form} errors={errors} setForm={setForm} setErrors={setErrors} />
+                    <InputField label="Pincode" name="zipCode" placeholder="110001" required form={form} errors={errors} setForm={setForm} setErrors={setErrors} />
                     <InputField label="City" name="city" placeholder="New Delhi" required form={form} errors={errors} setForm={setForm} setErrors={setErrors} />
                 </div>
 
-                <InputField label="House/Flat No, Building" name="addressLine1" placeholder="Flat 402, Block A" required form={form} errors={errors} setForm={setForm} setErrors={setErrors} />
-                <InputField label="Road Name, Area, Colony" name="addressLine2" placeholder="Sector 14, Main Road" form={form} errors={errors} setForm={setForm} setErrors={setErrors} />
+                <InputField label="Address (House No, Area, Landmark)" name="street" placeholder="Flat 402, Block A, Main Road" required form={form} errors={errors} setForm={setForm} setErrors={setErrors} />
+                <InputField label="State" name="state" placeholder="Delhi" required form={form} errors={errors} setForm={setForm} setErrors={setErrors} />
 
                 {/* Type Selection */}
                 <div className="mb-6">

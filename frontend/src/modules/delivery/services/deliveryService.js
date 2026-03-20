@@ -47,6 +47,22 @@ const deliveryService = {
     updateDeliveryStatus: async (orderId, status, message, proof) => {
         const response = await api.patch(`/deliveries/orders/${orderId}/status`, { status, message, proof });
         return response.data;
+    },
+
+    // Notifications
+    getNotifications: async () => {
+        const response = await api.get('/notifications');
+        return response.data;
+    },
+
+    markNotificationAsRead: async (id) => {
+        const response = await api.patch(`/notifications/${id}/read`);
+        return response.data;
+    },
+
+    markAllNotificationsRead: async () => {
+        const response = await api.patch('/notifications/read-all');
+        return response.data;
     }
 };
 

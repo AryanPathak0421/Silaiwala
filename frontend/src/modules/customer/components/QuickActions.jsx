@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Scissors, ShoppingBag, ClipboardList, Users } from 'lucide-react';
+import { Scissors, ShoppingBag, ClipboardList, Users, Sparkles } from 'lucide-react';
 
 const actions = [
     {
@@ -27,6 +27,12 @@ const actions = [
         icon: <Scissors className="w-6 h-6 text-amber-600" />,
         color: 'bg-amber-50',
         path: '/services'
+    },
+    {
+        label: 'Embellishments',
+        icon: <Sparkles className="w-6 h-6 text-purple-600" />,
+        color: 'bg-purple-50',
+        path: '/embellishments'
     }
 ];
 
@@ -35,7 +41,7 @@ const QuickActions = () => {
 
     return (
         <div className="px-4 py-3">
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-4 sm:grid-cols-5 gap-4">
                 {actions.map((action, index) => (
                     <motion.div
                         key={index}

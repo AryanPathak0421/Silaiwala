@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit3, Search, Scissors, Layers, ShoppingBag, Package, ChevronRight, X } from 'lucide-react';
 import { Button } from '../components/UIElements';
 import api from '../services/api';
+import SafeImage from '../../../components/Common/SafeImage';
 
 const Products = () => {
     const [activeTab, setActiveTab] = useState('samples'); // 'samples' | 'fabrics'
@@ -15,6 +16,8 @@ const Products = () => {
     const [showModal, setShowModal] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isImageUploading, setIsImageUploading] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editId, setEditId] = useState(null);
     const [newItem, setNewItem] = useState({
         title: '',
         name: '',
@@ -97,7 +100,7 @@ const Products = () => {
         fetchSubcats();
     }, [selectedParent, activeTab]);
 
-    const handleAdd = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
@@ -105,7 +108,7 @@ const Products = () => {
             let payload = {};
 
             if (activeTab === 'samples') {
-                endpoint = '/tailors/services';
+                endpoint = isEditing ? `/tailors/services/${editId}` : '/tailors/services';
                 payload = { 
                     title: newItem.title,
                     description: newItem.description,
@@ -113,24 +116,22 @@ const Products = () => {
                     basePrice: newItem.basePrice,
                     deliveryTime: newItem.deliveryTime,
                     category: newItem.category,
-                    tags: newItem.tags.split(',').map(t => t.trim()).filter(t => t !== ''),
+                    tags: typeof newItem.tags === 'string' 
+                        ? newItem.tags.split(',').map(t => t.trim()).filter(t => t !== '')
+                        : newItem.tags,
                     isActive: true
                 };
             } else if (activeTab === 'fabrics') {
-                endpoint = '/tailors/products';
-                payload = { ...newItem, title: newItem.name };
+                endpoint = isEditing ? `/tailors/products/${editId}` : '/tailors/products';
+                payload = { ...newItem, title: (newItem.name || newItem.title) };
             }
             
-            const res = await api.post(endpoint, payload);
+            const res = isEditing 
+                ? await api.patch(endpoint, payload)
+                : await api.post(endpoint, payload);
+
             if (res.data.success) {
-                setShowModal(false);
-                setNewItem({
-                    title: '', name: '', description: '', image: '',
-                    basePrice: '', price: '', deliveryTime: '2-4 DAYS',
-                    stock: '', category: '', serviceType: 'STITCHING',
-                    tags: ''
-                });
-                setSelectedParent('');
+                closeModal();
                 fetchData();
             }
         } catch (error) {
@@ -138,6 +139,58 @@ const Products = () => {
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const handleEdit = (item) => {
+        setIsEditing(true);
+        setEditId(item._id);
+        
+        if (activeTab === 'samples') {
+            setNewItem({
+                ...newItem,
+                title: item.title,
+                description: item.description,
+                image: item.image,
+                basePrice: item.basePrice,
+                deliveryTime: item.deliveryTime,
+                category: item.category?._id || item.category,
+                tags: Array.isArray(item.tags) ? item.tags.join(', ') : (item.tags || '')
+            });
+        } else {
+            // For fabrics, we might need to find the parent category
+            setNewItem({
+                ...newItem,
+                name: item.name || item.title,
+                description: item.description,
+                image: item.image || (item.images && item.images[0]),
+                price: item.price,
+                stock: item.stock,
+                category: item.category?._id || item.category
+            });
+            
+            // If it's a subcategory, we try to set the parent
+            if (item.category?.parentCategory) {
+                setSelectedParent(item.category.parentCategory);
+            } else if (item.category && typeof item.category === 'object' && item.category._id) {
+                // If the populated category has a parent, set it
+                // Note: We might need to fetch the category details if not fully populated
+            }
+        }
+        setShowModal(true);
+    };
+
+    const closeModal = () => {
+        setShowModal(false);
+        setIsEditing(false);
+        setEditId(null);
+        setNewItem({
+            title: '', name: '', description: '', image: '',
+            basePrice: '', price: '', deliveryTime: '2-4 DAYS',
+            stock: '', category: '', serviceType: 'STITCHING',
+            tags: ''
+        });
+        setSelectedParent('');
+        setSubcategories([]);
     };
 
     const handleDelete = async (id, type) => {
@@ -177,7 +230,10 @@ const Products = () => {
                     </p>
                 </div>
                 <button
-                    onClick={() => setShowModal(true)}
+                    onClick={() => {
+                        setIsEditing(false);
+                        setShowModal(true);
+                    }}
                     className="h-12 w-12 bg-[#1e3932] text-white rounded-2xl flex items-center justify-center shadow-lg shadow-green-900/10 hover:bg-[#152a25] active:scale-90 transition-all"
                 >
                     <Plus size={24} />
@@ -222,23 +278,23 @@ const Products = () => {
                             {activeTab === 'samples' ? <Scissors size={32} className="text-gray-200" /> : <Package size={32} className="text-gray-200" />}
                         </div>
                         <p className="text-gray-400 font-bold text-sm tracking-tight uppercase">No {activeTab} found</p>
-                        <button onClick={() => setShowModal(true)} className="mt-4 text-[#1e3932] text-[10px] font-black underline uppercase tracking-widest">Add your first {activeTab.slice(0, -1)}</button>
+                        <button onClick={() => { setIsEditing(false); setShowModal(true); }} className="mt-4 text-[#1e3932] text-[10px] font-black underline uppercase tracking-widest">Add your first {activeTab.slice(0, -1)}</button>
                     </div>
                 ) : (
                     filteredItems.map((item) => (
                         <div key={item._id} className="bg-white rounded-[2.5rem] border border-gray-50 shadow-[0_4px_20px_rgb(0,0,0,0.03)] overflow-hidden flex flex-col group transition-all hover:shadow-xl hover:translate-y-[-4px] animate-in fade-in slide-in-from-bottom-2 duration-300">
                             {/* Image Container */}
                             <div className="aspect-[16/9] bg-gray-100 relative overflow-hidden">
-                                <img
-                                    src={item.image || item.images?.[0] || 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800'}
+                                <SafeImage
+                                    src={item.image || item.images?.[0]}
                                     alt={item.title || item.name}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                    className="w-full h-full group-hover:scale-105 transition-transform duration-700"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                                 <div className="absolute top-4 right-4 flex gap-2 translate-y-[-10px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
                                     <button
-                                        onClick={() => alert("Edit feature coming soon")}
+                                        onClick={() => handleEdit(item)}
                                         className="p-2.5 bg-white shadow-xl rounded-xl text-gray-600 hover:text-[#1e3932] hover:bg-green-50 active:scale-95 transition-all"
                                     >
                                         <Edit3 size={16} />
@@ -303,7 +359,7 @@ const Products = () => {
                     <div className="bg-white w-full max-w-xl rounded-[3rem] shadow-[0_32px_100px_rgba(0,0,0,0.18)] flex flex-col overflow-hidden animate-in zoom-in-95 duration-500 relative max-h-[92vh]">
                         {/* Close Button Top Right */}
                         <button 
-                            onClick={() => setShowModal(false)} 
+                            onClick={closeModal} 
                             className="absolute top-6 right-6 h-10 w-10 flex items-center justify-center rounded-full bg-[#f8f9fa] text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all z-20"
                         >
                             <X size={18} />
@@ -311,12 +367,12 @@ const Products = () => {
 
                         <div className="p-8 md:p-12 pt-12 md:pt-16 pb-4 md:pb-6">
                             <div>
-                                <h4 className="text-3xl md:text-4xl font-black text-[#1e3932] tracking-tighter uppercase italic leading-none">Upload {activeTab === 'samples' ? 'Service' : 'Fabric'}</h4>
-                                <p className="text-[10px] md:text-[11px] font-bold text-gray-400 uppercase tracking-[0.25em] mt-3">{activeTab === 'samples' ? 'Add a new stitching service for customers' : 'Add new fabric material to your shop'}</p>
+                                <h4 className="text-3xl md:text-4xl font-black text-[#1e3932] tracking-tighter uppercase italic leading-none">{isEditing ? 'Edit' : 'Upload'} {activeTab === 'samples' ? 'Service' : 'Fabric'}</h4>
+                                <p className="text-[10px] md:text-[11px] font-bold text-gray-400 uppercase tracking-[0.25em] mt-3">{isEditing ? `Update your existing ${activeTab.slice(0, -1)} details` : (activeTab === 'samples' ? 'Add a new stitching service for customers' : 'Add new fabric material to your shop')}</p>
                             </div>
                         </div>
                         
-                        <form onSubmit={handleAdd} className="p-6 md:p-10 pt-2 space-y-4 md:space-y-6 overflow-y-auto custom-scrollbar border-b border-gray-50/50">
+                        <form onSubmit={handleSubmit} className="p-6 md:p-10 pt-2 space-y-4 md:space-y-6 overflow-y-auto custom-scrollbar border-b border-gray-50/50">
                             {/* Title/Name */}
                             <div className="space-y-1.5 md:space-y-2">
                                 <label className="text-[11px] font-black text-gray-300 uppercase tracking-widest ml-4">Title / Name</label>
@@ -500,11 +556,11 @@ const Products = () => {
                         
                         <div className="p-8 md:p-12 pt-4 md:pt-6 pb-10 md:pb-16 bg-white">
                             <button 
-                                onClick={handleAdd}
+                                onClick={handleSubmit}
                                 disabled={isSubmitting}
                                 className="w-full bg-[#1e3932] text-white rounded-full py-6 font-black uppercase tracking-[0.3em] italic text-sm shadow-[0_24px_50px_rgba(30,57,50,0.22)] hover:shadow-[0_28px_60px_rgba(30,57,50,0.3)] transition-all active:scale-95 disabled:opacity-50"
                             >
-                                {isSubmitting ? 'Publishing...' : 'Publish ' + (activeTab === 'samples' ? 'Service' : 'Fabric')}
+                                {isSubmitting ? (isEditing ? 'Updating...' : 'Publishing...') : (isEditing ? 'Update ' : 'Publish ') + (activeTab === 'samples' ? 'Service' : 'Fabric')}
                             </button>
                         </div>
                     </div>

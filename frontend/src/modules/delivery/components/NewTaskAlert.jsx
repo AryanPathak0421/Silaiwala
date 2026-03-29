@@ -71,7 +71,7 @@ const NewTaskAlert = ({ onTaskAccepted }) => {
                     icon: '🚀',
                     style: {
                         borderRadius: '1rem',
-                        background: '#142921',
+                        background: '#FF5C8A',
                         color: '#fff',
                         fontWeight: '900',
                         fontSize: '12px',
@@ -108,16 +108,16 @@ const NewTaskAlert = ({ onTaskAccepted }) => {
                 exit={{ y: -100, opacity: 0 }}
                 className="fixed top-4 left-4 right-4 z-[200]"
             >
-                <div className="bg-[#142921] rounded-[2rem] border border-white/10 shadow-2xl shadow-black/40 overflow-hidden">
+                <div className="bg-primary-dark rounded-[2rem] border border-white/10 shadow-2xl shadow-black/40 overflow-hidden">
                     {/* Header */}
                     <div className="bg-white/5 px-6 py-4 flex justify-between items-center border-b border-white/5">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-emerald-800 rounded-xl flex items-center justify-center text-white shadow-lg">
+                            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg">
                                 <Truck size={20} />
                             </div>
                             <div>
                                 <h3 className="text-sm font-black text-white tracking-widest uppercase mb-0.5">New Dispatch Request</h3>
-                                <p className="text-[10px] font-bold text-emerald-400/80 tracking-widest leading-none">EST. EARNINGS: ₹20.00</p>
+                                <p className="text-[10px] font-bold text-pink-300/80 tracking-widest leading-none">EST. EARNINGS: ₹20.00</p>
                             </div>
                         </div>
                         <button 
@@ -132,7 +132,7 @@ const NewTaskAlert = ({ onTaskAccepted }) => {
                     <div className="p-6 space-y-4">
                         <div className="flex gap-4">
                             <div className="w-10 flex flex-col items-center">
-                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+                                <div className="w-2.5 h-2.5 rounded-full bg-pink-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
                                 <div className="w-0.5 flex-1 bg-white/5 border-l border-white/10 border-dashed my-1"></div>
                                 <div className="w-2.5 h-2.5 rounded-full bg-slate-500"></div>
                             </div>
@@ -144,7 +144,7 @@ const NewTaskAlert = ({ onTaskAccepted }) => {
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-2 text-white/60">
-                                    <MapPin size={12} className="text-emerald-500" />
+                                    <MapPin size={12} className="text-primary" />
                                     <p className="text-[11px] font-bold tracking-wide italic">Nearby your current location</p>
                                 </div>
                             </div>
@@ -164,9 +164,9 @@ const NewTaskAlert = ({ onTaskAccepted }) => {
                             {/* Success State Overlay in Swipe */}
                             <motion.div 
                                 style={{ opacity: checkOpacity, scale: checkScale }}
-                                className="absolute inset-0 flex items-center justify-center bg-emerald-800/20 pointer-events-none"
+                                className="absolute inset-0 flex items-center justify-center bg-primary/20 pointer-events-none"
                             >
-                                <Check size={24} className="text-emerald-400" />
+                                <Check size={24} className="text-primary-light" />
                             </motion.div>
 
                             <motion.div
@@ -175,7 +175,7 @@ const NewTaskAlert = ({ onTaskAccepted }) => {
                                 dragElastic={0.1}
                                 onDragEnd={onDragEnd}
                                 style={{ x }}
-                                className="w-13 h-13 bg-white rounded-xl flex items-center justify-center text-[#142921] shadow-xl cursor-grab active:cursor-grabbing z-10"
+                                className="w-13 h-13 bg-white rounded-xl flex items-center justify-center text-primary-dark shadow-xl cursor-grab active:cursor-grabbing z-10"
                             >
                                 {isAccepting ? <Package className="animate-spin" size={20} /> : <ArrowRight size={24} />}
                             </motion.div>

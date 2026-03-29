@@ -58,7 +58,7 @@ export const Step1Basic = ({ register, errors, setValue, watch }) => {
                     type="button"
                     onClick={handleSendOTP}
                     disabled={!phone || phone.length < 10 || otpSent}
-                    className="px-4 py-3 h-[52px] bg-[#1e3932] text-white rounded-2xl font-bold text-sm whitespace-nowrap active:scale-95 disabled:opacity-50 disabled:active:scale-100 transition-all shadow-lg shadow-green-900/10 mb-1"
+                    className="px-4 py-3 h-[52px] bg-primary text-white rounded-2xl font-bold text-sm whitespace-nowrap active:scale-95 disabled:opacity-50 disabled:active:scale-100 transition-all shadow-lg shadow-pink-900/10 mb-1"
                 >
                     {otpSent ? 'OTP Sent' : 'Send OTP'}
                 </button>
@@ -144,7 +144,7 @@ export const Step2Business = ({ register, errors }) => {
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Primary Service Area</label>
                 <select
                     {...register('serviceArea', { required: 'Area is required' })}
-                    className={`w-full px-4 py-3 bg-gray-50 border-2 rounded-2xl focus:outline-none transition-all ${errors.serviceArea ? 'border-red-400 focus:border-red-500 bg-red-50/50' : 'border-gray-50 focus:border-[#1e3932] focus:bg-white'}`}
+                    className={`w-full px-4 py-3 bg-gray-50 border-2 rounded-2xl focus:outline-none transition-all ${errors.serviceArea ? 'border-red-400 focus:border-red-500 bg-red-50/50' : 'border-gray-50 focus:border-primary focus:bg-white'}`}
                 >
                     <option value="">Select Region</option>
                     <option value="north">North India</option>

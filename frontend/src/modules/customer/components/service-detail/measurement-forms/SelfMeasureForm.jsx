@@ -77,11 +77,11 @@ const SelfMeasureForm = ({ initialData, onSave, onCancel }) => {
         <div className="bg-gray-50 border border-t-0 border-gray-100 rounded-b-2xl p-4 animate-in slide-in-from-top-2 duration-300">
 
             {/* Helper Banner */}
-            <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-4 flex gap-3">
-                <Info size={18} className="text-blue-600 shrink-0 mt-0.5" />
+            <div className="bg-pink-50 border border-pink-100 rounded-lg p-3 mb-4 flex gap-3">
+                <Info size={18} className="text-primary shrink-0 mt-0.5" />
                 <div>
                     <h4 className="text-xs font-bold text-blue-800">Standard Size Guide</h4>
-                    <p className="text-[10px] text-blue-600 mt-0.5 leading-relaxed">
+                    <p className="text-[10px] text-primary mt-0.5 leading-relaxed">
                         Measure comfortably. Don't pull the tape too tight. All units are in inches.
                     </p>
                 </div>
@@ -148,7 +148,7 @@ const SelfMeasureForm = ({ initialData, onSave, onCancel }) => {
                 <textarea
                     value={values.notes}
                     onChange={(e) => setValues(prev => ({ ...prev, notes: e.target.value }))}
-                    className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#1e3932] focus:ring-1 focus:ring-[#e6f4f1] transition-all placeholder:text-gray-300 resize-none"
+                    className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-[#e6f4f1] transition-all placeholder:text-gray-300 resize-none"
                     rows={3}
                     placeholder="E.g., I prefer a loose fit around the waist. Please add pockets."
                 />
@@ -160,7 +160,7 @@ const SelfMeasureForm = ({ initialData, onSave, onCancel }) => {
                     onClick={() => setSaveProfile(!saveProfile)}
                     className={cn(
                         "w-5 h-5 rounded border flex items-center justify-center cursor-pointer mt-0.5",
-                        saveProfile ? "bg-[#1e3932] border-[#1e3932]" : "border-gray-300 bg-white"
+                        saveProfile ? "bg-primary border-primary" : "border-gray-300 bg-white"
                     )}
                 >
                     {saveProfile && <div className="w-2.5 h-1.5 border-b-2 border-l-2 border-white rotate-[-45deg] mb-0.5" />}
@@ -179,7 +179,7 @@ const SelfMeasureForm = ({ initialData, onSave, onCancel }) => {
                             }}
                             placeholder="Profile Name (e.g. My Summer Fit)"
                             className={cn(
-                                "mt-2 w-full text-xs border-b border-gray-200 py-1 outline-none focus:border-[#1e3932] bg-transparent",
+                                "mt-2 w-full text-xs border-b border-gray-200 py-1 outline-none focus:border-primary bg-transparent",
                                 errors.profileName ? "border-red-300 placeholder:text-red-300" : ""
                             )}
                             autoFocus
@@ -198,7 +198,7 @@ const SelfMeasureForm = ({ initialData, onSave, onCancel }) => {
                 </button>
                 <button
                     onClick={handleSave}
-                    className="flex-1 py-2.5 rounded-full bg-[#1e3932] text-white text-xs font-bold shadow-md hover:bg-[#152e28] active:scale-95 transition-all flex items-center justify-center gap-2"
+                    className="flex-1 py-2.5 rounded-full bg-primary text-white text-xs font-bold shadow-md hover:bg-primary-dark active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
                     <Save size={14} />
                     Confirm Measurements

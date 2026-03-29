@@ -47,7 +47,7 @@ const DesignUpload = () => {
             <div className="mt-4">
                 <h3 className="text-sm font-bold text-gray-900 mb-2">Special Instructions</h3>
                 <textarea
-                    className="w-full rounded-xl border border-gray-200 p-3 text-sm focus:ring-1 focus:ring-[#1e3932] focus:outline-none resize-none bg-gray-50 focus:bg-white transition-colors"
+                    className="w-full rounded-xl border border-gray-200 p-3 text-sm focus:ring-1 focus:ring-primary focus:outline-none resize-none bg-gray-50 focus:bg-white transition-colors"
                     rows={3}
                     placeholder="Describe specific details like neck depth, sleeve length, piping color, etc..."
                 />

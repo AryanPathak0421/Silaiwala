@@ -86,7 +86,7 @@ const AdminLayout = () => {
             )}
 
             {/* Sidebar */}
-            <aside className={`fixed lg:relative inset-y-0 left-0 z-50 w-64 bg-[#FF5C8A] text-white flex flex-col shadow-2xl transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+            <aside className={`fixed lg:relative inset-y-0 left-0 z-50 w-64 bg-primary text-white flex flex-col shadow-2xl transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
                 <div className="p-6 border-b border-white/5 flex justify-between items-center">
                     <h1 className="text-xl font-black tracking-tighter flex items-center gap-3">
                         <div className="h-10 w-10 bg-white rounded-lg flex items-center justify-center p-1.5 shadow-lg border border-white/10 overflow-hidden shrink-0">
@@ -106,14 +106,14 @@ const AdminLayout = () => {
                             to={item.path}
                             onClick={() => setIsSidebarOpen(false)}
                             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${isActive(item.path)
-                                ? 'bg-white text-[#FF5C8A] shadow-[0_10px_20px_rgba(0,0,0,0.1)] translate-x-1'
+                                ? 'bg-white text-primary shadow-[0_10px_20px_rgba(0,0,0,0.1)] translate-x-1'
                                 : 'text-white/80 hover:text-white hover:bg-black/80'
                                 }`}
                         >
-                            <span className={`${isActive(item.path) ? 'text-[#FF5C8A]' : 'text-white/60 group-hover:text-white'} transition-colors`}>
+                            <span className={`${isActive(item.path) ? 'text-primary' : 'text-white/60 group-hover:text-white'} transition-colors`}>
                                 {item.icon}
                             </span>
-                            <span className={`font-black tracking-tight text-xs uppercase ${isActive(item.path) ? 'text-[#FF5C8A]' : 'group-hover:text-white'}`}>{item.label}</span>
+                            <span className={`font-black tracking-tight text-xs uppercase ${isActive(item.path) ? 'text-primary' : 'group-hover:text-white'}`}>{item.label}</span>
                         </Link>
                     ))}
                 </nav>
@@ -154,7 +154,7 @@ const AdminLayout = () => {
                         </div>
                         <button 
                             onClick={() => setHasUnread(false)}
-                            className="relative p-2.5 text-gray-400 hover:text-[#FF5C8A] hover:bg-gray-50 rounded-full transition-all"
+                            className="relative p-2.5 text-gray-400 hover:text-primary hover:bg-gray-50 rounded-full transition-all"
                         >
                             <Bell size={20} />
                             {hasUnread && (
@@ -166,7 +166,7 @@ const AdminLayout = () => {
                                 <p className="text-sm font-bold text-gray-900 leading-none">Super Admin</p>
                                 <p className="text-[10px] text-gray-400 font-bold uppercase mt-1 tracking-tighter">Full Access</p>
                             </div>
-                            <div className="h-10 w-10 lg:h-11 lg:w-11 rounded-xl bg-gradient-to-br from-[#FF5C8A] to-[#FF5C8A] flex items-center justify-center text-white font-bold shadow-lg shadow-pink-900/10 shrink-0">
+                            <div className="h-10 w-10 lg:h-11 lg:w-11 rounded-xl gradient-brand flex items-center justify-center text-white font-bold shadow-lg shadow-pink-900/10 shrink-0">
                                 SA
                             </div>
                             <button 

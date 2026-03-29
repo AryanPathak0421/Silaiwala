@@ -25,7 +25,7 @@ const Notifications = () => {
             case 'ORDER_CREATED':
                 return { icon: <ShoppingBag size={18} />, bg: 'bg-green-50', color: 'text-green-600' };
             case 'ORDER_STATUS_UPDATED':
-                return { icon: <Bell size={18} />, bg: 'bg-blue-50', color: 'text-blue-600' };
+                return { icon: <Bell size={18} />, bg: 'bg-pink-50', color: 'text-primary' };
             case 'SYSTEM_NOTICE':
                 return { icon: <AlertCircle size={18} />, bg: 'bg-orange-50', color: 'text-orange-600' };
             default:
@@ -46,7 +46,7 @@ const Notifications = () => {
                 {unreadCount > 0 ? (
                     <button
                         onClick={markAllRead}
-                        className="text-[10px] font-black text-[#1e3932] uppercase tracking-widest bg-green-50 px-3 py-1.5 rounded-lg active:scale-95 transition-all hover:bg-[#1e3932] hover:text-white"
+                        className="text-[10px] font-black text-primary uppercase tracking-widest bg-green-50 px-3 py-1.5 rounded-lg active:scale-95 transition-all hover:bg-primary hover:text-white"
                     >
                         Mark All Read
                     </button>

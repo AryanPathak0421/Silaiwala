@@ -17,7 +17,7 @@ const VariantSelector = ({ images, selectedSize, setSelectedSize, selectedColor,
                             key={index}
                             className={cn(
                                 "w-10 h-10 rounded-full border-2 transition-all hover:scale-110 relative",
-                                selectedColor === color ? "border-[#1e3932] shadow-lg" : "border-gray-200"
+                                selectedColor === color ? "border-primary shadow-lg" : "border-gray-200"
                             )}
                             style={{ backgroundColor: color }}
                             onClick={() => setSelectedColor(color)}
@@ -37,7 +37,7 @@ const VariantSelector = ({ images, selectedSize, setSelectedSize, selectedColor,
                 <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-semibold">Select Size</span>
                     {/* Size Chart Modal Toggle (Mock) */}
-                    <button className="text-xs text-[#1e3932] hover:underline flex items-center gap-1 font-medium">
+                    <button className="text-xs text-primary hover:underline flex items-center gap-1 font-medium">
                         <Ruler className="h-4 w-4" /> Size Chart
                     </button>
                 </div>
@@ -47,9 +47,9 @@ const VariantSelector = ({ images, selectedSize, setSelectedSize, selectedColor,
                         <button
                             key={size}
                             className={cn(
-                                "w-12 h-10 border rounded-md text-sm font-medium transition-all hover:border-[#1e3932]",
+                                "w-12 h-10 border rounded-md text-sm font-medium transition-all hover:border-primary",
                                 selectedSize === size
-                                    ? "bg-[#1e3932] text-white border-[#1e3932] shadow-md"
+                                    ? "bg-primary text-white border-primary shadow-md"
                                     : "bg-white text-gray-700 hover:bg-gray-50 border-gray-200"
                             )}
                             onClick={() => setSelectedSize(size)}

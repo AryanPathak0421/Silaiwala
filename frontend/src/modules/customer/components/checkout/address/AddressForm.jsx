@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Briefcase, ChevronRight } from 'lucide-react';
+import { Home, Briefcase, ChevronRight, Navigation } from 'lucide-react';
 import useAddressStore from '../../../../../store/userStore';
 
 const InputField = ({ label, name, placeholder, type = "text", required, form, errors, setForm, setErrors }) => (
@@ -13,7 +13,7 @@ const InputField = ({ label, name, placeholder, type = "text", required, form, e
                 setForm({ ...form, [name]: e.target.value });
                 if (errors[name]) setErrors({ ...errors, [name]: null });
             }}
-            className={`w-full text-xs font-semibold p-2.5 rounded-lg border focus:outline-none focus:ring-1 transition-all ${errors[name] ? "border-red-300 focus:border-red-500 bg-red-50" : "border-gray-200 focus:border-[#1e3932] bg-gray-50/50 focus:bg-white"
+            className={`w-full text-xs font-semibold p-2.5 rounded-lg border focus:outline-none focus:ring-1 transition-all ${errors[name] ? "border-red-300 focus:border-red-500 bg-red-50" : "border-gray-200 focus:border-primary bg-gray-50/50 focus:bg-white"
                 }`}
         />
         {errors[name] && <span className="text-[9px] text-red-500 font-medium ml-1">{errors[name]}</span>}
@@ -22,6 +22,7 @@ const InputField = ({ label, name, placeholder, type = "text", required, form, e
 
 const AddressForm = ({ onCancel, onSuccess }) => {
     const addAddress = useAddressStore((state) => state.addAddress);
+    const [isLocating, setIsLocating] = useState(false);
 
     const [form, setForm] = useState({
         receiverName: '', phone: '', zipCode: '',
@@ -29,6 +30,37 @@ const AddressForm = ({ onCancel, onSuccess }) => {
     });
 
     const [errors, setErrors] = useState({});
+
+    const handleAutoLocation = () => {
+        setIsLocating(true);
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                try {
+                    const { latitude, longitude } = position.coords;
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
+                    const data = await res.json();
+                    
+                    if (data && data.address) {
+                        const addr = data.address;
+                        setForm(prev => ({
+                            ...prev,
+                            street: data.display_name || '',
+                            city: addr.city || addr.town || addr.village || addr.suburb || '',
+                            state: addr.state || '',
+                            zipCode: addr.postcode || ''
+                        }));
+                    }
+                } catch (error) {
+                    console.error("Geocoding failed:", error);
+                } finally {
+                    setIsLocating(false);
+                }
+            }, (error) => {
+                alert("Location access denied. Please enter manually.");
+                setIsLocating(false);
+            });
+        }
+    };
 
     const validate = () => {
         const newErrors = {};
@@ -51,11 +83,28 @@ const AddressForm = ({ onCancel, onSuccess }) => {
     };
 
     return (
-        <div className="bg-white rounded-2xl p-4 animate-in slide-in-from-bottom-4 duration-300 shadow-xl border border-gray-100">
-            <div className="flex justify-between items-center mb-4">
-                <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                    Add New Address
-                </h3>
+        <div className="bg-white rounded-[2rem] p-6 animate-in slide-in-from-bottom-4 duration-300 shadow-2xl border border-gray-100 selection:bg-pink-100 selection:text-primary">
+            <div className="flex flex-col gap-4 mb-6">
+                <div className="flex justify-between items-center">
+                    <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest flex items-center gap-2">
+                        <div className="w-1.5 h-6 bg-primary rounded-full" />
+                        New Address Details
+                    </h3>
+                </div>
+                
+                <button 
+                    type="button"
+                    onClick={handleAutoLocation}
+                    disabled={isLocating}
+                    className="flex items-center justify-center gap-2 px-4 py-3 bg-pink-50 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-pink-100 transition-all active:scale-[0.98] disabled:opacity-50"
+                >
+                    {isLocating ? (
+                        <div className="w-3.5 h-3.5 border-2 border-primary border-t-transparent animate-spin rounded-full" />
+                    ) : (
+                        <Navigation size={14} className="fill-primary/10" />
+                    )}
+                    {isLocating ? 'Fetching...' : 'Detect Current Location'}
+                </button>
             </div>
 
             <form onSubmit={handleSubmit}>
@@ -82,7 +131,7 @@ const AddressForm = ({ onCancel, onSuccess }) => {
                                 type="button"
                                 onClick={() => setForm({ ...form, type })}
                                 className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${form.type === type
-                                    ? "bg-[#1e3932] text-white shadow-md ring-2 ring-[#e6f4f1]"
+                                    ? "bg-primary text-white shadow-md ring-2 ring-pink-100"
                                     : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                                     }`}
                             >
@@ -104,7 +153,7 @@ const AddressForm = ({ onCancel, onSuccess }) => {
                     </button>
                     <button
                         type="submit"
-                        className="py-2.5 rounded-xl bg-[#1e3932] text-white text-xs font-bold shadow-lg hover:bg-[#152e28] active:scale-95 transition-all flex items-center justify-center gap-2"
+                        className="py-2.5 rounded-xl bg-primary text-white text-xs font-bold shadow-lg shadow-pink-900/10 hover:bg-primary-dark active:scale-95 transition-all flex items-center justify-center gap-2"
                     >
                         Save Address <ChevronRight size={14} />
                     </button>

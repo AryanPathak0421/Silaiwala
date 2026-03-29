@@ -93,13 +93,13 @@ const AdminCustomers = () => {
                 <div className="flex bg-gray-50 p-1 rounded-xl w-full sm:w-auto overflow-x-auto no-scrollbar">
                     <button 
                         onClick={() => setSelectedTab('All Customers')}
-                        className={`px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap transition-all ${selectedTab === 'All Customers' ? 'bg-white text-[#1e3932] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                        className={`px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap transition-all ${selectedTab === 'All Customers' ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
                     >
                         All Customers
                     </button>
                     <button 
                         onClick={() => setSelectedTab('New This Month')}
-                        className={`px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap transition-all ${selectedTab === 'New This Month' ? 'bg-white text-[#1e3932] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                        className={`px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap transition-all ${selectedTab === 'New This Month' ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
                     >
                         New This Month
                     </button>
@@ -123,7 +123,7 @@ const AdminCustomers = () => {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex-1 overflow-hidden flex flex-col relative">
                 {isLoading && (
                      <div className="w-full h-1 bg-gray-100 overflow-hidden absolute top-0 left-0 z-10">
-                         <div className="h-full bg-[#1e3932] animate-pulse w-1/3"></div>
+                         <div className="h-full bg-primary animate-pulse w-1/3"></div>
                      </div>
                 )}
                 <div className="overflow-x-auto">
@@ -142,15 +142,15 @@ const AdminCustomers = () => {
                                 <tr
                                     key={customer.id}
                                     onClick={() => setSelectedCustomer(customer)}
-                                    className="hover:bg-[#1e3932]/5 transition-colors cursor-pointer group"
+                                    className="hover:bg-primary/5 transition-colors cursor-pointer group"
                                 >
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-xl bg-[#1e3932]/10 border border-[#1e3932]/20 flex items-center justify-center text-[#1e3932] font-black text-sm">
+                                            <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black text-sm">
                                                 {customer.name.charAt(0)}
                                             </div>
                                             <div className="flex flex-col">
-                                                <span className="text-sm font-bold text-gray-900 group-hover:text-[#1e3932] transition-colors">{customer.name}</span>
+                                                <span className="text-sm font-bold text-gray-900 group-hover:text-primary transition-colors">{customer.name}</span>
                                                 <span className="text-[10px] text-gray-400 font-medium">Joined {customer.joined}</span>
                                             </div>
                                         </div>
@@ -165,7 +165,7 @@ const AdminCustomers = () => {
                                         <span className="text-xs font-bold text-gray-900">{customer.orders}</span>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className="text-sm font-black text-[#1e3932]">{customer.totalSpent}</span>
+                                        <span className="text-sm font-black text-primary">{customer.totalSpent}</span>
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className={`px-2 py-1 rounded-lg text-[9px] font-black border uppercase tracking-wider ${getStatusStyle(customer.status)}`}>
@@ -199,7 +199,7 @@ const AdminCustomers = () => {
                         >
                             <div className="p-6 border-b border-gray-100 flex justify-between items-start bg-gray-50">
                                 <div className="flex items-center gap-4">
-                                    <div className="h-16 w-16 rounded-2xl bg-[#1e3932]/10 border border-[#1e3932]/20 flex items-center justify-center text-[#1e3932] font-black text-2xl">
+                                    <div className="h-16 w-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black text-2xl">
                                         {selectedCustomer.name.charAt(0)}
                                     </div>
                                     <div>
@@ -222,13 +222,13 @@ const AdminCustomers = () => {
 
                                 {/* Lifetime Value */}
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-gradient-to-br from-[#1e3932] to-[#0a211e] border-none p-4 rounded-2xl shadow-sm text-center text-white">
+                                    <div className="bg-gradient-to-br from-primary to-primary-dark border-none p-4 rounded-2xl shadow-sm text-center text-white">
                                         <div className="flex justify-center mb-1 text-green-400"><ShoppingBag size={20} /></div>
                                         <p className="text-2xl font-black">{selectedCustomer.orders}</p>
                                         <p className="text-[10px] text-white/60 font-bold uppercase tracking-widest mt-1">Total Orders</p>
                                     </div>
                                     <div className="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm text-center">
-                                        <div className="flex justify-center mb-1 text-[#1e3932]"><CheckCircle2 size={20} /></div>
+                                        <div className="flex justify-center mb-1 text-primary"><CheckCircle2 size={20} /></div>
                                         <p className="text-2xl font-black text-gray-900">{selectedCustomer.totalSpent}</p>
                                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Lifetime Spent</p>
                                     </div>
@@ -241,10 +241,10 @@ const AdminCustomers = () => {
                                     </h3>
                                     <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm space-y-4">
                                         <div className="flex items-center gap-3 text-sm font-medium text-gray-700">
-                                            <Phone size={16} className="text-[#1e3932] opacity-70" /> {selectedCustomer.phone}
+                                            <Phone size={16} className="text-primary opacity-70" /> {selectedCustomer.phone}
                                         </div>
                                         <div className="flex items-center gap-3 text-sm font-medium text-gray-700">
-                                            <Mail size={16} className="text-[#1e3932] opacity-70" /> {selectedCustomer.email}
+                                            <Mail size={16} className="text-primary opacity-70" /> {selectedCustomer.email}
                                         </div>
                                     </div>
                                 </div>
@@ -278,7 +278,7 @@ const AdminCustomers = () => {
                                     onClick={() => {
                                         window.location.href = `/admin/orders?search=${selectedCustomer.name}`;
                                     }}
-                                    className="flex-1 py-3 bg-[#1e3932] text-white text-xs font-black rounded-xl hover:bg-[#0a211e] shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest"
+                                    className="flex-1 py-3 bg-primary text-white text-xs font-black rounded-xl hover:bg-primary-dark shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest"
                                 >
                                     View Full Order History
                                 </button>

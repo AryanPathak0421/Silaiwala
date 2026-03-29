@@ -215,7 +215,7 @@ const Registration = () => {
                     className="flex flex-col items-center justify-center w-full group mt-4"
                 >
                     <p className="text-[11px] text-gray-500 font-medium">
-                        Already have an account? <span className="font-bold text-[#e60023] hover:underline">Sign In</span>
+                        Already have an account? <span className="font-bold text-primary hover:underline">Sign In</span>
                     </p>
                 </button>
             </footer>

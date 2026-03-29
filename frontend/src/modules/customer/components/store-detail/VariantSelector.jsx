@@ -22,7 +22,7 @@ const VariantSelector = ({ sizes, colors, onSizeSelect, onColorSelect }) => {
             <div>
                 <div className="flex justify-between items-center mb-3">
                     <h3 className="text-sm font-bold text-gray-900">Select Size</h3>
-                    <button className="text-xs font-semibold text-[#1e3932] flex items-center gap-1 hover:underline">
+                    <button className="text-xs font-semibold text-primary flex items-center gap-1 hover:underline">
                         <Ruler size={12} /> Size Chart
                     </button>
                 </div>
@@ -34,7 +34,7 @@ const VariantSelector = ({ sizes, colors, onSizeSelect, onColorSelect }) => {
                             className={cn(
                                 "w-10 h-10 rounded-full border flex items-center justify-center text-xs font-semibold transition-all",
                                 selectedSize === size
-                                    ? "bg-[#1e3932] text-white border-[#1e3932] shadow-md scale-105"
+                                    ? "bg-primary text-white border-primary shadow-md scale-105"
                                     : "bg-white text-gray-700 border-gray-200 hover:border-gray-400"
                             )}
                         >
@@ -54,7 +54,7 @@ const VariantSelector = ({ sizes, colors, onSizeSelect, onColorSelect }) => {
                             onClick={() => handleColor(color.name)}
                             className={cn(
                                 "w-8 h-8 rounded-full border-2 transition-all relative",
-                                selectedColor === color.name ? "border-[#1e3932] scale-110 ring-2 ring-offset-2 ring-[#1e3932]" : "border-gray-200 hover:scale-105"
+                                selectedColor === color.name ? "border-primary scale-110 ring-2 ring-offset-2 ring-primary" : "border-gray-200 hover:scale-105"
                             )}
                             style={{ backgroundColor: color.hex }}
                             title={color.name}

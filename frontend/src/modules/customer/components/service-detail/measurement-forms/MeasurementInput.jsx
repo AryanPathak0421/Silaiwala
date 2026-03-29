@@ -19,7 +19,7 @@ const MeasurementInput = ({ label, value, onChange, placeholder, min, max, error
                         "w-full bg-white border rounded-xl px-3 py-2.5 text-sm outline-none transition-all placeholder:text-gray-300",
                         error
                             ? "border-red-300 focus:border-red-500 focus:ring-1 focus:ring-red-200"
-                            : "border-gray-200 focus:border-[#1e3932] focus:ring-1 focus:ring-[#e6f4f1]"
+                            : "border-gray-200 focus:border-primary focus:ring-1 focus:ring-[#e6f4f1]"
                     )}
                 />
             </div>

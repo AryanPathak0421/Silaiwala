@@ -72,7 +72,7 @@ const WalletPage = () => {
     if (isLoading) {
         return (
             <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-10">
-                <Loader2 className="w-10 h-10 animate-spin text-[#1e3932] mb-4" />
+                <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
                 <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-400">Loading Wallet...</p>
             </div>
         );
@@ -81,7 +81,7 @@ const WalletPage = () => {
     return (
         <div className="min-h-screen bg-gray-50 pb-20 md:p-6 font-sans">
             {/* Header */}
-            <div className="sticky top-0 z-50 bg-[#1e3932] md:bg-transparent md:mb-8 px-4 py-4 flex items-center gap-4 text-white md:text-gray-900 border-b border-white/10 md:border-0 backdrop-blur-md">
+            <div className="sticky top-0 z-50 bg-primary md:bg-transparent md:mb-8 px-4 py-4 flex items-center gap-4 text-white md:text-gray-900 border-b border-white/10 md:border-0 backdrop-blur-md">
                 <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-2xl md:bg-white md:shadow-sm hover:bg-white/10 md:hover:bg-gray-50 transition-all">
                     <ArrowLeft size={20} />
                 </button>
@@ -98,7 +98,7 @@ const WalletPage = () => {
                 {/* Balance Card Section */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Primary Card */}
-                    <div className="md:col-span-2 relative h-56 bg-gradient-to-br from-[#1e3932] to-[#0a1e1a] rounded-[2.5rem] p-8 shadow-2xl overflow-hidden flex flex-col justify-between group">
+                    <div className="md:col-span-2 relative h-56 bg-gradient-to-br from-primary to-[#0a1e1a] rounded-[2.5rem] p-8 shadow-2xl overflow-hidden flex flex-col justify-between group">
                         <div className="absolute top-0 right-0 p-10 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-700">
                             <Wallet size={180} strokeWidth={1} />
                         </div>
@@ -114,7 +114,7 @@ const WalletPage = () => {
                         <div className="flex justify-between items-end">
                             <button 
                                 onClick={() => setShowWithdraw(true)}
-                                className="bg-white text-[#1e3932] px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl active:scale-95 transition-all hover:bg-green-50"
+                                className="bg-white text-primary px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl active:scale-95 transition-all hover:bg-green-50"
                             >
                                 Withdraw Funds
                             </button>
@@ -124,7 +124,7 @@ const WalletPage = () => {
 
                     {/* Secondary Stat Card */}
                     <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm flex flex-col justify-center items-center text-center">
-                        <div className="p-4 bg-green-50 text-[#1e3932] rounded-3xl mb-4">
+                        <div className="p-4 bg-green-50 text-primary rounded-3xl mb-4">
                             <Banknote size={24} />
                         </div>
                         <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Total Payouts</h3>
@@ -137,10 +137,10 @@ const WalletPage = () => {
                 <div className="bg-white rounded-[2.5rem] p-6 md:p-10 border border-gray-100 shadow-sm">
                     <div className="flex justify-between items-center mb-8">
                         <h3 className="text-sm md:text-lg font-black text-gray-900 tracking-widest md:tracking-tight uppercase md:normal-case italic md:not-italic flex items-center gap-2">
-                            <History size={18} className="text-[#1e3932]" />
+                            <History size={18} className="text-primary" />
                             Journal Records
                         </h3>
-                        <button className="text-[10px] font-black text-[#1e3932] flex items-center gap-1 uppercase tracking-widest hover:underline">
+                        <button className="text-[10px] font-black text-primary flex items-center gap-1 uppercase tracking-widest hover:underline">
                             <Download size={14} /> Export CSV
                         </button>
                     </div>
@@ -216,7 +216,7 @@ const WalletPage = () => {
                                             value={amount}
                                             onChange={(e) => setAmount(e.target.value)}
                                             placeholder="Min. 500"
-                                            className="w-full pl-10 pr-6 py-5 bg-gray-50 border-2 border-transparent focus:border-[#1e3932] outline-none rounded-2xl text-2xl font-black tracking-tighter"
+                                            className="w-full pl-10 pr-6 py-5 bg-gray-50 border-2 border-transparent focus:border-primary outline-none rounded-2xl text-2xl font-black tracking-tighter"
                                         />
                                     </div>
                                     <div className="flex justify-between items-center mt-3">
@@ -224,7 +224,7 @@ const WalletPage = () => {
                                         <button 
                                             type="button"
                                             onClick={() => setAmount(stats.balance.toString())}
-                                            className="text-[10px] font-black text-[#1e3932] uppercase tracking-widest hover:underline"
+                                            className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline"
                                         >
                                             Max
                                         </button>
@@ -242,7 +242,7 @@ const WalletPage = () => {
                                     <button 
                                         type="submit"
                                         disabled={isSubmitting || !amount || parseFloat(amount) <= 0 || parseFloat(amount) > stats.balance}
-                                        className="flex-[2] py-4 bg-[#1e3932] text-white font-black rounded-2xl text-xs uppercase tracking-widest shadow-xl shadow-green-900/20 active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2"
+                                        className="flex-[2] py-4 bg-primary text-white font-black rounded-2xl text-xs uppercase tracking-widest shadow-xl shadow-green-900/20 active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2"
                                     >
                                         {isSubmitting && <Loader2 size={16} className="animate-spin" />}
                                         {isSubmitting ? 'Sending...' : 'Confirm Withdrawal'}

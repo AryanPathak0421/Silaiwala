@@ -101,7 +101,7 @@ const AdminLogin = () => {
         <div className="min-h-screen flex items-center justify-center bg-[#FF5C8A] relative overflow-hidden font-sans">
             {/* Ambient Animated Gradients */}
             <div className="absolute top-[-10%] left-[-5%] w-[60%] h-[60%] bg-pink-400 rounded-full blur-[140px] opacity-40 animate-pulse"></div>
-            <div className="absolute bottom-[-10%] right-[-5%] w-[50%] h-[50%] bg-[#0a211e] rounded-full blur-[120px] opacity-60"></div>
+            <div className="absolute bottom-[-10%] right-[-5%] w-[50%] h-[50%] bg-primary-dark rounded-full blur-[120px] opacity-60"></div>
 
             <div className="w-full max-w-md bg-white/95 backdrop-blur-xl rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] overflow-hidden relative z-10 mx-4 border border-white">
                 <div className="p-8 sm:p-12 flex flex-col items-center">

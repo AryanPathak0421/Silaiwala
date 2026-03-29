@@ -27,14 +27,14 @@ const ActiveOrderBanner = ({ order }) => {
                 {/* Progress Bar (Dynamic based on tracking history length) */}
                 <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2 relative z-10">
                     <div 
-                        className="bg-[#1e3932] h-1.5 rounded-full transition-all duration-500" 
+                        className="bg-primary h-1.5 rounded-full transition-all duration-500" 
                         style={{ width: `${Math.min((order.trackingHistory?.length || 1) * 20, 100)}%` }}
                     ></div>
                 </div>
 
                 <div className="flex justify-between items-center text-xs text-gray-500 relative z-10">
                     <span className="text-[10px] font-medium">Updated {new Date(order.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                    <button className="text-[#1e3932] text-[10px] font-black uppercase tracking-widest">Track Now</button>
+                    <button className="text-primary text-[10px] font-black uppercase tracking-widest">Track Now</button>
                 </div>
 
                 {/* Background Decoration */}

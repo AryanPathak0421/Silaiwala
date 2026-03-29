@@ -150,7 +150,7 @@ const Orders = () => {
         return (
             <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
                 <div className="bg-white w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
-                    <div className="bg-[#1e3932] p-8 text-white relative">
+                    <div className="bg-primary p-8 text-white relative">
                         <button onClick={onClose} className="absolute right-6 top-6 p-2 bg-white/10 rounded-full hover:bg-white/20 transition-all">
                             <X size={20} />
                         </button>
@@ -160,7 +160,7 @@ const Orders = () => {
                             </div>
                             <div>
                                 <h3 className="text-xl font-bold">{order.items[0]?.service?.title}</h3>
-                                <p className="text-green-100/70 text-sm font-medium uppercase tracking-widest mt-1">Order Detail</p>
+                                <p className="text-pink-100/70 text-sm font-medium uppercase tracking-widest mt-1">Order Detail</p>
                             </div>
                         </div>
                     </div>
@@ -175,7 +175,7 @@ const Orders = () => {
                             <div>
                                 <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Payment</p>
                                 <p className="text-sm font-black text-gray-900">₹{order.totalAmount}</p>
-                                <p className="text-xs text-green-600 font-bold uppercase tracking-tighter">{order.paymentStatus}</p>
+                                <p className="text-xs text-primary font-bold uppercase tracking-tighter">{order.paymentStatus}</p>
                             </div>
                         </div>
 
@@ -195,7 +195,7 @@ const Orders = () => {
                                         className={cn(
                                             "p-3 rounded-2xl border text-[10px] font-black uppercase text-left flex items-center gap-2 transition-all",
                                             order.status === btn.status 
-                                                ? "bg-[#1e3932] text-white border-[#1e3932] shadow-md" 
+                                                ? "bg-primary text-white border-primary shadow-md" 
                                                 : "bg-white text-gray-500 border-gray-100 hover:border-gray-200"
                                         )}
                                     >
@@ -226,13 +226,13 @@ const Orders = () => {
                                             </div>
                                             <div className="flex-1 min-w-0 text-left">
                                                 <p className="text-[8px] text-gray-400 font-bold uppercase mb-0.5">Platform Fabric</p>
-                                                <p className="text-[10px] font-black text-[#1e3932] truncate">{order.items[0].selectedFabric.title}</p>
+                                                <p className="text-[10px] font-black text-primary truncate">{order.items[0].selectedFabric.title}</p>
                                             </div>
                                         </>
                                     ) : (
                                         <div className="flex-1 text-left">
                                             <p className="text-[8px] text-gray-400 font-bold uppercase mb-0.5">Fabric</p>
-                                            <p className="text-[10px] font-black text-[#1e3932] uppercase">
+                                            <p className="text-[10px] font-black text-primary uppercase">
                                                 {order.items[0]?.fabricSource?.toLowerCase() === 'customer' ? 'Customer Provides' : order.items[0]?.fabricSource}
                                             </p>
                                         </div>
@@ -240,7 +240,7 @@ const Orders = () => {
                                 </div>
                                 <div className="bg-gray-50 p-3 rounded-2xl">
                                     <p className="text-[9px] text-gray-400 font-bold uppercase">Delivery</p>
-                                    <p className="text-xs font-black text-[#1e3932]">{order.items[0]?.deliveryType}</p>
+                                    <p className="text-xs font-black text-primary">{order.items[0]?.deliveryType}</p>
                                 </div>
                             </div>
                         </div>
@@ -248,9 +248,9 @@ const Orders = () => {
                         {order.deliveryPartner && (
                             <div className="pt-4 border-t border-gray-50">
                                 <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-2">Delivery Partner</p>
-                                <div className="flex items-center justify-between bg-blue-50/50 p-3 rounded-2xl border border-blue-100/50">
+                                <div className="flex items-center justify-between bg-pink-50/50 p-3 rounded-2xl border border-pink-100/50">
                                     <div className="flex items-center gap-3">
-                                        <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-[#1e3932] shadow-sm">
+                                        <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-primary shadow-sm">
                                             <Truck size={20} />
                                         </div>
                                         <div>
@@ -260,7 +260,7 @@ const Orders = () => {
                                     </div>
                                     <a 
                                         href={`tel:${order.deliveryPartner.phoneNumber}`}
-                                        className="p-2 bg-white text-[#1e3932] rounded-full shadow-sm hover:scale-110 transition-transform"
+                                        className="p-2 bg-white text-primary rounded-full shadow-sm hover:scale-110 transition-transform"
                                     >
                                         <Phone size={16} />
                                     </a>
@@ -294,7 +294,7 @@ const Orders = () => {
                                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                                 <button 
                                                     onClick={() => window.open(order.items[0].measurements.image, '_blank')}
-                                                    className="px-4 py-2 bg-white text-[#1e3932] text-[10px] font-black uppercase rounded-xl"
+                                                    className="px-4 py-2 bg-white text-primary text-[10px] font-black uppercase rounded-xl"
                                                 >
                                                     View Full Image
                                                 </button>
@@ -338,7 +338,7 @@ const Orders = () => {
                         {order.status === 'pending' && (
                             <button 
                                 onClick={() => { handleStatusUpdate(order._id, 'accepted'); onClose(); }}
-                                className="flex-[1.5] py-4 bg-[#1e3932] text-white text-xs font-black uppercase rounded-2xl shadow-lg shadow-[#1e3932]/20 active:scale-95 transition-all"
+                                className="flex-[1.5] py-4 bg-primary text-white text-xs font-black uppercase rounded-2xl shadow-lg shadow-primary/20 active:scale-95 transition-all"
                             >
                                 Accept Order Now
                             </button>
@@ -360,7 +360,7 @@ const Orders = () => {
                         placeholder="Search Order ID or Customer..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 bg-white border border-gray-100 rounded-2xl focus:outline-none focus:border-[#1e3932] shadow-sm text-sm"
+                        className="w-full pl-12 pr-4 py-3 bg-white border border-gray-100 rounded-2xl focus:outline-none focus:border-primary shadow-sm text-sm"
                     />
                 </div>
                 <button
@@ -377,7 +377,7 @@ const Orders = () => {
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-[1rem] transition-all ${activeTab === tab ? 'bg-[#1e3932] text-white shadow-md' : 'text-gray-400'
+                        className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-[1rem] transition-all ${activeTab === tab ? 'bg-primary text-white shadow-md' : 'text-gray-400'
                             }`}
                     >
                         {tab}
@@ -389,7 +389,7 @@ const Orders = () => {
             <div className="space-y-3">
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center py-20 gap-3">
-                        <div className="h-8 w-8 border-4 border-[#1e3932]/10 border-t-[#1e3932] rounded-full animate-spin"></div>
+                        <div className="h-8 w-8 border-4 border-primary/10 border-t-primary rounded-full animate-spin"></div>
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Loading Requests...</p>
                     </div>
                 ) : filteredOrders.length === 0 ? (
@@ -401,7 +401,7 @@ const Orders = () => {
                         <div key={order._id} className="bg-white p-4 rounded-[1.5rem] border border-gray-50 shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-md transition-shadow group relative">
                             <div className="flex justify-between items-start mb-3">
                                 <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 bg-gray-50 rounded-xl flex items-center justify-center text-[#1e3932] font-black text-xs">
+                                    <div className="h-10 w-10 bg-gray-50 rounded-xl flex items-center justify-center text-primary font-black text-xs">
                                         {order.orderId.split('-')[1]}
                                     </div>
                                     <div>
@@ -419,7 +419,7 @@ const Orders = () => {
                                 {/* Dropdown Menu */}
                                 {activeMenuId === order._id && (
                                     <div className="absolute right-4 top-12 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-10 animate-in fade-in zoom-in duration-200">
-                                        <button onClick={() => { handleAction('View Detail', order); setActiveMenuId(null); }} className="w-full text-left px-4 py-2 text-xs font-bold text-[#1e3932] hover:bg-gray-50 flex items-center gap-2">
+                                        <button onClick={() => { handleAction('View Detail', order); setActiveMenuId(null); }} className="w-full text-left px-4 py-2 text-xs font-bold text-primary hover:bg-gray-50 flex items-center gap-2">
                                             <Search size={14} /> View Detail
                                         </button>
                                         <button onClick={() => { handleAction('Contact Customer', order); setActiveMenuId(null); }} className="w-full text-left px-4 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50">Contact Customer</button>
@@ -445,7 +445,7 @@ const Orders = () => {
                                         <>
                                             <button
                                                 onClick={() => handleAction('Accept Order', order)}
-                                                className="px-4 py-2 bg-[#1e3932] text-white text-[10px] font-black uppercase rounded-xl shadow-md active:scale-95 transition-all flex items-center gap-1"
+                                                className="px-4 py-2 bg-primary text-white text-[10px] font-black uppercase rounded-xl shadow-md active:scale-95 transition-all flex items-center gap-1"
                                             >
                                                 <Check size={14} strokeWidth={4} /> Accept
                                             </button>
@@ -462,19 +462,19 @@ const Orders = () => {
                                             Waiting for Rider
                                         </div>
                                     ) : order.status === 'fabric-picked-up' ? (
-                                        <div className="px-4 py-2 bg-blue-50 text-blue-600 text-[10px] font-black uppercase rounded-xl flex items-center gap-1.5 ring-1 ring-blue-100">
+                                        <div className="px-4 py-2 bg-pink-50 text-primary text-[10px] font-black uppercase rounded-xl flex items-center gap-1.5 ring-1 ring-pink-100">
                                             <Truck size={14} className="animate-bounce" />
                                             Fabric In-Transit
                                         </div>
                                     ) : order.status === 'fabric-delivered' ? (
                                         <button
                                             onClick={() => handleStatusUpdate(order._id, 'cutting')}
-                                            className="px-4 py-2 bg-[#1e3932] text-white text-[10px] font-black uppercase rounded-xl shadow-md active:scale-95 transition-all flex items-center gap-1.5"
+                                            className="px-4 py-2 bg-primary text-white text-[10px] font-black uppercase rounded-xl shadow-md active:scale-95 transition-all flex items-center gap-1.5"
                                         >
                                             <Scissors size={14} /> Start Batch
                                         </button>
                                     ) : (
-                                        <button className="px-4 py-2 bg-gray-100 text-[#1e3932] text-[10px] font-black uppercase rounded-xl flex items-center gap-1.5 ring-1 ring-gray-200">
+                                        <button className="px-4 py-2 bg-gray-100 text-primary text-[10px] font-black uppercase rounded-xl flex items-center gap-1.5 ring-1 ring-gray-200">
                                             {getStatusIcon(order.status)}
                                             {order.status.replace(/-/g, ' ')}
                                         </button>

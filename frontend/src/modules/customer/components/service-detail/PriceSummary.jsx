@@ -26,13 +26,13 @@ const PriceSummary = ({ basePrice, deliveryPrice, fabricPrice = 0, deliveryDays,
                 {fabricPrice > 0 && (
                     <div className="flex justify-between text-sm text-gray-600">
                         <span>Fabric Price</span>
-                        <span className="text-[#1e3932]">₹{fabricPrice}</span>
+                        <span className="text-primary">₹{fabricPrice}</span>
                     </div>
                 )}
                 {deliveryPrice > 0 && (
                     <div className="flex justify-between text-sm text-gray-600">
                         <span>Express Delivery</span>
-                        <span className="text-[#1e3932]">+₹{deliveryPrice}</span>
+                        <span className="text-primary">+₹{deliveryPrice}</span>
                     </div>
                 )}
                 <div className="flex justify-between text-sm text-gray-600">
@@ -57,7 +57,7 @@ const PriceSummary = ({ basePrice, deliveryPrice, fabricPrice = 0, deliveryDays,
 
                 <button
                     onClick={onProceed ? onProceed : () => navigate('/checkout/address')}
-                    className="bg-[#1e3932] text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg hover:bg-[#152e28] active:scale-95 transition-all flex items-center justify-center gap-2"
+                    className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg hover:bg-primary-dark active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
                     Proceed to Checkout <ArrowRight size={16} />
                 </button>

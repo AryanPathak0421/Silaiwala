@@ -54,7 +54,7 @@ const UploadSlip = ({ onUpload, onCancel }) => {
                 onClick={() => !preview && fileInputRef.current?.click()}
                 className={cn(
                     "relative w-full aspect-[4/3] rounded-xl border-2 border-dashed flex flex-col items-center justify-center transition-all bg-white cursor-pointer group mb-4 overflow-hidden",
-                    error ? "border-red-300 bg-red-50" : "border-gray-200 hover:border-[#1e3932] hover:bg-[#f2fcf9]"
+                    error ? "border-red-300 bg-red-50" : "border-gray-200 hover:border-primary hover:bg-[#f2fcf9]"
                 )}
             >
                 <input
@@ -80,7 +80,7 @@ const UploadSlip = ({ onUpload, onCancel }) => {
                     </>
                 ) : (
                     <div className="text-center p-6">
-                        <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                        <div className="w-12 h-12 rounded-full bg-pink-50 text-primary flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                             <Upload size={20} />
                         </div>
                         <p className="text-sm font-semibold text-gray-700">Click to Upload Slip</p>
@@ -99,7 +99,7 @@ const UploadSlip = ({ onUpload, onCancel }) => {
                 <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#1e3932] focus:ring-1 focus:ring-[#e6f4f1] transition-all placeholder:text-gray-300 resize-none"
+                    className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-[#e6f4f1] transition-all placeholder:text-gray-300 resize-none"
                     rows={3}
                     placeholder="E.g., Please ignore the crossed out numbers on the slip."
                 />
@@ -119,7 +119,7 @@ const UploadSlip = ({ onUpload, onCancel }) => {
                     className={cn(
                         "flex-1 py-2.5 rounded-full text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2",
                         preview
-                            ? "bg-[#1e3932] hover:bg-[#152e28] active:scale-95"
+                            ? "bg-primary hover:bg-primary-dark active:scale-95"
                             : "bg-gray-300 cursor-not-allowed"
                     )}
                 >

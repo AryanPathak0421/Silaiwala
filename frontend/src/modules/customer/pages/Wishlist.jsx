@@ -22,7 +22,7 @@ const WishlistPage = () => {
                 <p className="text-sm text-gray-500 mb-6 max-w-xs">Save items that you like to your wishlist to review them later.</p>
                 <Link
                     to="/store"
-                    className="px-6 py-3 rounded-xl bg-[#1e3932] text-white font-bold text-sm shadow-lg hover:bg-[#152e28] transition-all"
+                    className="px-6 py-3 rounded-xl bg-[#FF5C8A] text-white font-bold text-sm shadow-lg hover:bg-[#cc496e] transition-all"
                 >
                     Explore Store
                 </Link>
@@ -52,7 +52,7 @@ const WishlistPage = () => {
             </div>
 
             <div className="max-w-7xl mx-auto p-4 md:p-8">
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 animate-in fade-in duration-500">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6 animate-in fade-in duration-500">
                     {items.map((product) => (
                         <ProductCard key={product._id || product.id} product={product} />
                     ))}
@@ -62,7 +62,7 @@ const WishlistPage = () => {
             {/* Quick Link to Cart if items available */}
             <Link
                 to="/cart"
-                className="fixed bottom-6 right-6 w-14 h-14 bg-[#1e3932] text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 md:hidden"
+                className="fixed bottom-6 right-6 w-14 h-14 bg-[#FF5C8A] text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 md:hidden"
             >
                 <ShoppingBag size={24} />
             </Link>

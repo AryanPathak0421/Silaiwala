@@ -82,7 +82,7 @@ const ProfileSettings = () => {
 
     if (isLoading) {
         return <div className="min-h-screen flex items-center justify-center bg-gray-50">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1e3932]"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>;
     }
 
@@ -94,7 +94,7 @@ const ProfileSettings = () => {
                         <h3 className="text-lg font-black text-gray-900">Pick Up Information</h3>
                         <p className="text-sm text-gray-600">Default pickup location is your registered shop address. Delivery partners will arrive between 10 AM - 6 PM.</p>
                         <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
-                            <p className="text-xs font-bold text-[#1e3932] uppercase tracking-widest mb-1">Current Address</p>
+                            <p className="text-xs font-bold text-primary uppercase tracking-widest mb-1">Current Address</p>
                             <p className="text-sm font-medium text-gray-800">{formData.address}</p>
                         </div>
                     </div>
@@ -133,15 +133,15 @@ const ProfileSettings = () => {
     return (
         <div className="min-h-full bg-gray-50 flex flex-col relative animate-in fade-in duration-300 pb-20">
             {/* Curved Header */}
-            <div className={`relative bg-[#1e3932] pt-8 ${isEditing ? 'pb-24' : 'pb-32'} px-5 text-white overflow-hidden shrink-0 shadow-xl shadow-green-900/10 transition-all duration-300`}>
-                <div className="absolute inset-0 z-0 opacity-20 Mix-blend-overlay pointer-events-none">
+            <div className={`relative bg-primary pt-8 ${isEditing ? 'pb-24' : 'pb-32'} px-5 text-white overflow-hidden shrink-0 shadow-xl shadow-pink-900/10 transition-all duration-300`}>
+                <div className="absolute inset-0 z-0 opacity-20 mix-blend-overlay pointer-events-none">
                     <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full fill-white">
                         <path d="M0,100 C40,80 60,0 100,0 L100,100 Z" />
                     </svg>
                 </div>
 
                 <div className="relative z-10 flex items-center justify-between mb-2">
-                    <button onClick={() => isEditing ? setIsEditing(false) : navigate(-1)} className="p-2 -ml-2 text-white hover:text-green-100 transition-colors">
+                    <button onClick={() => isEditing ? setIsEditing(false) : navigate(-1)} className="p-2 -ml-2 text-white hover:text-pink-100 transition-colors">
                         {isEditing ? <X size={20} /> : <ArrowLeft size={20} />}
                     </button>
                     <h1 className="text-lg font-black tracking-tight absolute left-1/2 -translate-x-1/2 uppercase">
@@ -161,7 +161,7 @@ const ProfileSettings = () => {
             {!isEditing && (
                 <div className="relative z-20 flex flex-col items-center -mt-20 mb-8 px-5 animate-in zoom-in duration-300">
                     <div className="h-[5.5rem] w-[5.5rem] bg-white p-1 rounded-full shadow-lg mb-4 pointer-events-none">
-                        <div className="w-full h-full bg-[#1e3932] rounded-full flex flex-col items-center justify-center text-white relative overflow-hidden pointer-events-auto">
+                        <div className="w-full h-full bg-primary rounded-full flex flex-col items-center justify-center text-white relative overflow-hidden pointer-events-auto">
                             <span className="text-3xl font-black">{profile?.shopName?.charAt(0) || formData.name?.charAt(0) || 'R'}</span>
                             <div
                                 className="absolute bottom-0 w-full bg-black/20 py-1 text-center cursor-pointer hover:bg-black/30 transition-colors"
@@ -208,7 +208,7 @@ const ProfileSettings = () => {
                             onChange={(e) => setFormData({...formData, address: e.target.value})}
                         />
                     </div>
-                    <Button type="submit" loading={isSaving} className="py-5 rounded-2xl shadow-xl shadow-green-900/20 transition-all font-black uppercase tracking-widest">
+                    <Button type="submit" loading={isSaving} className="py-5 rounded-2xl shadow-xl shadow-pink-900/20 transition-all font-black uppercase tracking-widest">
                          Save Profile
                     </Button>
                 </form>
@@ -219,15 +219,15 @@ const ProfileSettings = () => {
                         <button
                             key={index}
                             onClick={() => item.action ? item.action() : navigate(item.path)}
-                            className="w-full bg-white px-5 py-4 rounded-[1.5rem] border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.02)] flex items-center justify-between hover:border-[#1e3932]/20 transition-all group active:scale-[0.98]"
+                            className="w-full bg-white px-5 py-4 rounded-[1.5rem] border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.02)] flex items-center justify-between hover:border-primary/20 transition-all group active:scale-[0.98]"
                         >
                             <div className="flex items-center gap-4">
-                                <div className="h-10 w-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 group-hover:text-[#1e3932] group-hover:bg-green-50 transition-all">
+                                <div className="h-10 w-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 group-hover:text-primary group-hover:bg-pink-50 transition-all">
                                     {item.icon}
                                 </div>
                                 <span className="text-sm font-bold text-gray-700 tracking-tight">{item.label}</span>
                             </div>
-                            <ChevronRight size={18} className="text-gray-300 group-hover:text-[#1e3932] transition-colors" />
+                            <ChevronRight size={18} className="text-gray-300 group-hover:text-primary transition-colors" />
                         </button>
                     ))}
 

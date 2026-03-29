@@ -55,7 +55,7 @@ const ReviewModal = ({ isOpen, onClose, orderId, tailorId, deliveryPartnerId, on
                 >
                     {/* Header */}
                     <div className="p-6 pb-0 flex items-center justify-between">
-                        <h2 className="text-xl font-black text-[#1e3932] tracking-tight">Rate Experience</h2>
+                        <h2 className="text-xl font-black text-primary tracking-tight">Rate Experience</h2>
                         <button onClick={onClose} className="p-2 bg-gray-50 rounded-full text-gray-400">
                             <X size={20} />
                         </button>
@@ -68,7 +68,7 @@ const ReviewModal = ({ isOpen, onClose, orderId, tailorId, deliveryPartnerId, on
                                 <button
                                     onClick={() => setTarget('Tailor')}
                                     className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${
-                                        target === 'Tailor' ? 'bg-[#1e3932] text-white shadow-md' : 'text-gray-400'
+                                        target === 'Tailor' ? 'bg-primary text-white shadow-md' : 'text-gray-400'
                                     }`}
                                 >
                                     Artisan
@@ -114,7 +114,7 @@ const ReviewModal = ({ isOpen, onClose, orderId, tailorId, deliveryPartnerId, on
                                 value={comment}
                                 onChange={(e) => setComment(e.target.value)}
                                 placeholder="Write your feedback here..."
-                                className="w-full bg-gray-50 border border-gray-100 rounded-3xl p-5 text-sm font-medium focus:ring-2 focus:ring-[#1e3932]/10 focus:border-[#1e3932] transition-all outline-none resize-none min-h-[120px]"
+                                className="w-full bg-gray-50 border border-gray-100 rounded-3xl p-5 text-sm font-medium focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all outline-none resize-none min-h-[120px]"
                             />
                         </div>
 
@@ -124,7 +124,7 @@ const ReviewModal = ({ isOpen, onClose, orderId, tailorId, deliveryPartnerId, on
                         <button
                             onClick={handleSubmit}
                             disabled={isSubmitting}
-                            className="w-full py-5 bg-[#1e3932] text-white rounded-[2rem] font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 shadow-xl active:scale-95 transition-all disabled:opacity-50"
+                            className="w-full py-5 bg-primary text-white rounded-[2rem] font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 shadow-xl active:scale-95 transition-all disabled:opacity-50"
                         >
                             {isSubmitting ? (
                                 <Loader2 size={18} className="animate-spin" />

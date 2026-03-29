@@ -94,11 +94,11 @@ const MeasurementsPage = () => {
             <header className="bg-white px-6 pt-12 pb-6 flex items-center gap-4 sticky top-0 z-30 border-b border-gray-100 shadow-sm">
                 <button 
                     onClick={() => navigate('/profile')}
-                    className="p-2 -ml-2 rounded-full hover:bg-gray-50 text-[#1e3932]"
+                    className="p-2 -ml-2 rounded-full hover:bg-gray-50 text-primary"
                 >
                     <ChevronLeft size={24} />
                 </button>
-                <h1 className="text-xl font-bold text-[#1e3932]">My Measurements</h1>
+                <h1 className="text-xl font-bold text-primary">My Measurements</h1>
             </header>
 
             <div className="max-w-md mx-auto px-4 py-6">
@@ -113,7 +113,7 @@ const MeasurementsPage = () => {
                             className="bg-white rounded-[2.5rem] shadow-xl p-8 border border-gray-100 mb-8"
                         >
                             <div className="flex items-center justify-between mb-8">
-                                <h3 className="text-lg font-bold text-[#1e3932]">{editingId ? 'Edit Profile' : 'New Profile'}</h3>
+                                <h3 className="text-lg font-bold text-primary">{editingId ? 'Edit Profile' : 'New Profile'}</h3>
                                 <button 
                                     onClick={resetForm}
                                     className="text-xs font-bold text-gray-400 uppercase tracking-widest"
@@ -136,7 +136,7 @@ const MeasurementsPage = () => {
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Garment Type</label>
                                     <select 
-                                        className="w-full h-12 px-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#1e3932] outline-none bg-gray-50 transition-all text-sm appearance-none"
+                                        className="w-full h-12 px-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary outline-none bg-gray-50 transition-all text-sm appearance-none"
                                         value={formData.garmentType}
                                         onChange={(e) => setFormData({...formData, garmentType: e.target.value})}
                                     >
@@ -186,7 +186,7 @@ const MeasurementsPage = () => {
                                 </div>
 
                                 <Button 
-                                    className="w-full bg-[#1e3932] h-14 rounded-full text-white font-bold shadow-lg shadow-emerald-900/10 hover:bg-[#152e28] transition-all"
+                                    className="w-full bg-primary h-14 rounded-full text-white font-bold shadow-lg shadow-pink-900/10 hover:bg-primary-dark transition-all"
                                     type="submit"
                                     disabled={isLoading}
                                 >
@@ -202,12 +202,12 @@ const MeasurementsPage = () => {
                             className="space-y-4"
                         >
                             {/* Stats/Intro */}
-                            <div className="bg-[#1e3932] p-6 rounded-[2rem] text-white shadow-lg shadow-emerald-900/20 mb-8 relative overflow-hidden">
+                            <div className="bg-primary p-6 rounded-[2rem] text-white shadow-lg shadow-pink-900/20 mb-8 relative overflow-hidden">
                                 <div className="absolute top-0 right-0 p-4 opacity-10">
                                     <Ruler size={120} />
                                 </div>
                                 <h3 className="text-lg font-bold mb-1">Stay Fit, Fit Well.</h3>
-                                <p className="text-emerald-100/60 text-xs mb-4 max-w-[200px]">Save your body profiles once and use them for any tailor order.</p>
+                                <p className="text-pink-100/60 text-xs mb-4 max-w-[200px]">Save your body profiles once and use them for any tailor order.</p>
                                 <button 
                                     onClick={() => setIsAdding(true)}
                                     className="bg-white/10 hover:bg-white/20 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 text-xs font-bold transition-all"
@@ -218,7 +218,7 @@ const MeasurementsPage = () => {
 
                             {measurements.length === 0 && !isLoading ? (
                                 <div className="text-center py-20 px-10">
-                                    <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 text-[#1e3932]">
+                                    <div className="w-20 h-20 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-4 text-primary">
                                         <Ruler size={32} />
                                     </div>
                                     <h4 className="font-bold text-gray-400 mb-1">No profiles yet</h4>
@@ -234,7 +234,7 @@ const MeasurementsPage = () => {
                                         className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between group hover:shadow-md transition-all active:scale-95 cursor-default"
                                     >
                                         <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-[#1e3932]">
+                                            <div className="w-12 h-12 rounded-2xl bg-pink-50 flex items-center justify-center text-primary">
                                                 <ShirtIcon size={20} />
                                             </div>
                                             <div>
@@ -248,7 +248,7 @@ const MeasurementsPage = () => {
                                         <div className="flex items-center gap-2">
                                             <button 
                                                 onClick={() => handleEdit(m)}
-                                                className="p-2 text-gray-400 hover:text-[#1e3932] hover:bg-emerald-50 rounded-lg transition-all"
+                                                className="p-2 text-gray-400 hover:text-primary hover:bg-pink-50 rounded-lg transition-all"
                                             >
                                                 <Edit2 size={16} />
                                             </button>

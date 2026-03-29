@@ -39,15 +39,15 @@ const AdminReports = () => {
                                         key={type.id}
                                         onClick={() => setSelectedReportType(type.id)}
                                         className={`w-full text-left p-3 rounded-xl border transition-all flex items-start gap-3 ${selectedReportType === type.id
-                                                ? 'border-[#1e3932] bg-[#1e3932]/5 text-[#1e3932]'
+                                                ? 'border-primary bg-primary/5 text-primary'
                                                 : 'border-gray-100 bg-gray-50 text-gray-600 hover:border-gray-200'
                                             }`}
                                     >
-                                        <div className={`p-1.5 rounded-lg shrink-0 mt-0.5 ${selectedReportType === type.id ? 'bg-[#1e3932] text-white' : 'bg-white text-gray-400 shadow-sm'}`}>
+                                        <div className={`p-1.5 rounded-lg shrink-0 mt-0.5 ${selectedReportType === type.id ? 'bg-primary text-white' : 'bg-white text-gray-400 shadow-sm'}`}>
                                             {type.icon}
                                         </div>
                                         <div>
-                                            <p className={`text-xs font-bold ${selectedReportType === type.id ? 'text-[#1e3932]' : 'text-gray-900'}`}>{type.id}</p>
+                                            <p className={`text-xs font-bold ${selectedReportType === type.id ? 'text-primary' : 'text-gray-900'}`}>{type.id}</p>
                                             <p className="text-[9px] font-medium opacity-80 mt-0.5 leading-snug">{type.desc}</p>
                                         </div>
                                     </button>
@@ -62,7 +62,7 @@ const AdminReports = () => {
                             <select
                                 value={dateRange}
                                 onChange={(e) => setDateRange(e.target.value)}
-                                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 outline-none focus:border-[#1e3932] transition-colors appearance-none"
+                                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 outline-none focus:border-primary transition-colors appearance-none"
                             >
                                 <option>Today</option>
                                 <option>This Week</option>
@@ -81,7 +81,7 @@ const AdminReports = () => {
                                 <button className="py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 hover:bg-gray-100 transition-colors shadow-sm">
                                     CSV
                                 </button>
-                                <button className="py-2.5 bg-[#1e3932]/10 border border-[#1e3932]/20 rounded-xl text-xs font-bold text-[#1e3932] shadow-sm">
+                                <button className="py-2.5 bg-primary/10 border border-primary/20 rounded-xl text-xs font-bold text-primary shadow-sm">
                                     PDF
                                 </button>
                             </div>
@@ -89,7 +89,7 @@ const AdminReports = () => {
 
                         <button
                             onClick={generateReport}
-                            className="w-full mt-4 py-3 bg-[#1e3932] text-white text-xs font-black rounded-xl hover:bg-[#0a211e] shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest flex justify-center items-center gap-2"
+                            className="w-full mt-4 py-3 bg-primary text-white text-xs font-black rounded-xl hover:bg-primary-dark shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest flex justify-center items-center gap-2"
                         >
                             <Download size={16} /> Generate & Download
                         </button>
@@ -99,10 +99,10 @@ const AdminReports = () => {
                 {/* Preview Panel */}
                 <div className="lg:col-span-2 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border border-gray-200 shadow-inner p-8 flex flex-col items-center justify-center text-center relative overflow-hidden">
                     <div className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80" aria-hidden="true">
-                        <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#1e3932] to-[#4ade80] opacity-10 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" style={{ clipPath: 'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)' }}></div>
+                        <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-primary to-[#4ade80] opacity-10 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" style={{ clipPath: 'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)' }}></div>
                     </div>
 
-                    <FileText size={64} className="text-[#1e3932]/20 mb-6" />
+                    <FileText size={64} className="text-primary/20 mb-6" />
                     <h2 className="text-xl font-black text-gray-900 mb-2">Report Preview</h2>
                     <p className="text-sm text-gray-500 max-w-sm">
                         Select a report type and date range on the left, then click generate to download your customized analytics report.
@@ -110,7 +110,7 @@ const AdminReports = () => {
 
                     <div className="mt-8 bg-white p-4 rounded-xl shadow-sm border border-gray-100 w-full max-w-md">
                         <div className="flex items-center gap-3">
-                            <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
+                            <div className="p-3 bg-pink-50 text-primary rounded-lg">
                                 {reportTypes.find(t => t.id === selectedReportType)?.icon}
                             </div>
                             <div className="text-left flex-1">

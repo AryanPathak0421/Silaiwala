@@ -34,7 +34,7 @@ const ProductGallery = ({ images }) => {
                     {images.map((_, idx) => (
                         <div
                             key={idx}
-                            className={cn("w-1.5 h-1.5 rounded-full", activeIndex === idx ? "bg-[#1e3932]" : "bg-white/60")}
+                            className={cn("w-1.5 h-1.5 rounded-full", activeIndex === idx ? "bg-primary" : "bg-white/60")}
                         />
                     ))}
                 </div>
@@ -48,7 +48,7 @@ const ProductGallery = ({ images }) => {
                         onClick={() => setActiveIndex(idx)}
                         className={cn(
                             "w-16 h-16 rounded-lg overflow-hidden cursor-pointer border-2 transition-all",
-                            activeIndex === idx ? "border-[#1e3932]" : "border-transparent opacity-70 hover:opacity-100"
+                            activeIndex === idx ? "border-primary" : "border-transparent opacity-70 hover:opacity-100"
                         )}
                     >
                         <img src={img} alt={`Thumbnail ${idx}`} className="w-full h-full object-cover" />

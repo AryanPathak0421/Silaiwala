@@ -30,7 +30,7 @@ const CMSContentPage = () => {
     if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="w-10 h-10 border-4 border-[#1e3932] border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
             </div>
         );
     }
@@ -39,7 +39,7 @@ const CMSContentPage = () => {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
                 <h2 className="text-xl font-bold text-gray-900">Content Not Found</h2>
-                <button onClick={() => navigate(-1)} className="mt-4 text-[#1e3932] font-black uppercase tracking-widest text-xs">Go Back</button>
+                <button onClick={() => navigate(-1)} className="mt-4 text-primary font-black uppercase tracking-widest text-xs">Go Back</button>
             </div>
         );
     }
@@ -47,7 +47,7 @@ const CMSContentPage = () => {
     return (
         <div className="min-h-screen bg-gray-50 pb-24 font-sans">
             {/* Curved Header */}
-            <div className="relative bg-[#1e3932] pt-8 pb-32 px-5 text-white overflow-hidden shrink-0 shadow-xl shadow-green-900/10">
+            <div className="relative bg-primary pt-8 pb-32 px-5 text-white overflow-hidden shrink-0 shadow-xl shadow-pink-900/10">
                 <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
                     <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full fill-white">
                         <path d="M0,100 C40,80 60,0 100,0 L100,100 Z" />
@@ -67,7 +67,7 @@ const CMSContentPage = () => {
                 </div>
 
                 <div className="relative z-10 mt-6 bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-4 flex items-center gap-4">
-                    <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center text-[#1e3932] shadow-xl">
+                    <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center text-primary shadow-xl">
                         <div className="p-2 bg-gray-50 rounded-lg">
                             <span className="text-xs font-black uppercase tracking-tighter">PDF</span>
                         </div>
@@ -89,7 +89,7 @@ const CMSContentPage = () => {
             <div className="px-5 -mt-10 relative z-20">
                 <div className="bg-white rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <div className="flex items-center gap-2 mb-6 px-1">
-                        <div className="w-1 h-4 bg-[#1e3932] rounded-full" />
+                        <div className="w-1 h-4 bg-primary rounded-full" />
                         <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] italic">Terms & Content</h3>
                     </div>
 
@@ -115,7 +115,7 @@ const CMSContentPage = () => {
             
             <style dangerouslySetInnerHTML={{ __html: `
                 .cms-content-render h1, .cms-content-render h2, .cms-content-render h3 {
-                    color: #1e3932;
+                    color: #FF5C8A;
                     font-weight: 900;
                     margin-top: 1.5em;
                     margin-bottom: 0.5em;
@@ -141,7 +141,7 @@ const CMSContentPage = () => {
                     top: 0.6rem;
                     width: 0.5rem;
                     height: 1px;
-                    background: #1e3932;
+                    background: #FF5C8A;
                 }
             `}} />
         </div>

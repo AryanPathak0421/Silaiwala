@@ -185,7 +185,7 @@ const AdminOrders = () => {
             case 'delivered': return 'bg-green-100 text-green-700 border-green-200';
             case 'completed': return 'bg-green-100 text-green-700 border-green-200';
             case 'in-progress': return 'bg-blue-100 text-blue-700 border-blue-200';
-            case 'accepted': return 'bg-indigo-100 text-indigo-700 border-indigo-200';
+            case 'accepted': return 'bg-pink-50 text-primary border-pink-100';
             case 'ready-for-pickup': return 'bg-purple-100 text-purple-700 border-purple-200';
             case 'out-for-delivery': return 'bg-orange-100 text-orange-700 border-orange-200';
             case 'pending': return 'bg-gray-100 text-gray-700 border-gray-200';
@@ -214,7 +214,7 @@ const AdminOrders = () => {
                         <button
                             key={tab}
                             onClick={() => setSelectedTab(tab)}
-                            className={`px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap transition-all ${selectedTab === tab ? 'bg-white text-[#1e3932] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                            className={`px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap transition-all ${selectedTab === tab ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
                         >
                             {tab}
                         </button>
@@ -232,7 +232,7 @@ const AdminOrders = () => {
                             className="w-full pl-9 pr-4 py-2 text-xs font-semibold bg-gray-50 border border-transparent focus:border-gray-200 rounded-xl outline-none transition-all" 
                         />
                     </div>
-                    <button className="p-2 bg-gray-50 text-gray-600 rounded-xl hover:bg-gray-100 hover:text-[#1e3932] transition-colors shrink-0 border border-transparent">
+                    <button className="p-2 bg-gray-50 text-gray-600 rounded-xl hover:bg-gray-100 hover:text-primary transition-colors shrink-0 border border-transparent">
                         <Filter size={18} />
                     </button>
                 </div>
@@ -242,7 +242,7 @@ const AdminOrders = () => {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex-1 overflow-hidden flex flex-col relative">
                 {isLoading && (
                      <div className="w-full h-1 bg-gray-100 overflow-hidden absolute top-0 left-0 z-10">
-                         <div className="h-full bg-[#1e3932] animate-pulse w-1/3"></div>
+                         <div className="h-full bg-primary animate-pulse w-1/3"></div>
                      </div>
                 )}
                 <div className="overflow-x-auto">
@@ -262,11 +262,11 @@ const AdminOrders = () => {
                                 <tr
                                     key={order.id}
                                     onClick={() => setSelectedOrder(order)}
-                                    className="hover:bg-[#1e3932]/5 transition-colors cursor-pointer group"
+                                    className="hover:bg-primary/5 transition-colors cursor-pointer group"
                                 >
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col">
-                                            <span className="text-xs font-black text-[#1e3932] uppercase group-hover:underline">{order.id}</span>
+                                            <span className="text-xs font-black text-primary uppercase group-hover:underline">{order.id}</span>
                                             <span className="text-[10px] text-gray-500 font-medium mt-0.5">{order.date}</span>
                                         </div>
                                     </td>
@@ -296,7 +296,7 @@ const AdminOrders = () => {
                                             <span className={`px-2 py-1 rounded-lg text-[9px] font-black border uppercase tracking-wider ${getStatusStyle(order.status)}`}>
                                                 {order.status.replace(/-/g, ' ')}
                                             </span>
-                                            <ChevronRight size={16} className="text-gray-300 group-hover:text-[#1e3932] transition-colors" />
+                                            <ChevronRight size={16} className="text-gray-300 group-hover:text-primary transition-colors" />
                                         </div>
                                     </td>
                                 </tr>
@@ -375,9 +375,9 @@ const AdminOrders = () => {
                                         <div className="flex justify-between items-start">
                                             <div>
                                                 <p className="text-sm font-black text-gray-900">{selectedOrder.service}</p>
-                                                <p className="text-[10px] font-bold text-[#1e3932] uppercase mt-1">{selectedOrder.type}</p>
+                                                <p className="text-[10px] font-bold text-primary uppercase mt-1">{selectedOrder.type}</p>
                                             </div>
-                                            <p className="text-sm font-black text-[#1e3932]">{selectedOrder.amount}</p>
+                                            <p className="text-sm font-black text-primary">{selectedOrder.amount}</p>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-200">
                                             <div>
@@ -403,16 +403,16 @@ const AdminOrders = () => {
                                         <div className="flex justify-between items-center">
                                             <div>
                                                 <p className="text-[10px] text-gray-400 font-bold">Tailor</p>
-                                                <p className="text-xs font-bold text-[#1e3932]">{selectedOrder.tailor}</p>
+                                                <p className="text-xs font-bold text-primary">{selectedOrder.tailor}</p>
                                             </div>
-                                            <button onClick={() => { setAssignRole('tailor'); setIsAssignModalOpen(true); }} className="text-[10px] font-bold text-blue-600 hover:underline">Reassign</button>
+                                            <button onClick={() => { setAssignRole('tailor'); setIsAssignModalOpen(true); }} className="text-[10px] font-bold text-primary hover:underline">Reassign</button>
                                         </div>
                                         <div className="flex justify-between items-center pt-2 border-t border-gray-50">
                                             <div>
                                                 <p className="text-[10px] text-gray-400 font-bold">Delivery Partner</p>
-                                                <p className="text-xs font-bold text-[#1e3932]">{selectedOrder.deliveryPartner}</p>
+                                                <p className="text-xs font-bold text-primary">{selectedOrder.deliveryPartner}</p>
                                             </div>
-                                            <button onClick={() => { setAssignRole('deliveryPartner'); setIsAssignModalOpen(true); }} className="text-[10px] font-bold text-orange-600 hover:underline">Reassign</button>
+                                            <button onClick={() => { setAssignRole('deliveryPartner'); setIsAssignModalOpen(true); }} className="text-[10px] font-bold text-primary hover:underline">Reassign</button>
                                         </div>
                                     </div>
                                     <div className="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm space-y-2">
@@ -444,7 +444,7 @@ const AdminOrders = () => {
                                         {selectedOrder.trackingHistory.length > 0 ? (
                                             [...selectedOrder.trackingHistory].reverse().map((event, idx) => (
                                                 <div key={idx} className="relative">
-                                                    <div className={`absolute -left-[19px] top-1 h-3 w-3 rounded-full border-2 border-white shadow-sm ${idx === 0 ? 'bg-[#1e3932] scale-125' : 'bg-gray-300'}`} />
+                                                    <div className={`absolute -left-[19px] top-1 h-3 w-3 rounded-full border-2 border-white shadow-sm ${idx === 0 ? 'bg-primary scale-125' : 'bg-gray-300'}`} />
                                                     <div className="bg-white p-3 rounded-xl border border-gray-50 shadow-sm">
                                                         <div className="flex justify-between items-start">
                                                             <p className="text-[11px] font-black text-gray-900 uppercase tracking-tight">{event.status.replace(/-/g, ' ')}</p>
@@ -487,7 +487,7 @@ const AdminOrders = () => {
                                                       <button
                                                         key={status}
                                                         onClick={() => handleUpdateStatus(selectedOrder.fullId, status)}
-                                                        className="w-full text-left px-4 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50 hover:text-[#1e3932] uppercase tracking-wider"
+                                                        className="w-full text-left px-4 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50 hover:text-primary uppercase tracking-wider"
                                                       >
                                                           {status.replace(/-/g, ' ')}
                                                       </button>
@@ -596,7 +596,7 @@ const AdminOrders = () => {
 
                                 {/* Team Assignments */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-xl">
+                                    <div className="bg-pink-50/50 border border-pink-100 p-4 rounded-xl">
                                         <h4 className="text-[10px] font-semibold uppercase text-blue-400 tracking-wider mb-2 flex items-center gap-1.5">
                                             <Scissors size={12} /> Assigned Tailor
                                         </h4>
@@ -788,7 +788,7 @@ const AdminOrders = () => {
                                     <button 
                                         key={user.id}
                                         onClick={() => handleAssign(user.id)}
-                                        className={`w-full text-left p-3 rounded-xl border transition-all text-xs font-bold flex justify-between items-center ${user.isActive ? 'border-gray-100 hover:border-[#1e3932] hover:bg-[#1e3932]/5 bg-white text-gray-700' : 'border-gray-50 bg-gray-50 opacity-50 cursor-not-allowed text-gray-400'}`}
+                                        className={`w-full text-left p-3 rounded-xl border transition-all text-xs font-bold flex justify-between items-center ${user.isActive ? 'border-gray-100 hover:border-primary hover:bg-primary/5 bg-white text-gray-700' : 'border-gray-50 bg-gray-50 opacity-50 cursor-not-allowed text-gray-400'}`}
                                         disabled={!user.isActive}
                                     >
                                         <div className="flex flex-col">

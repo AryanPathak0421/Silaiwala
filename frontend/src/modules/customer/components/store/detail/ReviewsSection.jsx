@@ -10,7 +10,7 @@ const REVIEWS = [
 const ReviewsSection = () => {
     return (
         <div className="bg-white rounded-lg p-6 mt-8 shadow-sm border border-gray-100">
-            <h3 className="text-xl font-bold text-[#1e3932] mb-6 flex items-center gap-2">
+            <h3 className="text-xl font-bold text-primary mb-6 flex items-center gap-2">
                 Ratings & Reviews <span className="text-sm font-normal text-gray-500">(120)</span>
             </h3>
 

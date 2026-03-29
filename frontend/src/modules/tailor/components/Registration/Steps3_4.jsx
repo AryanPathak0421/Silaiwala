@@ -57,7 +57,7 @@ export const Step4Portfolio = ({ register, errors, setValue, watch }) => {
     return (
         <div className="space-y-6 animate-in slide-in-from-right duration-300">
             <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 mb-2">
-                <p className="text-[10px] font-black text-[#1e3932] uppercase tracking-widest mb-1">Showcase Your Work</p>
+                <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Showcase Your Work</p>
                 <p className="text-xs text-gray-600 font-medium leading-relaxed">Upload clear photos of your best creations to attract more customers.</p>
             </div>
 
@@ -82,7 +82,7 @@ export const Step4Portfolio = ({ register, errors, setValue, watch }) => {
                         <label className="text-[10px] font-bold text-gray-400">Working Days</label>
                         <select
                             {...register('workingDays', { required: 'Working days required' })}
-                            className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:outline-none focus:border-[#1e3932] focus:bg-white transition-all text-sm font-medium"
+                            className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:outline-none focus:border-primary focus:bg-white transition-all text-sm font-medium"
                         >
                             <option value="">Select Days</option>
                             <option value="mon-fri">Mon - Fri</option>
@@ -94,7 +94,7 @@ export const Step4Portfolio = ({ register, errors, setValue, watch }) => {
                         <label className="text-[10px] font-bold text-gray-400">Daily Hours</label>
                         <select
                             {...register('workingHours', { required: 'Working hours required' })}
-                            className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:outline-none focus:border-[#1e3932] focus:bg-white transition-all text-sm font-medium"
+                            className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:outline-none focus:border-primary focus:bg-white transition-all text-sm font-medium"
                         >
                             <option value="">Select Hours</option>
                             <option value="9-5">9:00 AM - 5:00 PM</option>

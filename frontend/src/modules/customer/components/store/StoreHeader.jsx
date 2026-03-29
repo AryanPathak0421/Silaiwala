@@ -20,7 +20,7 @@ const StoreHeader = ({ searchQuery, setSearchQuery }) => {
                             <img src={silaiwalaLogo} alt="Silaiwala" className="w-8 h-8 object-contain" />
                         </Link>
                         <div>
-                            <h1 className="text-xl font-black text-gray-900 leading-none tracking-tight">Silai<span className="text-[#1e3932]">wala</span></h1>
+                            <h1 className="text-xl font-black text-gray-900 leading-none tracking-tight">Silai<span className="text-[#FF5C8A]">wala</span></h1>
                             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter mt-1">Premium Collection</p>
                         </div>
                     </div>
@@ -28,21 +28,21 @@ const StoreHeader = ({ searchQuery, setSearchQuery }) => {
                     <div className="flex items-center gap-2">
                         <Link
                             to="/wishlist"
-                            className="p-2.5 bg-gray-50 rounded-2xl text-gray-400 border border-gray-100 hover:bg-white hover:text-rose-600 transition-all active:scale-90 relative"
+                            className="p-2.5 bg-gray-50 rounded-2xl text-gray-400 border border-gray-100 hover:bg-white hover:text-[#FF5C8A] transition-all active:scale-90 relative"
                         >
-                            <Heart size={20} className={wishlistCount > 0 ? "fill-rose-600 text-rose-600" : ""} />
+                            <Heart size={20} className={wishlistCount > 0 ? "fill-[#FF5C8A] text-[#FF5C8A]" : ""} />
                             {wishlistCount > 0 && (
-                                <span className="absolute top-2 right-2 h-2 w-2 bg-rose-500 rounded-full border border-white"></span>
+                                <span className="absolute top-2 right-2 h-2 w-2 bg-[#FF5C8A] rounded-full border border-white"></span>
                             )}
                         </Link>
 
                         <Link
                             to="/cart"
-                            className="p-2.5 bg-gray-50 rounded-2xl text-gray-400 border border-gray-100 hover:bg-white hover:text-rose-600 transition-all active:scale-90 relative"
+                            className="p-2.5 bg-gray-50 rounded-2xl text-gray-400 border border-gray-100 hover:bg-white hover:text-[#FF5C8A] transition-all active:scale-90 relative"
                         >
                             <ShoppingBag size={20} />
                             {cartCount > 0 && (
-                                <span className="absolute -top-1 -right-1 h-5 w-5 bg-rose-600 text-white text-[10px] font-black flex items-center justify-center rounded-full border-2 border-white shadow-md">
+                                <span className="absolute -top-1 -right-1 h-5 w-5 bg-[#FF5C8A] text-white text-[10px] font-black flex items-center justify-center rounded-full border-2 border-white shadow-md">
                                     {cartCount}
                                 </span>
                             )}
@@ -59,14 +59,14 @@ const StoreHeader = ({ searchQuery, setSearchQuery }) => {
                 {/* Search Bar */}
                 <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Search className="h-4 w-4 text-gray-400 group-focus-within:text-rose-600 transition-colors" />
+                        <Search className="h-4 w-4 text-gray-400 group-focus-within:text-[#FF5C8A] transition-colors" />
                     </div>
                     <input
                         type="text"
                         placeholder="Search fabrics, designs, collections..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-gray-100 border border-transparent rounded-[1.25rem] py-3.5 pl-11 pr-4 text-sm font-medium focus:bg-white focus:outline-none focus:ring-4 focus:ring-rose-600/5 focus:border-rose-600/20 transition-all placeholder:text-gray-400 shadow-inner"
+                        className="w-full bg-gray-100 border border-transparent rounded-[1.25rem] py-3.5 pl-11 pr-4 text-sm font-medium focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#FF5C8A]/5 focus:border-[#FF5C8A]/20 transition-all placeholder:text-gray-400 shadow-inner"
                     />
                 </div>
             </div>

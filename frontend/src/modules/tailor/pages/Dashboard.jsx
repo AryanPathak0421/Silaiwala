@@ -12,10 +12,10 @@ import {
 const Dashboard = () => {
     const navigate = useNavigate();
     const stats = [
-        { label: 'Total Orders', value: '48', icon: <ShoppingBag className="text-blue-600" />, change: '+12% from last month' },
+        { label: 'Total Orders', value: '48', icon: <ShoppingBag className="text-primary" />, change: '+12% from last month' },
         { label: 'Pending', value: '12', icon: <Clock className="text-orange-600" />, change: '4 overdue' },
-        { label: 'Completed', value: '32', icon: <CheckCircle className="text-green-600" />, change: '+5 today' },
-        { label: 'Earnings', value: '₹14,500', icon: <TrendingUp className="text-purple-600" />, change: 'Avg ₹450/order' },
+        { label: 'Completed', value: '32', icon: <CheckCircle className="text-primary" />, change: '+5 today' },
+        { label: 'Earnings', value: '₹14,500', icon: <TrendingUp className="text-primary-dark" />, change: 'Avg ₹450/order' },
     ];
 
     const recentOrders = [
@@ -27,9 +27,9 @@ const Dashboard = () => {
 
     const getStatusColor = (status) => {
         switch (status.toLowerCase()) {
-            case 'measuring': return 'bg-blue-100 text-blue-700';
+            case 'measuring': return 'bg-pink-100 text-primary';
             case 'cutting': return 'bg-orange-100 text-orange-700';
-            case 'stitching': return 'bg-purple-100 text-purple-700';
+            case 'stitching': return 'bg-pink-50 text-primary-dark';
             case 'ironing': return 'bg-green-100 text-green-700';
             default: return 'bg-gray-100 text-gray-700';
         }
@@ -48,13 +48,13 @@ const Dashboard = () => {
             {/* Welcome Section */}
             <div className="flex justify-between items-end">
                 <div>
-                    <h2 className="text-3xl font-bold text-[#1e3932]">Welcome back, Royal Stitches! 👋</h2>
+                    <h2 className="text-3xl font-bold text-primary">Welcome back, Royal Stitches! 👋</h2>
                     <p className="text-gray-500 mt-2 font-medium">You have 3 new orders waiting for acceptance today.</p>
                 </div>
                 <div className="flex gap-4">
                     <button
                         onClick={() => navigate('/partner/settings')}
-                        className="px-6 py-2.5 rounded-xl bg-[#1e3932] text-white font-semibold hover:shadow-lg hover:translate-y-[-2px] active:translate-y-[0] transition-all"
+                        className="px-6 py-2.5 rounded-xl bg-primary text-white font-semibold hover:shadow-lg hover:translate-y-[-2px] active:translate-y-[0] transition-all"
                     >
                         Manage Availability
                     </button>
@@ -76,7 +76,7 @@ const Dashboard = () => {
                         <div className="mt-4">
                             <h3 className="text-gray-500 font-medium text-sm">{stat.label}</h3>
                             <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
-                            <p className="text-xs text-green-600 mt-2 font-medium flex items-center gap-1">
+                            <p className="text-xs text-primary mt-2 font-medium flex items-center gap-1">
                                 {stat.change}
                             </p>
                         </div>
@@ -90,7 +90,7 @@ const Dashboard = () => {
                     <h3 className="text-xl font-bold text-gray-900">Active Work Orders</h3>
                     <button
                         onClick={() => navigate('/partner/orders')}
-                        className="text-[#1e3932] font-semibold text-sm flex items-center gap-1 hover:underline"
+                        className="text-primary font-semibold text-sm flex items-center gap-1 hover:underline"
                     >
                         See all orders <ChevronRight size={16} />
                     </button>
@@ -110,7 +110,7 @@ const Dashboard = () => {
                         <tbody className="divide-y divide-gray-100">
                             {recentOrders.map((order) => (
                                 <tr key={order.id} className="hover:bg-gray-50/50 transition-colors group">
-                                    <td className="px-6 py-4 font-bold text-[#1e3932] text-sm uppercase">{order.id}</td>
+                                    <td className="px-6 py-4 font-bold text-primary text-sm uppercase">{order.id}</td>
                                     <td className="px-6 py-4">
                                         <div className="font-medium text-gray-900">{order.customer}</div>
                                         <div className="text-xs text-gray-400">{order.date}</div>
@@ -129,7 +129,7 @@ const Dashboard = () => {
                                     <td className="px-6 py-4 text-right">
                                         <button
                                             onClick={() => navigate('/partner/orders', { state: { highlightOrderTitle: order.id } })}
-                                            className="bg-white border rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-[#1e3932] hover:text-white hover:border-[#1e3932] transition-all"
+                                            className="bg-white border rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-primary hover:text-white hover:border-primary transition-all"
                                         >
                                             Update Status
                                         </button>

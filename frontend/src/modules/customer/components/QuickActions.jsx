@@ -95,7 +95,7 @@ const QuickActions = () => {
                 {actions.length > 4 && (
                     <button 
                         onClick={() => setIsExpanded(!isExpanded)}
-                        className="text-[10px] font-black text-[#FF5C8A] bg-[#f2fcf9] px-3 py-1.5 rounded-full border border-[#FF5C8A]/10 hover:shadow-sm transition-all uppercase tracking-widest sm:hidden"
+                        className="text-[10px] font-black text-[#FF5C8A] bg-pink-50 px-3 py-1.5 rounded-full border border-[#FF5C8A]/10 hover:shadow-sm transition-all uppercase tracking-widest sm:hidden"
                     >
                         {isExpanded ? 'Hide' : 'View All'}
                     </button>

@@ -31,7 +31,7 @@ const OrderSuccess = () => {
             <h1 className="text-2xl font-bold text-gray-900 mb-2 animate-in slide-in-from-bottom-2 duration-700 delay-200">
                 Order Placed Successfully!
             </h1>
-            <p className="text-sm font-bold text-[#1e3932] mb-1 font-mono uppercase tracking-widest">{orderNumber}</p>
+            <p className="text-sm font-bold text-primary mb-1 font-mono uppercase tracking-widest">{orderNumber}</p>
             <p className="text-xs text-gray-500 mb-8 max-w-xs animate-in slide-in-from-bottom-2 duration-700 delay-300">
                 Thank you for choosing us. We have received your order and our artisan is starting to prepare it.
             </p>
@@ -39,7 +39,7 @@ const OrderSuccess = () => {
             <div className="w-full max-w-xs space-y-3 animate-in slide-in-from-bottom-2 duration-700 delay-500">
                 <Link
                     to={`/orders/${orderId}/track`}
-                    className="w-full py-3.5 rounded-full bg-[#1e3932] text-white font-bold shadow-lg shadow-[#1e3932]/20 hover:bg-[#152e28] active:scale-95 transition-all flex items-center justify-center gap-2"
+                    className="w-full py-3.5 rounded-full bg-primary text-white font-bold shadow-lg shadow-pink-900/10 hover:bg-primary-dark active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
                     <PackageCheck size={18} />
                     Track Order Status

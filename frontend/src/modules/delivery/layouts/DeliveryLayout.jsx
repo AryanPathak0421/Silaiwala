@@ -125,7 +125,7 @@ const DeliveryLayout = () => {
     ];
 
     return (
-        <div className="min-h-[100dvh] bg-[#FAFAFB] flex flex-col font-sans selection:bg-indigo-100 selection:text-indigo-700 overflow-x-clip">
+        <div className="min-h-[100dvh] bg-[#FAFAFB] flex flex-col font-sans selection:bg-pink-100 selection:text-primary overflow-x-clip">
             {/* New Task Rapido-Style Alert */}
             <NewTaskAlert onTaskAccepted={(orderId) => {
                 // Refresh data if we are on dashboard or tasks page
@@ -174,10 +174,10 @@ const DeliveryLayout = () => {
                                         <div 
                                             key={n._id} 
                                             onClick={() => !n.isRead && handleMarkRead(n._id)}
-                                            className={`p-4 rounded-2xl border transition-all cursor-pointer ${!n.isRead ? 'bg-emerald-50/50 border-emerald-100' : 'bg-white border-slate-100'}`}
+                                            className={`p-4 rounded-2xl border transition-all cursor-pointer ${!n.isRead ? 'bg-pink-50/50 border-pink-100' : 'bg-white border-slate-100'}`}
                                         >
                                             <div className="flex justify-between items-start mb-1">
-                                                <h3 className={`text-sm font-black ${!n.isRead ? 'text-emerald-800' : 'text-slate-700'}`}>{n.title}</h3>
+                                                <h3 className={`text-sm font-black ${!n.isRead ? 'text-primary' : 'text-slate-700'}`}>{n.title}</h3>
                                                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
                                                     {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </span>
@@ -191,7 +191,7 @@ const DeliveryLayout = () => {
                             <div className="p-6 border-t border-slate-100">
                                 <button 
                                     onClick={handleMarkAllRead}
-                                    className="w-full py-3.5 bg-slate-900 text-white rounded-xl font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-slate-200 active:scale-95 transition-all"
+                                    className="w-full py-3.5 bg-primary text-white rounded-xl font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-pink-200 active:scale-95 transition-all"
                                 >
                                     Mark All As Read
                                 </button>
@@ -201,40 +201,43 @@ const DeliveryLayout = () => {
                 )}
             </AnimatePresence>
 
-            {/* Top Fixed Header */}
-            <header className="fixed top-0 left-0 right-0 h-20 bg-white/80 backdrop-blur-xl border-b border-slate-100 flex items-center justify-between px-6 z-50 shadow-sm">
+            {/* Top Fixed Header - Elegant Mobile Profile Bar */}
+            <header className="fixed top-0 left-0 right-0 h-20 bg-white/90 backdrop-blur-xl border-b border-slate-100 flex items-center justify-between px-6 z-50">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-md overflow-hidden border border-gray-50">
-                        <img src={silaiwalaLogo} alt="Silaiwala" className="w-8 h-8 object-contain" />
+                    <div className="w-11 h-11 bg-white rounded-xl flex items-center justify-center shadow-lg shadow-slate-200/50 overflow-hidden border border-gray-100">
+                        <img src={silaiwalaLogo} alt="Silaiwala" className="w-9 h-9 object-contain p-1" />
                     </div>
                     <div className="flex flex-col">
                         <span className="font-black text-slate-900 text-lg tracking-tighter leading-none">Silaiwala</span>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                            <div className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-slate-300'}`}></div>
+                            <span className="text-[9px] font-black uppercase tracking-[0.1em] text-slate-400">Partner Hub</span>
+                        </div>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    {/* Header Status Toggle */}
+                <div className="flex items-center gap-3">
+                    {/* Status Pill Toggle */}
                     <button
                         onClick={toggleAvailability}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-500 ${isOnline
-                            ? 'bg-emerald-100 border-emerald-100 text-emerald-800 shadow-sm'
+                        className={`flex items-center gap-2 px-3 py-2 rounded-full border transition-all duration-300 ${isOnline
+                            ? 'bg-pink-50 border-pink-100 text-primary'
                             : 'bg-slate-50 border-slate-200 text-slate-400'
                             }`}
                     >
-                        <div className={`w-[6px] h-[6px] rounded-full ${isOnline ? 'bg-emerald-800 animate-pulse' : 'bg-slate-300'}`}></div>
                         <span className="text-[9px] font-black uppercase tracking-widest leading-none">
                             {isOnline ? 'Online' : 'Offline'}
                         </span>
-                        <Power size={10} strokeWidth={3} className={isOnline ? 'text-emerald-800' : 'text-slate-300'} />
+                        <Power size={11} strokeWidth={3} className={isOnline ? 'text-primary' : 'text-slate-300'} />
                     </button>
 
                     <button
                         onClick={() => setShowNotifications(true)}
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all relative ${showNotifications ? 'bg-[#142921] text-white shadow-lg shadow-slate-200' : 'bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-900'}`}
+                        className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all relative ${showNotifications ? 'bg-primary text-white shadow-lg shadow-pink-200' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
                     >
                         <Bell size={20} className={showNotifications ? 'animate-bounce' : ''} />
                         {unreadCount > 0 && (
-                            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white">
+                            <span className="absolute top-1 right-1 w-5 h-5 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-sm ring-2 ring-rose-50">
                                 {unreadCount > 9 ? '9+' : unreadCount}
                             </span>
                         )}
@@ -258,7 +261,7 @@ const DeliveryLayout = () => {
             </main>
 
             {/* Bottom Mobile Navigation */}
-            <nav className="fixed bottom-0 left-0 right-0 h-[80px] bg-[#142921] backdrop-blur-xl rounded-t-[1.5rem] shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.3)] flex items-center justify-around px-2 z-50 border-t border-white/5 md:max-w-md md:mx-auto pb-safe">
+            <nav className="fixed bottom-0 left-0 right-0 h-[80px] bg-black backdrop-blur-xl rounded-t-[1.5rem] shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.3)] flex items-center justify-around px-2 z-50 border-t border-white/5 md:max-w-md md:mx-auto pb-safe">
                 {navItems.map((item) => {
                     const isActive = location.pathname === item.path;
                     return (
@@ -268,7 +271,7 @@ const DeliveryLayout = () => {
                             className="relative group flex flex-col items-center justify-center w-16 h-full"
                         >
                             <div className={`p-3 rounded-[1.2rem] transition-all duration-300 ${isActive
-                                ? 'bg-emerald-800 text-white shadow-xl shadow-emerald-800/20 mb-3'
+                                ? 'bg-primary text-white shadow-xl shadow-primary/20 mb-3'
                                 : 'text-slate-400 hover:text-slate-200'
                                 }`}>
                                 <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
@@ -276,7 +279,7 @@ const DeliveryLayout = () => {
                             {isActive && (
                                 <motion.span
                                     layoutId="navLabel"
-                                    className="absolute bottom-2.5 text-[9px] font-black text-emerald-800 uppercase tracking-widest"
+                                    className="absolute bottom-2.5 text-[9px] font-black text-primary uppercase tracking-widest"
                                 >
                                     {item.name}
                                 </motion.span>

@@ -16,7 +16,7 @@ const RECENTLY = [
 const RecentlyViewed = ({ title = "Recently Viewed", products = RECENTLY }) => {
     return (
         <div className="py-8 bg-gray-50">
-            <h3 className="text-lg font-bold text-[#1e3932] px-4 mb-4">{title}</h3>
+            <h3 className="text-lg font-bold text-primary px-4 mb-4">{title}</h3>
             <div className="flex overflow-x-auto gap-4 px-4 pb-4 scrollbar-hide snap-x">
                 {products.map((product) => (
                     <div key={product.id} className="min-w-[160px] md:min-w-[200px] snap-center">

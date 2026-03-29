@@ -45,8 +45,8 @@ const ServiceCard = ({ service }) => {
             {/* Content Section */}
             <div className="p-4 flex flex-col flex-1">
                 <div className="flex justify-between items-start mb-1">
-                    <h3 className="font-bold text-gray-900 group-hover:text-[#1e3932] transition-colors line-clamp-1">{service.title}</h3>
-                    <span className="font-bold text-[#1e3932]">₹{service.basePrice}</span>
+                    <h3 className="font-bold text-gray-900 group-hover:text-primary transition-colors line-clamp-1">{service.title}</h3>
+                    <span className="font-bold text-primary">₹{service.basePrice}</span>
                 </div>
 
                 <p className="text-xs text-gray-500 line-clamp-2 mb-3 flex-1">{service.description}</p>
@@ -73,7 +73,7 @@ const ServiceCard = ({ service }) => {
                             e.stopPropagation();
                             handleNavigate();
                         }}
-                        className="flex-1 py-2 px-3 rounded-xl bg-[#1e3932] text-white text-xs font-semibold hover:bg-[#152e28] shadow-sm transition-colors"
+                        className="flex-1 py-2 px-3 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-primary-dark shadow-sm transition-colors"
                     >
                         Book
                     </button>
@@ -108,7 +108,7 @@ const ServicesGrid = () => {
     if (isLoading) {
         return (
             <div className="p-12 flex flex-col items-center justify-center gap-3">
-                <Loader2 className="animate-spin text-[#1e3932]" />
+                <Loader2 className="animate-spin text-primary" />
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Cataloging Services...</p>
             </div>
         );

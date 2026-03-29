@@ -20,7 +20,7 @@ const ProductInfo = ({ product }) => {
 
             {/* Price Block */}
             <div className="flex items-end gap-3 pb-4 border-b border-gray-100">
-                <span className="text-3xl font-bold text-[#1e3932]">₹{product.price}</span>
+                <span className="text-3xl font-bold text-primary">₹{product.price}</span>
                 {product.originalPrice && (
                     <>
                         <span className="text-lg text-gray-400 line-through mb-1">₹{product.originalPrice}</span>

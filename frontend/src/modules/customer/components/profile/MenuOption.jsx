@@ -9,12 +9,12 @@ const MenuOption = ({ icon: Icon, label, subLabel, to, onClick, isDanger }) => {
         <Component
             to={to}
             onClick={onClick}
-            className={`w-full flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-[#1e3932]/20 hover:bg-[#1e3932]/[0.02] transition-all group mb-3 ${isDanger ? 'hover:bg-red-50 hover:border-red-100' : ''}`}
+            className={`w-full flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-[#FF5C8A]/20 hover:bg-[#FF5C8A]/[0.02] transition-all group mb-3 ${isDanger ? 'hover:bg-red-50 hover:border-red-100' : ''}`}
         >
             <div className="flex items-center gap-4">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isDanger
                         ? 'bg-red-50 text-red-500 group-hover:bg-red-100'
-                        : 'bg-green-50 text-[#1e3932] group-hover:bg-[#1e3932] group-hover:text-white'
+                        : 'bg-pink-50 text-[#FF5C8A] group-hover:bg-[#FF5C8A] group-hover:text-white'
                     }`}>
                     <Icon size={18} />
                 </div>
@@ -26,7 +26,7 @@ const MenuOption = ({ icon: Icon, label, subLabel, to, onClick, isDanger }) => {
 
             <ChevronRight
                 size={16}
-                className={`transition-colors ${isDanger ? 'text-red-300 group-hover:text-red-500' : 'text-gray-300 group-hover:text-[#1e3932]'}`}
+                className={`transition-colors ${isDanger ? 'text-red-300 group-hover:text-red-500' : 'text-gray-300 group-hover:text-[#FF5C8A]'}`}
             />
         </Component>
     );

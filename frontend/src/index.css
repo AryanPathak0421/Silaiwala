@@ -1,39 +1,70 @@
 @import "tailwindcss";
 
 @theme {
-    /* Centralized Brand Colors */
+    /* Centralized Brand Identity */
     --color-primary: #FF5C8A;
     --color-primary-light: #FF85A2;
     --color-primary-dark: #cc496e;
     --color-primary-soft: #fff5f7;
     
-    /* Legacy Green color (for reference or if needed elsewhere) */
-    --color-brand-green: #FF5C8A;
+    /* Secondary & Semantic Colors */
+    --color-secondary: #0f172a;
+    --color-accent: #f59e0b;
+    --color-success: #10b981;
+    --color-warning: #facc15;
+    --color-error: #ef4444;
     
-    /* Ultra High Contrast Gray Overrides for Max Readability */
-    --color-gray-400: #1a1a1a; /* Very Dark Black-Gray */
-    --color-gray-500: #111827; /* Rich Black */
-    --color-gray-600: #020617; /* Absolute Contrast */
-    --color-gray-300: #404040; /* Dark Charcoal */
-    
-    /* Custom spacing & roundedness */
-    --radius-2xl: 1rem;
-    --radius-3xl: 1.5rem;
+    /* Neutrals - High Contrast Overrides */
+    --color-gray-50: #f8fafc;
+    --color-gray-100: #f1f5f9;
+    --color-gray-200: #e2e8f0;
+    --color-gray-300: #cbd5e1;
+    --color-gray-400: #94a3b8;
+    --color-gray-500: #64748b;
+    --color-gray-600: #475569;
+    --color-gray-700: #334155;
+    --color-gray-800: #1e293b;
+    --color-gray-900: #0f172a;
+
+    /* Custom Border Radius */
+    --radius-xl: 1rem;
+    --radius-2xl: 1.5rem;
+    --radius-3xl: 2rem;
+    --radius-4xl: 3rem;
+
+    /* Extended Spacing */
+    --spacing-18: 4.5rem;
+    --spacing-22: 5.5rem;
 }
 
 :root {
     --brand-color: #FF5C8A;
 }
 
-/* Base utility for centralizing the theme color if needed */
+/* Base utility for centralizing the theme color */
 .bg-brand {
-    background-color: var(--brand-color);
+    background-color: var(--color-primary);
 }
 
 .text-brand {
-    color: var(--brand-color);
+    color: var(--color-primary);
 }
 
 .border-brand {
-    border-color: var(--brand-color);
+    border-color: var(--color-primary);
+}
+
+.shadow-brand {
+    --tw-shadow: 0 10px 25px -5px rgba(255, 92, 138, 0.25);
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
+.gradient-brand {
+    background-image: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+}
+
+.glass-brand {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }

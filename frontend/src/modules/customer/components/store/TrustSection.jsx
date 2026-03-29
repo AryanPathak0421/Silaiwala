@@ -15,7 +15,7 @@ const TrustSection = () => {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
                     {items.map((item, index) => (
                         <div key={index} className="flex flex-col items-center gap-2 group cursor-default">
-                            <div className="p-3 bg-gray-50 rounded-full text-[#1e3932] group-hover:bg-[#1e3932] group-hover:text-white transition-colors duration-300">
+                            <div className="p-3 bg-gray-50 rounded-full text-primary group-hover:bg-primary group-hover:text-white transition-colors duration-300">
                                 <item.icon className="h-6 w-6" />
                             </div>
                             <div>

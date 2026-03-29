@@ -25,7 +25,7 @@ const DeliveryDetails = () => {
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center py-20">
-                <Loader2 size={40} className="text-[#1e3932] animate-spin mb-4" />
+                <Loader2 size={40} className="text-primary animate-spin mb-4" />
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Fetching active riders...</p>
             </div>
         );
@@ -52,7 +52,7 @@ const DeliveryDetails = () => {
             {/* Active Partner Card */}
             {currentPartner ? (
                 <div className="bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.06)] relative overflow-hidden group">
-                    <div className="absolute -right-4 -top-4 h-20 w-20 bg-[#1e3932]/5 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700"></div>
+                    <div className="absolute -right-4 -top-4 h-20 w-20 bg-primary/5 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700"></div>
 
                     <div className="flex flex-col items-center">
                         <div className="h-20 w-20 bg-gray-100 rounded-[2rem] border-4 border-white shadow-lg overflow-hidden flex items-center justify-center">
@@ -72,11 +72,11 @@ const DeliveryDetails = () => {
                     <div className="grid grid-cols-2 gap-3 mt-6">
                         <a 
                             href={`tel:${currentPartner.phone || '+91'}`} 
-                            className="flex items-center justify-center gap-2 py-3 bg-gray-50 rounded-2xl border border-gray-100 text-[#1e3932] font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all no-underline"
+                            className="flex items-center justify-center gap-2 py-3 bg-gray-50 rounded-2xl border border-gray-100 text-primary font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all no-underline"
                         >
                             <Phone size={14} fill="currentColor" /> Call
                         </a>
-                        <button className="flex items-center justify-center gap-2 py-3 bg-gray-50 rounded-2xl border border-gray-100 text-[#1e3932] font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all outline-none">
+                        <button className="flex items-center justify-center gap-2 py-3 bg-gray-50 rounded-2xl border border-gray-100 text-primary font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all outline-none">
                             <MessageSquare size={14} fill="currentColor" /> Chat
                         </button>
                     </div>
@@ -84,7 +84,7 @@ const DeliveryDetails = () => {
                     <div className="mt-6 space-y-3">
                         <div className="flex items-center justify-between p-3.5 bg-gray-50/50 rounded-2xl border border-gray-50">
                             <div className="flex items-center gap-3">
-                                <div className="text-[#1e3932]"><Truck size={18} /></div>
+                                <div className="text-primary"><Truck size={18} /></div>
                                 <span className="text-xs font-bold text-gray-600">Active Task</span>
                             </div>
                             <span className="text-[11px] font-black text-gray-900 uppercase">#{currentPartner.orderId} • {currentPartner.task}</span>
@@ -92,7 +92,7 @@ const DeliveryDetails = () => {
                     </div>
                 </div>
             ) : (
-                <div className="bg-[#1e3932] p-6 rounded-[2.5rem] text-white flex items-center justify-between">
+                <div className="bg-primary p-6 rounded-[2.5rem] text-white flex items-center justify-between">
                     <div>
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-1">Status</p>
                         <h3 className="text-lg font-black tracking-tight leading-none uppercase italic">Waiting for Courier</h3>

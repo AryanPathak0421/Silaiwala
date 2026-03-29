@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Ruler, Upload, User, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react';
+import { Ruler, Upload, User, ChevronDown, ChevronUp, CheckCircle2, Home } from 'lucide-react';
 import { cn } from '../../../../utils/cn';
 import SelfMeasureForm from './measurement-forms/SelfMeasureForm';
 import UploadSlip from './measurement-forms/UploadSlip';
@@ -12,6 +12,7 @@ const MeasurementSelector = ({ selectedType, onSelectType, onMeasurementComplete
     const [completedMeasurements, setCompletedMeasurements] = useState({
         new: false,
         upload: false,
+        home: false,
         saved: !!selectedSavedProfile
     });
 
@@ -52,18 +53,18 @@ const MeasurementSelector = ({ selectedType, onSelectType, onMeasurementComplete
                                 onClick={() => handleSavedProfileSelect(m)}
                                 className={cn(
                                     "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all relative overflow-hidden",
-                                    selectedSavedProfile?._id === m._id ? "border-[#1e3932] bg-[#f2fcf9] shadow-sm" : "border-gray-100 hover:border-gray-200"
+                                    selectedSavedProfile?._id === m._id ? "border-primary bg-[#f2fcf9] shadow-sm" : "border-gray-100 hover:border-gray-200"
                                 )}
                             >
-                                <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 z-10">
+                                <div className="w-8 h-8 rounded-full bg-pink-50 flex items-center justify-center text-primary z-10">
                                     <User size={16} />
                                 </div>
                                 <div className="flex-1 z-10">
                                     <p className="text-sm font-semibold text-gray-900">{m.profileName}</p>
                                     <p className="text-[10px] text-gray-500">{m.garmentType}</p>
                                 </div>
-                                <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center z-10", selectedSavedProfile?._id === m._id ? "border-[#1e3932]" : "border-gray-300")}>
-                                    {selectedSavedProfile?._id === m._id && <div className="w-2 h-2 rounded-full bg-[#1e3932]" />}
+                                <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center z-10", selectedSavedProfile?._id === m._id ? "border-primary" : "border-gray-300")}>
+                                    {selectedSavedProfile?._id === m._id && <div className="w-2 h-2 rounded-full bg-primary" />}
                                 </div>
                             </div>
                          ))}
@@ -73,7 +74,7 @@ const MeasurementSelector = ({ selectedType, onSelectType, onMeasurementComplete
                 {/* 2. Enter New Measurement */}
                 <div className={cn(
                     "border rounded-xl overflow-hidden transition-all",
-                    selectedType === 'new' ? "border-[#1e3932] shadow-sm" : "border-gray-100 hover:border-gray-200"
+                    selectedType === 'new' ? "border-primary shadow-sm" : "border-gray-100 hover:border-gray-200"
                 )}>
                     <div
                         onClick={() => onSelectType('new')} // Just select, don't toggle form visibility directly here if we want it to stay open when selected
@@ -82,7 +83,7 @@ const MeasurementSelector = ({ selectedType, onSelectType, onMeasurementComplete
                             selectedType === 'new' ? "bg-[#f2fcf9]" : "bg-white"
                         )}
                     >
-                        <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center text-[#1e3932]">
+                        <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center text-primary">
                             <Ruler size={16} />
                         </div>
                         <div className="flex-1">
@@ -92,7 +93,7 @@ const MeasurementSelector = ({ selectedType, onSelectType, onMeasurementComplete
                             </div>
                             <p className="text-[10px] text-gray-500">Manually enter Chest, Waist, etc.</p>
                         </div>
-                        {selectedType === 'new' ? <ChevronUp size={16} className="text-[#1e3932]" /> : <ChevronDown size={16} className="text-gray-400" />}
+                        {selectedType === 'new' ? <ChevronUp size={16} className="text-primary" /> : <ChevronDown size={16} className="text-gray-400" />}
                     </div>
 
                     {/* Expandable Form */}
@@ -108,7 +109,7 @@ const MeasurementSelector = ({ selectedType, onSelectType, onMeasurementComplete
                 {/* 3. Upload Measurement Slip */}
                 <div className={cn(
                     "border rounded-xl overflow-hidden transition-all",
-                    selectedType === 'upload' ? "border-[#1e3932] shadow-sm" : "border-gray-100 hover:border-gray-200"
+                    selectedType === 'upload' ? "border-primary shadow-sm" : "border-gray-100 hover:border-gray-200"
                 )}>
                     <div
                         onClick={() => onSelectType('upload')}
@@ -127,7 +128,7 @@ const MeasurementSelector = ({ selectedType, onSelectType, onMeasurementComplete
                             </div>
                             <p className="text-[10px] text-gray-500">Photo of handwritten notes</p>
                         </div>
-                        {selectedType === 'upload' ? <ChevronUp size={16} className="text-[#1e3932]" /> : <ChevronDown size={16} className="text-gray-400" />}
+                        {selectedType === 'upload' ? <ChevronUp size={16} className="text-primary" /> : <ChevronDown size={16} className="text-gray-400" />}
                     </div>
 
                     {/* Expandable Form */}
@@ -136,6 +137,37 @@ const MeasurementSelector = ({ selectedType, onSelectType, onMeasurementComplete
                             onUpload={handleUploadComplete}
                             onCancel={() => onSelectType(null)}
                         />
+                    )}
+                </div>
+
+                {/* 4. Tailor at Home (Visit) */}
+                <div
+                    onClick={() => onSelectType('home')}
+                    className={cn(
+                        "group p-3 rounded-xl border cursor-pointer transition-all flex items-center gap-3 relative overflow-hidden",
+                        selectedType === 'home' ? "border-primary bg-pink-50 ring-1 ring-primary shadow-sm" : "border-gray-100 bg-white hover:border-gray-200"
+                    )}
+                >
+                    <div className={cn(
+                        "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
+                        selectedType === 'home' ? "bg-primary text-white" : "bg-blue-50 text-blue-600"
+                    )}>
+                        <Home size={16} />
+                    </div>
+                    <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                            <h4 className="text-sm font-bold text-gray-900">Tailor at Home</h4>
+                            <span className="text-[8px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-black uppercase tracking-widest">Premium</span>
+                        </div>
+                        <p className="text-[10px] text-gray-400 font-medium leading-none mt-1">Get measured by experts at your doorstep</p>
+                    </div>
+                    <div className="text-right">
+                        <p className="text-xs font-black text-primary">₹250</p>
+                    </div>
+                    {selectedType === 'home' && (
+                        <div className="absolute top-0 right-0 p-1 bg-primary text-white rounded-bl-lg">
+                            <CheckCircle2 size={10} />
+                        </div>
                     )}
                 </div>
 

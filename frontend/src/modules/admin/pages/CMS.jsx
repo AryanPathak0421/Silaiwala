@@ -11,7 +11,14 @@ const AdminCMS = () => {
     // Banner States
     const [bannersData, setBannersData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [newBanner, setNewBanner] = useState({ title: '', targetLocation: 'Home Page - Top Carousel', image: 'https://cdn-icons-png.flaticon.com/128/9284/9284227.png' });
+    const [newBanner, setNewBanner] = useState({ 
+        title: '', 
+        subtitle: '',
+        badge: '',
+        color: 'bg-gradient-to-br from-[#FF5C8A] to-[#ff85a2]',
+        targetLocation: 'Home Page - Top Carousel', 
+        image: 'https://cdn-icons-png.flaticon.com/128/9284/9284227.png' 
+    });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isImageUploading, setIsImageUploading] = useState(false);
     
@@ -78,7 +85,14 @@ const AdminCMS = () => {
         try {
             await api.post('/admin/cms/banners', newBanner);
             setIsAddBannerModalOpen(false);
-            setNewBanner({ title: '', targetLocation: 'Home Page - Top Carousel', image: 'https://cdn-icons-png.flaticon.com/128/9284/9284227.png' });
+            setNewBanner({ 
+                title: '', 
+                subtitle: '',
+                badge: '',
+                color: 'bg-gradient-to-br from-[#FF5C8A] to-[#ff85a2]',
+                targetLocation: 'Home Page - Top Carousel', 
+                image: 'https://cdn-icons-png.flaticon.com/128/9284/9284227.png' 
+            });
             fetchData();
         } catch (error) {
             console.error('Failed to create banner:', error);
@@ -183,7 +197,7 @@ const AdminCMS = () => {
                 {selectedTab === 'Banners' && (
                     <button
                         onClick={() => setIsAddBannerModalOpen(true)}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-[#1e3932] text-white text-xs font-black rounded-xl hover:bg-[#0a211e] shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest"
+                        className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white text-xs font-black rounded-xl hover:bg-primary-dark shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest"
                     >
                         <Plus size={16} /> Add Banner
                     </button>
@@ -196,7 +210,7 @@ const AdminCMS = () => {
                             setNewContent({ title: '', content: '', type: 'legal', slug: '', category: 'general' });
                             setIsAddContentModalOpen(true);
                         }}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-[#1e3932] text-white text-xs font-black rounded-xl hover:bg-[#0a211e] shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest"
+                        className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white text-xs font-black rounded-xl hover:bg-primary-dark shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest"
                     >
                         <Plus size={16} /> Add {selectedTab === 'Legal Pages' ? 'Document' : 'FAQ'}
                     </button>
@@ -210,7 +224,7 @@ const AdminCMS = () => {
                         <button
                             key={tab}
                             onClick={() => setSelectedTab(tab)}
-                            className={`px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap transition-all flex items-center gap-2 ${selectedTab === tab ? 'bg-white text-[#1e3932] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                            className={`px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap transition-all flex items-center gap-2 ${selectedTab === tab ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
                         >
                             {tab}
                         </button>
@@ -222,7 +236,7 @@ const AdminCMS = () => {
             <div className="flex-1 overflow-y-auto pb-6 relative">
                 {isLoading && (
                      <div className="w-full h-1 bg-gray-100 overflow-hidden absolute top-0 left-0 z-10">
-                         <div className="h-full bg-[#1e3932] animate-pulse w-1/3"></div>
+                         <div className="h-full bg-primary animate-pulse w-1/3"></div>
                      </div>
                 )}
                 {selectedTab === 'Banners' && (
@@ -242,7 +256,7 @@ const AdminCMS = () => {
                                         </span>
                                     </div>
                                     <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button className="p-1.5 bg-white text-gray-700 hover:text-[#1e3932] shadow-sm rounded-lg transition-colors">
+                                        <button className="p-1.5 bg-white text-gray-700 hover:text-primary shadow-sm rounded-lg transition-colors">
                                             <Edit2 size={14} />
                                         </button>
                                         <button onClick={() => handleDeleteBanner(banner._id)} className="p-1.5 bg-white text-gray-700 hover:text-red-600 shadow-sm rounded-lg transition-colors">
@@ -264,7 +278,7 @@ const AdminCMS = () => {
                         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
                             <div>
                                 <h3 className="text-sm font-black text-gray-900 flex items-center gap-2 tracking-tight">
-                                    <Megaphone size={18} className="text-[#1e3932]" />
+                                    <Megaphone size={18} className="text-primary" />
                                     Broadcast Push Notification
                                 </h3>
                                 <p className="text-[10px] text-gray-500 font-medium mt-1">Send manual alerts to all active users</p>
@@ -276,7 +290,7 @@ const AdminCMS = () => {
                                     <select 
                                         value={notification.targetAudience}
                                         onChange={e => setNotification({...notification, targetAudience: e.target.value})}
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 outline-none focus:border-[#1e3932] transition-colors appearance-none"
+                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 outline-none focus:border-primary transition-colors appearance-none"
                                     >
                                         <option value="customer">All Customers</option>
                                         <option value="tailor">All Tailors</option>
@@ -290,7 +304,7 @@ const AdminCMS = () => {
                                         value={notification.title}
                                         onChange={e => setNotification({...notification, title: e.target.value})}
                                         placeholder="e.g. 50% Off on Stitching" 
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 outline-none focus:border-[#1e3932] transition-colors" 
+                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 outline-none focus:border-primary transition-colors" 
                                     />
                                 </div>
                                 <div>
@@ -300,13 +314,13 @@ const AdminCMS = () => {
                                         value={notification.message}
                                         onChange={e => setNotification({...notification, message: e.target.value})}
                                         placeholder="Type your message here..." 
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 outline-none focus:border-[#1e3932] transition-colors resize-none"
+                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 outline-none focus:border-primary transition-colors resize-none"
                                     ></textarea>
                                 </div>
                                 <button 
                                     onClick={handleSendBroadcast}
                                     disabled={isSending}
-                                    className="w-full py-3 bg-[#1e3932] text-white text-xs font-black rounded-xl hover:bg-[#0a211e] shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest flex justify-center items-center gap-2 disabled:opacity-50"
+                                    className="w-full py-3 bg-primary text-white text-xs font-black rounded-xl hover:bg-primary-dark shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest flex justify-center items-center gap-2 disabled:opacity-50"
                                 >
                                     {isSending ? <div className="w-5 h-5 border-2 border-white border-t-transparent animate-spin rounded-full" /> : <Send size={16} />} 
                                     {isSending ? 'Sending...' : 'Send Broadcast'}
@@ -314,14 +328,14 @@ const AdminCMS = () => {
                             </div>
                         </div>
 
-                        <div className="bg-gradient-to-br from-[#1e3932] to-[#0a211e] p-6 rounded-2xl shadow-sm text-white flex flex-col items-center justify-center text-center relative overflow-hidden group">
+                        <div className="bg-gradient-to-br from-primary to-primary-dark p-6 rounded-2xl shadow-sm text-white flex flex-col items-center justify-center text-center relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                                 <Smartphone size={100} />
                             </div>
                             <Smartphone size={48} className="text-white/80 mb-4 relative z-10" />
                             <h3 className="text-lg font-black tracking-tight relative z-10">Automated Flows</h3>
                             <p className="text-xs text-white/70 mt-2 max-w-sm relative z-10">Transactional notifications (order updates, shipping, payments) are handled automatically by the system algorithms.</p>
-                            <button className="mt-6 px-6 py-2.5 bg-white text-[#1e3932] text-[10px] font-black rounded-xl hover:shadow-lg transition-all uppercase tracking-widest relative z-10">
+                            <button className="mt-6 px-6 py-2.5 bg-white text-primary text-[10px] font-black rounded-xl hover:shadow-lg transition-all uppercase tracking-widest relative z-10">
                                 View Notification Logs
                             </button>
                         </div>
@@ -341,14 +355,14 @@ const AdminCMS = () => {
                             </thead>
                             <tbody className="divide-y divide-gray-50">
                                 {cmsContent.map((doc, i) => (
-                                    <tr key={i} className="hover:bg-[#1e3932]/5 transition-colors group">
+                                    <tr key={i} className="hover:bg-primary/5 transition-colors group">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="p-2 bg-gray-100 text-gray-500 rounded-lg group-hover:text-[#1e3932] group-hover:bg-[#1e3932]/10 transition-colors">
+                                                <div className="p-2 bg-gray-100 text-gray-500 rounded-lg group-hover:text-primary group-hover:bg-primary/10 transition-colors">
                                                     <FileText size={16} />
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-bold text-gray-900 group-hover:text-[#1e3932] transition-colors">{doc.title}</span>
+                                                    <span className="text-sm font-bold text-gray-900 group-hover:text-primary transition-colors">{doc.title}</span>
                                                     <span className="text-[10px] text-gray-400 font-medium">/{doc.slug}</span>
                                                 </div>
                                             </div>
@@ -365,7 +379,7 @@ const AdminCMS = () => {
                                             <div className="flex justify-end gap-2">
                                                 <button 
                                                     onClick={() => handleEditContent(doc)}
-                                                    className="px-4 py-2 bg-gray-50 text-[#1e3932] text-[10px] font-black rounded-lg hover:bg-gray-100 uppercase tracking-widest border border-gray-200"
+                                                    className="px-4 py-2 bg-gray-50 text-primary text-[10px] font-black rounded-lg hover:bg-gray-100 uppercase tracking-widest border border-gray-200"
                                                 >
                                                     Edit
                                                 </button>
@@ -399,9 +413,9 @@ const AdminCMS = () => {
                             </thead>
                             <tbody className="divide-y divide-gray-50">
                                 {cmsContent.map((faq, i) => (
-                                    <tr key={i} className="hover:bg-[#1e3932]/5 transition-colors group">
+                                    <tr key={i} className="hover:bg-primary/5 transition-colors group">
                                         <td className="px-6 py-4 max-w-md">
-                                            <span className="text-sm font-bold text-gray-900 group-hover:text-[#1e3932] transition-colors block truncate">{faq.title}</span>
+                                            <span className="text-sm font-bold text-gray-900 group-hover:text-primary transition-colors block truncate">{faq.title}</span>
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">{faq.category}</span>
@@ -415,7 +429,7 @@ const AdminCMS = () => {
                                             <div className="flex justify-end gap-2">
                                                 <button 
                                                     onClick={() => handleEditContent(faq)}
-                                                    className="px-4 py-2 bg-gray-50 text-[#1e3932] text-[10px] font-black rounded-lg hover:bg-gray-100 uppercase tracking-widest border border-gray-200"
+                                                    className="px-4 py-2 bg-gray-50 text-primary text-[10px] font-black rounded-lg hover:bg-gray-100 uppercase tracking-widest border border-gray-200"
                                                 >
                                                     Edit
                                                 </button>
@@ -464,15 +478,36 @@ const AdminCMS = () => {
                                 <div className="p-6 space-y-5 flex-1 bg-white">
                                     <div>
                                         <label className="block text-[10px] font-black uppercase text-gray-500 tracking-widest mb-1.5">Banner Title (Internal)</label>
-                                        <input type="text" value={newBanner.title} onChange={e => setNewBanner({...newBanner, title: e.target.value})} placeholder="e.g. Diwali Flash Sale" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-[#1e3932] transition-colors" />
+                                        <input type="text" value={newBanner.title} onChange={e => setNewBanner({...newBanner, title: e.target.value})} placeholder="e.g. Diwali Flash Sale" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-primary transition-colors" />
                                     </div>
-                                    <div>
-                                        <label className="block text-[10px] font-black uppercase text-gray-500 tracking-widest mb-1.5">Placement Location</label>
-                                        <select value={newBanner.targetLocation} onChange={e => setNewBanner({...newBanner, targetLocation: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-[#1e3932] transition-colors appearance-none">
-                                            <option>Home Page - Top Carousel</option>
-                                            <option>Store Tab - Header Banner</option>
-                                            <option>Promotional Popup</option>
-                                        </select>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-[10px] font-black uppercase text-gray-500 tracking-widest mb-1.5">Subtitle (Public)</label>
+                                            <input type="text" value={newBanner.subtitle} onChange={e => setNewBanner({...newBanner, subtitle: e.target.value})} placeholder="e.g. On your first custom stitching order" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-primary transition-colors" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-black uppercase text-gray-500 tracking-widest mb-1.5">Badge Text</label>
+                                            <input type="text" value={newBanner.badge} onChange={e => setNewBanner({...newBanner, badge: e.target.value})} placeholder="e.g. LIMITED OFFER" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-primary transition-colors" />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-[10px] font-black uppercase text-gray-500 tracking-widest mb-1.5">Placement Location</label>
+                                            <select value={newBanner.targetLocation} onChange={e => setNewBanner({...newBanner, targetLocation: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-primary transition-colors appearance-none">
+                                                <option>Home Page - Top Carousel</option>
+                                                <option>Store Tab - Header Banner</option>
+                                                <option>Promotional Popup</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-black uppercase text-gray-500 tracking-widest mb-1.5">Gradient Color (Tailwind)</label>
+                                            <select value={newBanner.color} onChange={e => setNewBanner({...newBanner, color: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-primary transition-colors appearance-none">
+                                                <option value="bg-gradient-to-br from-[#FF5C8A] to-[#ff85a2]">SilaiWala Pink</option>
+                                                <option value="bg-gradient-to-br from-[#1e3e5a] to-[#2d5a8c]">Deep Ocean Blue</option>
+                                                <option value="bg-gradient-to-br from-[#5a1e3e] to-[#8c2d5a]">Luxury Purple</option>
+                                                <option value="bg-gradient-to-br from-[#1e3932] to-[#2d5246]">Classic Emerald</option>
+                                            </select>
+                                        </div>
                                     </div>
                                     <div>
                                         <label className="block text-[10px] font-black uppercase text-gray-500 tracking-widest mb-1.5">Banner Image</label>
@@ -483,7 +518,7 @@ const AdminCMS = () => {
                                                     value={newBanner.image} 
                                                     onChange={e => setNewBanner({...newBanner, image: e.target.value})} 
                                                     placeholder="https://..." 
-                                                    className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-[#1e3932] transition-colors" 
+                                                    className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-primary transition-colors" 
                                                 />
                                                 <div className="relative">
                                                     <input
@@ -495,7 +530,7 @@ const AdminCMS = () => {
                                                     />
                                                     <button className="h-full px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 border border-gray-200 whitespace-nowrap">
                                                         {isImageUploading ? (
-                                                            <div className="w-4 h-4 border-2 border-[#1e3932] border-t-transparent animate-spin rounded-full" />
+                                                            <div className="w-4 h-4 border-2 border-primary border-t-transparent animate-spin rounded-full" />
                                                         ) : (
                                                             <ImageIcon size={16} />
                                                         )}
@@ -518,7 +553,7 @@ const AdminCMS = () => {
                                     <button onClick={() => setIsAddBannerModalOpen(false)} className="px-6 py-3 bg-white border border-gray-200 text-gray-600 text-xs font-black rounded-xl hover:bg-gray-50 transition-colors uppercase tracking-widest">
                                         Cancel
                                     </button>
-                                    <button disabled={isSubmitting} onClick={handleCreateBanner} className="px-6 py-3 bg-[#1e3932] text-white text-xs font-black rounded-xl hover:bg-[#0a211e] shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest disabled:opacity-50">
+                                    <button disabled={isSubmitting} onClick={handleCreateBanner} className="px-6 py-3 bg-primary text-white text-xs font-black rounded-xl hover:bg-primary-dark shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest disabled:opacity-50">
                                         {isSubmitting ? 'Publishing...' : 'Publish Banner'}
                                     </button>
                                 </div>
@@ -557,16 +592,16 @@ const AdminCMS = () => {
                                 <div className="p-6 space-y-5 flex-1 bg-white overflow-y-auto max-h-[70vh]">
                                     <div>
                                         <label className="block text-[10px] font-black uppercase text-gray-500 tracking-widest mb-1.5">{selectedTab === 'Legal Pages' ? 'Document Title' : 'Question'}</label>
-                                        <input type="text" value={newContent.title} onChange={e => setNewContent({...newContent, title: e.target.value})} placeholder={selectedTab === 'Legal Pages' ? "e.g. Privacy Policy" : "e.g. How to track my order?"} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-[#1e3932] transition-colors" />
+                                        <input type="text" value={newContent.title} onChange={e => setNewContent({...newContent, title: e.target.value})} placeholder={selectedTab === 'Legal Pages' ? "e.g. Privacy Policy" : "e.g. How to track my order?"} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-primary transition-colors" />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-[10px] font-black uppercase text-gray-500 tracking-widest mb-1.5">URL Slug (Optional)</label>
-                                            <input type="text" value={newContent.slug} onChange={e => setNewContent({...newContent, slug: e.target.value})} placeholder="e.g. privacy-policy" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-[#1e3932] transition-colors" />
+                                            <input type="text" value={newContent.slug} onChange={e => setNewContent({...newContent, slug: e.target.value})} placeholder="e.g. privacy-policy" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-primary transition-colors" />
                                         </div>
                                         <div>
                                             <label className="block text-[10px] font-black uppercase text-gray-500 tracking-widest mb-1.5">Category</label>
-                                            <select value={newContent.category} onChange={e => setNewContent({...newContent, category: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-[#1e3932] transition-colors appearance-none">
+                                            <select value={newContent.category} onChange={e => setNewContent({...newContent, category: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-primary transition-colors appearance-none">
                                                 <option value="general">General</option>
                                                 <option value="customer">Customer</option>
                                                 <option value="tailor">Tailor</option>
@@ -576,14 +611,14 @@ const AdminCMS = () => {
                                     </div>
                                     <div>
                                         <label className="block text-[10px] font-black uppercase text-gray-500 tracking-widest mb-1.5">{selectedTab === 'Legal Pages' ? 'Full Content (Markdown/HTML supported)' : 'Answer Content'}</label>
-                                        <textarea rows={8} value={newContent.content} onChange={e => setNewContent({...newContent, content: e.target.value})} placeholder="Start typing the content here..." className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-[#1e3932] transition-colors resize-none"></textarea>
+                                        <textarea rows={8} value={newContent.content} onChange={e => setNewContent({...newContent, content: e.target.value})} placeholder="Start typing the content here..." className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-primary transition-colors resize-none"></textarea>
                                     </div>
                                 </div>
                                 <div className="p-6 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3 rounded-b-3xl">
                                     <button onClick={() => setIsAddContentModalOpen(false)} className="px-6 py-3 bg-white border border-gray-200 text-gray-600 text-xs font-black rounded-xl hover:bg-gray-50 transition-colors uppercase tracking-widest">
                                         Cancel
                                     </button>
-                                    <button disabled={isSubmitting} onClick={handleCreateContent} className="px-6 py-3 bg-[#1e3932] text-white text-xs font-black rounded-xl hover:bg-[#0a211e] shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest disabled:opacity-50">
+                                    <button disabled={isSubmitting} onClick={handleCreateContent} className="px-6 py-3 bg-primary text-white text-xs font-black rounded-xl hover:bg-primary-dark shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest disabled:opacity-50">
                                         {isSubmitting ? 'Saving...' : (isEditing ? 'Update Content' : 'Publish Content')}
                                     </button>
                                 </div>

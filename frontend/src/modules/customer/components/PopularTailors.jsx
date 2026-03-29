@@ -28,12 +28,12 @@ const PopularTailors = () => {
                     <h2 className="text-2xl font-black text-gray-900 tracking-tight">Expert Tailors Near You</h2>
                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Stitching experts at your doorstep</p>
                 </div>
-                <Link to="/tailors" className="text-xs font-black text-[#1e3932] bg-[#f2fcf9] px-3 py-1.5 rounded-full border border-[#1e3932]/10 hover:shadow-sm transition-all">
+                <Link to="/tailors" className="text-xs font-black text-[#FF5C8A] bg-pink-50 px-3 py-1.5 rounded-full border border-[#FF5C8A]/10 hover:shadow-sm transition-all">
                     See All
                 </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {displayTailors.map((tailor, index) => (
                     <motion.div
                         key={tailor._id}
@@ -61,22 +61,22 @@ const PopularTailors = () => {
                                         className="h-full w-full group-hover:scale-110 transition-transform duration-500"
                                     />
                                 </div>
-                                <div className="absolute -bottom-1 -right-1 bg-[#1e3932] text-white p-1 rounded-lg border-2 border-white shadow-sm">
+                                <div className="absolute -bottom-1 -right-1 bg-[#FF5C8A] text-white p-1 rounded-lg border-2 border-white shadow-sm">
                                     <ShieldCheck size={10} />
                                 </div>
                             </div>
 
                             <div className="flex-1 pt-1">
                                 <div className="flex items-center gap-1.5 mb-0.5">
-                                    <h3 className="text-sm font-black text-gray-900 leading-none group-hover:text-[#1e3932] transition-colors">{tailor.shopName || tailor.user?.name}</h3>
+                                    <h3 className="text-sm font-black text-gray-900 leading-none group-hover:text-[#FF5C8A] transition-colors">{tailor.shopName || tailor.user?.name}</h3>
                                 </div>
-                                <p className="text-[11px] text-[#1e3932] font-bold mt-1 bg-[#f2fcf9] w-fit px-2 py-0.5 rounded-full border border-[#1e3932]/5 italic">
+                                <p className="text-[11px] text-[#FF5C8A] font-bold mt-1 bg-pink-50 w-fit px-2 py-0.5 rounded-full border border-[#FF5C8A]/5 italic">
                                     {tailor.specializations?.[0] || 'Expert Tailor'}
                                 </p>
 
                                 <div className="flex items-center gap-3 mt-3 text-[10px] text-gray-400 font-bold uppercase">
-                                    <div className="flex items-center gap-1 text-[#1e3932]">
-                                        <Star size={10} className="fill-[#1e3932]" />
+                                    <div className="flex items-center gap-1 text-[#FF5C8A]">
+                                        <Star size={10} className="fill-[#FF5C8A]" />
                                         {tailor.rating || 0}
                                     </div>
                                     <div className="flex items-center gap-1">

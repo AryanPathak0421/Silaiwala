@@ -29,8 +29,8 @@ const FAQSection = () => {
     return (
         <div className="px-4 py-8 pb-24">
             <div className="flex items-center gap-2 mb-6">
-                <div className="p-2 bg-[#1e3932]/10 rounded-lg">
-                    <HelpCircle size={18} className="text-[#1e3932]" />
+                <div className="p-2 bg-primary/10 rounded-lg">
+                    <HelpCircle size={18} className="text-primary" />
                 </div>
                 <div>
                     <h2 className="text-lg font-black text-gray-900 tracking-tight">Need Help?</h2>
@@ -45,8 +45,8 @@ const FAQSection = () => {
                             className="w-full flex justify-between items-center p-4 text-left group"
                             onClick={() => setOpenIndex(openIndex === index ? null : index)}
                         >
-                            <span className="text-xs font-bold text-gray-800 group-hover:text-[#1e3932] transition-colors">{item.title}</span>
-                            <div className={`p-1 rounded-lg transition-colors ${openIndex === index ? 'bg-[#1e3932]/10 text-[#1e3932]' : 'bg-gray-50 text-gray-400'}`}>
+                            <span className="text-xs font-bold text-gray-800 group-hover:text-primary transition-colors">{item.title}</span>
+                            <div className={`p-1 rounded-lg transition-colors ${openIndex === index ? 'bg-primary/10 text-primary' : 'bg-gray-50 text-gray-400'}`}>
                                 {openIndex === index ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                             </div>
                         </button>

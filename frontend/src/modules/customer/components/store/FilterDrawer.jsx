@@ -8,7 +8,7 @@ const FilterSection = ({ title, children, isOpen = true }) => {
         <div className="border-b border-gray-100 py-4 last:border-0">
             <button
                 onClick={() => setOpen(!open)}
-                className="flex items-center justify-between w-full text-sm font-semibold text-gray-800 mb-2 hover:text-[#1e3932]"
+                className="flex items-center justify-between w-full text-sm font-semibold text-gray-800 mb-2 hover:text-primary"
             >
                 {title}
                 <ChevronDown className={cn("h-4 w-4 transition-transform", open ? "rotate-180" : "")} />
@@ -50,7 +50,7 @@ const FilterDrawer = ({ isOpen, onClose, filters, setFilters }) => {
             >
                 {/* Header */}
                 <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                    <h2 className="text-lg font-bold text-[#1e3932] flex items-center gap-2">
+                    <h2 className="text-lg font-bold text-primary flex items-center gap-2">
                         <SlidersHorizontal className="h-5 w-5" />
                         Filters
                     </h2>
@@ -66,7 +66,7 @@ const FilterDrawer = ({ isOpen, onClose, filters, setFilters }) => {
                     <FilterSection title="Sort By">
                         {['Price: Low to High', 'Price: High to Low', 'Popular', 'Newest'].map((opt) => (
                             <label key={opt} className="flex items-center gap-2 cursor-pointer group">
-                                <input type="radio" name="sort" className="accent-[#1e3932] w-4 h-4 cursor-pointer" />
+                                <input type="radio" name="sort" className="accent-primary w-4 h-4 cursor-pointer" />
                                 <span className="text-sm text-gray-600 group-hover:text-gray-900">{opt}</span>
                             </label>
                         ))}
@@ -74,7 +74,7 @@ const FilterDrawer = ({ isOpen, onClose, filters, setFilters }) => {
 
                     {/* Price Range */}
                     <FilterSection title="Price Range">
-                        <input type="range" min="500" max="10000" className="w-full accent-[#1e3932] cursor-pointer" />
+                        <input type="range" min="500" max="10000" className="w-full accent-primary cursor-pointer" />
                         <div className="flex justify-between text-xs text-gray-500 mt-1">
                             <span>₹500</span>
                             <span>₹10,000+</span>
@@ -87,7 +87,7 @@ const FilterDrawer = ({ isOpen, onClose, filters, setFilters }) => {
                             {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map((size) => (
                                 <button
                                     key={size}
-                                    className="px-3 py-1 border rounded-md text-xs font-medium hover:border-[#1e3932] hover:bg-[#1e3932]/5 transition-colors"
+                                    className="px-3 py-1 border rounded-md text-xs font-medium hover:border-primary hover:bg-primary/5 transition-colors"
                                 >
                                     {size}
                                 </button>
@@ -111,7 +111,7 @@ const FilterDrawer = ({ isOpen, onClose, filters, setFilters }) => {
                     {/* Availability */}
                     <FilterSection title="Availability">
                         <label className="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" className="accent-[#1e3932] rounded w-4 h-4" />
+                            <input type="checkbox" className="accent-primary rounded w-4 h-4" />
                             <span className="text-sm text-gray-600">In Stock Only</span>
                         </label>
                     </FilterSection>
@@ -128,7 +128,7 @@ const FilterDrawer = ({ isOpen, onClose, filters, setFilters }) => {
                     </button>
                     <button
                         onClick={handleApply}
-                        className="flex-1 py-2.5 px-4 bg-[#1e3932] text-white rounded-lg font-bold hover:bg-[#152e28] transition-all shadow-lg shadow-[#1e3932]/20 text-sm"
+                        className="flex-1 py-2.5 px-4 bg-primary text-white rounded-lg font-bold hover:bg-primary-dark transition-all shadow-lg shadow-pink-900/10 text-sm"
                     >
                         Apply Filters
                     </button>

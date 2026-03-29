@@ -65,16 +65,16 @@ const Withdraw = () => {
     };
 
     if (isLoading) {
-        return <div className="min-h-full bg-[#1e3932] flex items-center justify-center">
+        return <div className="min-h-full bg-primary flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
         </div>;
     }
 
     if (step === 2) {
         return (
-            <div className="min-h-full bg-[#1e3932] flex items-center justify-center p-6 animate-in zoom-in duration-300">
+            <div className="min-h-full bg-primary flex items-center justify-center p-6 animate-in zoom-in duration-300">
                 <div className="bg-white rounded-[2.5rem] p-10 w-full max-w-sm text-center shadow-2xl flex flex-col items-center">
-                    <div className="h-24 w-24 bg-green-50 rounded-full flex items-center justify-center mb-8 text-[#1e3932] shadow-inner border-4 border-green-100 italic font-black text-3xl">
+                    <div className="h-24 w-24 bg-pink-50 rounded-full flex items-center justify-center mb-8 text-primary shadow-inner border-4 border-pink-100 italic font-black text-3xl">
                         ✓
                     </div>
                     <h2 className="text-2xl font-black text-gray-900 tracking-tight">Withdrawal Sent</h2>
@@ -83,7 +83,7 @@ const Withdraw = () => {
                     </p>
                     <button
                         onClick={() => navigate('/partner')}
-                        className="mt-10 w-full bg-[#1e3932] text-white py-5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all"
+                        className="mt-10 w-full bg-primary text-white py-5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all"
                     >
                         Return to Home
                     </button>
@@ -93,7 +93,7 @@ const Withdraw = () => {
     }
 
     return (
-        <div className="min-h-full bg-[#1e3932] flex flex-col relative animate-in slide-in-from-right duration-300">
+        <div className="min-h-full bg-primary flex flex-col relative animate-in slide-in-from-right duration-300">
             {/* Header */}
             <div className="px-5 py-8 flex items-center justify-between sticky top-0 z-10 text-white">
                 <button onClick={() => navigate(-1)} className="h-12 w-12 bg-white/10 hover:bg-white/20 rounded-2xl flex items-center justify-center transition-colors border border-white/10 backdrop-blur-md">
@@ -105,7 +105,7 @@ const Withdraw = () => {
 
             {/* Input Section (Top Half) */}
             <div className="flex-1 flex flex-col items-center justify-center -mt-16">
-                <p className="text-green-100/70 font-black uppercase tracking-[0.2em] text-[10px] mb-4 bg-white/5 px-4 py-1.5 rounded-full border border-white/5">
+                <p className="text-pink-100/70 font-black uppercase tracking-[0.2em] text-[10px] mb-4 bg-white/5 px-4 py-1.5 rounded-full border border-white/5">
                     Available: ₹{availableBalance.toLocaleString('en-IN')}
                 </p>
                 <div className="flex items-center text-white scale-110">
@@ -126,7 +126,7 @@ const Withdraw = () => {
                         <button
                             key={num}
                             onClick={() => handleKeyPress(num.toString())}
-                            className="h-14 rounded-2xl text-3xl font-black text-gray-900 active:bg-gray-100 hover:text-[#1e3932] transition-all flex items-center justify-center"
+                            className="h-14 rounded-2xl text-3xl font-black text-gray-900 active:bg-gray-100 hover:text-primary transition-all flex items-center justify-center"
                         >
                             {num}
                         </button>
@@ -134,7 +134,7 @@ const Withdraw = () => {
                     <div />
                     <button
                         onClick={() => handleKeyPress('0')}
-                        className="h-14 rounded-2xl text-3xl font-black text-gray-900 active:bg-gray-100 hover:text-[#1e3932] transition-all flex items-center justify-center"
+                        className="h-14 rounded-2xl text-3xl font-black text-gray-900 active:bg-gray-100 hover:text-primary transition-all flex items-center justify-center"
                     >
                         0
                     </button>
@@ -150,7 +150,7 @@ const Withdraw = () => {
                     <button
                         onClick={handleWithdrawRequest}
                         disabled={numAmount === 0 || numAmount > availableBalance || isSubmitting}
-                        className="w-full bg-[#1e3932] text-white py-5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-2xl shadow-green-900/30 active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-3"
+                        className="w-full bg-primary text-white py-5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-2xl shadow-pink-900/30 active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-3"
                     >
                         {isSubmitting && <Loader2 size={16} className="animate-spin" />}
                         {isSubmitting ? 'Processing...' : 'Send Withdrawal Request'}

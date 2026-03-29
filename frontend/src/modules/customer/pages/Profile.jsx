@@ -31,12 +31,12 @@ const LegalLinks = () => {
     return (
         <div className="mt-8 space-y-4">
             <div className="flex items-center gap-2 mb-2 px-1">
-                <div className="p-1 px-1.5 bg-[#1e3932] rounded text-white italic">
+                <div className="p-1 px-1.5 bg-[#FF5C8A] rounded text-white italic">
                     <FileText size={10} strokeWidth={3} />
                 </div>
                 <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] italic">Legal & Policies</h3>
             </div>
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {docs.map((doc, idx) => (
                     <MenuOption
                         key={doc._id}
@@ -75,86 +75,88 @@ const ProfilePage = () => {
         phone: '+91 9876543210'
     };
 
-    // Quick Fix Check: if useAuthStore fails, user might be undefined
-
     return (
         <div className="min-h-screen bg-gray-50 pb-24 font-sans text-gray-900">
             {/* 1. Header & Stats */}
             <ProfileHeader user={displayUser} stats={profile?.stats} />
 
-            <div className="max-w-md mx-auto px-4 -mt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="max-w-4xl mx-auto px-4 -mt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
-                {/* 2. Main Menu */}
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Account</h3>
+                {/* Account Section */}
+                <div className="mb-6">
+                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 ml-1">Account</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <MenuOption
+                            icon={ShoppingBag}
+                            label="My Orders"
+                            subLabel="Track, Return, Feedback"
+                            to="/orders"
+                        />
+                        <MenuOption
+                            icon={MapPin}
+                            label="Saved Addresses"
+                            subLabel="Manage Pickup & Delivery locations"
+                            to="/profile/addresses"
+                        />
+                        <MenuOption
+                            icon={Ruler}
+                            label="My Measurements"
+                            subLabel="Saved Body Profiles"
+                            to="/profile/measurements"
+                        />
+                        <MenuOption
+                            icon={Heart}
+                            label="Wishlist"
+                            subLabel="Your Saved styles"
+                            to="/wishlist"
+                        />
+                        <MenuOption
+                            icon={MessageSquare}
+                            label="My Reviews"
+                            subLabel="Rating & feedback given"
+                            to="/reviews"
+                        />
+                    </div>
+                </div>
 
-                <MenuOption
-                    icon={ShoppingBag}
-                    label="My Orders"
-                    subLabel="Track, Return, Feedback"
-                    to="/orders"
-                />
-
-                <MenuOption
-                    icon={MapPin}
-                    label="Saved Addresses"
-                    subLabel="Manage Pickup & Delivery locations"
-                    to="/profile/addresses"
-                />
-
-                <MenuOption
-                    icon={Ruler}
-                    label="My Measurements"
-                    subLabel="Saved Body Profiles"
-                    to="/profile/measurements"
-                />
-
-                <MenuOption
-                    icon={Heart}
-                    label="Wishlist"
-                    subLabel="Your Saved styles"
-                    to="/wishlist"
-                />
-
-                <MenuOption
-                    icon={MessageSquare}
-                    label="My Reviews"
-                    subLabel="Rating & feedback given"
-                    to="/reviews"
-                />
-
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 mt-6 ml-1">Support & More</h3>
-
-                <MenuOption
-                    icon={Headset}
-                    label="Help & Support"
-                    subLabel="FAQs, Contact Us"
-                    to="/support"
-                />
-
-                <MenuOption
-                    icon={Share2}
-                    label="Refer & Earn"
-                    subLabel="Invite friends, get discounts"
-                    to="/refer"
-                />
+                {/* Support Section */}
+                <div className="mb-6">
+                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 mt-6 ml-1">Support & More</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <MenuOption
+                            icon={Headset}
+                            label="Help & Support"
+                            subLabel="FAQs, Contact Us"
+                            to="/support"
+                        />
+                        <MenuOption
+                            icon={Share2}
+                            label="Refer & Earn"
+                            subLabel="Invite friends, get discounts"
+                            to="/refer"
+                        />
+                    </div>
+                </div>
 
                 <LegalLinks />
 
-                <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center justify-between p-4 bg-white rounded-2xl border border-red-100 shadow-sm mt-6 group hover:bg-red-50 transition-colors"
-                >
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-500 group-hover:bg-white group-hover:shadow-sm">
-                            <LogOut size={18} />
+                <div className="max-w-md mx-auto sm:max-w-none">
+                    <button
+                        onClick={handleLogout}
+                        className="w-full sm:max-w-sm mx-auto flex items-center justify-between p-4 bg-white rounded-2xl border border-red-100 shadow-sm mt-8 group hover:bg-red-50 transition-colors"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-500 group-hover:bg-white group-hover:shadow-sm">
+                                <LogOut size={18} />
+                            </div>
+                            <div className="text-left">
+                                <h4 className="text-sm font-bold text-red-600">Logout</h4>
+                            </div>
                         </div>
-                        <div className="text-left">
-                            <h4 className="text-sm font-bold text-red-600">Logout</h4>
-                        </div>
-                    </div>
-                </button>
+                    </button>
+                </div>
 
-                <p className="text-center text-[10px] text-gray-400 mt-6 pb-4">
+                <p className="text-center text-[10px] text-gray-400 mt-8 pb-4">
                     App Version 1.0.0 • Made with ❤️ in India
                 </p>
             </div>

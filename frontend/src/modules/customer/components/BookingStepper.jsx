@@ -21,7 +21,7 @@ const BookingStepper = ({ currentStepId }) => {
                     <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${(currentIndex / (STEPS.length - 1)) * 100}%` }}
-                        className="h-full bg-[#1e3932] transition-all duration-500 shadow-sm"
+                        className="h-full bg-primary transition-all duration-500 shadow-sm"
                     />
                 </div>
 
@@ -37,13 +37,13 @@ const BookingStepper = ({ currentStepId }) => {
                             <motion.div
                                 initial={false}
                                 animate={{
-                                    backgroundColor: isCompleted || isActive ? '#1e3932' : '#ffffff',
-                                    borderColor: isCompleted || isActive ? '#1e3932' : '#f3f4f6',
+                                    backgroundColor: isCompleted || isActive ? '#FF5C8A' : '#ffffff',
+                                    borderColor: isCompleted || isActive ? '#FF5C8A' : '#f3f4f6',
                                     scale: isActive ? 1.05 : 1,
                                 }}
                                 className={cn(
                                     "w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all shadow-sm",
-                                    isActive ? "ring-4 ring-[#1e3932]/10" : ""
+                                    isActive ? "ring-4 ring-primary/10" : ""
                                 )}
                             >
                                 {isCompleted ? (
@@ -56,7 +56,7 @@ const BookingStepper = ({ currentStepId }) => {
                             </motion.div>
                             <span className={cn(
                                 "text-[8px] font-black uppercase tracking-tighter transition-colors",
-                                isActive ? "text-[#1e3932]" : "text-gray-400"
+                                isActive ? "text-primary" : "text-gray-400"
                             )}>
                                 {step.label}
                             </span>

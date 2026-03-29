@@ -36,7 +36,7 @@ const AccordionItem = ({ title, content, isOpen, onClick }) => {
 const ProductAccordions = () => {
     return (
         <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 space-y-2">
-            <h3 className="text-lg font-bold text-[#1e3932] mb-4">Product Details</h3>
+            <h3 className="text-lg font-bold text-primary mb-4">Product Details</h3>
 
             <AccordionItem
                 title="Description"

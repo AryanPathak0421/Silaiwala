@@ -24,7 +24,7 @@ const ReferEarn = () => {
     return (
         <div className="min-h-screen bg-white font-sans text-gray-900 pb-20">
             {/* 1. Header */}
-            <div className="sticky top-0 z-50 bg-[#1e3932] text-white px-4 py-4 flex items-center gap-3">
+            <div className="sticky top-0 z-50 bg-primary text-white px-4 py-4 flex items-center gap-3">
                 <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors">
                     <ArrowLeft size={20} />
                 </button>
@@ -32,7 +32,7 @@ const ReferEarn = () => {
             </div>
 
             {/* 2. Hero Section */}
-            <div className="bg-[#1e3932] text-white px-6 pb-12 pt-6 rounded-b-[3rem] text-center">
+            <div className="bg-primary text-white px-6 pb-12 pt-6 rounded-b-[3rem] text-center">
                 <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
@@ -49,16 +49,16 @@ const ReferEarn = () => {
                 <div className="bg-white rounded-3xl p-6 shadow-xl border border-gray-100">
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center mb-4">Your Referral Code</p>
                     <div className="flex items-center gap-3 bg-gray-50 p-4 rounded-2xl border-2 border-dashed border-gray-200">
-                        <span className="flex-1 text-xl font-black text-[#1e3932] tracking-widest text-center uppercase">{referralCode}</span>
+                        <span className="flex-1 text-xl font-black text-primary tracking-widest text-center uppercase">{referralCode}</span>
                         <button
                             onClick={copyToClipboard}
-                            className="p-3 bg-white rounded-xl shadow-sm text-[#1e3932] hover:bg-gray-100 active:scale-90 transition-all"
+                            className="p-3 bg-white rounded-xl shadow-sm text-primary hover:bg-gray-100 active:scale-90 transition-all"
                         >
                             <Copy size={20} />
                         </button>
                     </div>
 
-                    <button className="w-full bg-[#1e3932] text-white py-4 rounded-2xl font-bold text-sm shadow-lg shadow-[#1e3932]/20 mt-6 flex items-center justify-center gap-3 transition-all hover:bg-[#152e28] active:scale-95">
+                    <button className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-sm shadow-lg shadow-pink-900/10 mt-6 flex items-center justify-center gap-3 transition-all hover:bg-primary-dark active:scale-95">
                         <Share2 size={18} />
                         Share Invitation Link
                     </button>
@@ -79,8 +79,8 @@ const ReferEarn = () => {
                         </div>
                     </div>
                     <div className="flex gap-6">
-                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0 border border-blue-100">
-                            <span className="font-black text-blue-600">2</span>
+                        <div className="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center shrink-0 border border-pink-100">
+                            <span className="font-black text-primary">2</span>
                         </div>
                         <div>
                             <h4 className="font-bold text-sm mb-1">Friend Orders</h4>

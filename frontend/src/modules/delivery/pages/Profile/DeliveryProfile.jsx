@@ -174,7 +174,7 @@ const DeliveryProfile = () => {
     if (loading) {
         return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4">
-                <Loader2 className="w-10 h-10 text-emerald-800 animate-spin" />
+                <Loader2 className="w-10 h-10 text-[#FF5C8A] animate-spin" />
                 <p className="text-sm font-bold text-slate-400 uppercase tracking-widest leading-none">Scanning Profile...</p>
             </div>
         );
@@ -186,7 +186,7 @@ const DeliveryProfile = () => {
             <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.1)] flex items-center justify-between relative z-20 group">
                 <div>
                     <h2 className="text-xl font-black text-slate-900 tracking-tight">Availability</h2>
-                    <p className={`text-[10px] font-bold tracking-widest mt-0.5 transition-colors capitalize ${isOnline ? 'text-emerald-800' : 'text-slate-400'}`}>
+                    <p className={`text-[10px] font-bold tracking-widest mt-0.5 transition-colors capitalize ${isOnline ? 'text-[#FF5C8A]' : 'text-slate-400'}`}>
                         {isOnline ? 'Active & Receiving Tasks' : 'Currently Off Duty'}
                     </p>
                 </div>
@@ -194,14 +194,14 @@ const DeliveryProfile = () => {
                 {/* Interactive Toggle Switch */}
                 <button
                     onClick={handleToggleDuty}
-                    className={`w-14 h-8 rounded-full p-1 transition-colors duration-500 ease-in-out relative flex items-center shadow-inner ${isOnline ? 'bg-emerald-800' : 'bg-slate-200'
+                    className={`w-14 h-8 rounded-full p-1 transition-colors duration-500 ease-in-out relative flex items-center shadow-inner ${isOnline ? 'bg-[#FF5C8A]' : 'bg-slate-200'
                         }`}
                 >
                     <div
                         className={`w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center transform transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isOnline ? 'translate-x-6' : 'translate-x-0'
                             }`}
                     >
-                        {isOnline && <div className="w-2 h-2 bg-emerald-800 rounded-full animate-pulse"></div>}
+                        {isOnline && <div className="w-2 h-2 bg-[#FF5C8A] rounded-full animate-pulse"></div>}
                     </div>
                 </button>
             </div>
@@ -220,8 +220,8 @@ const DeliveryProfile = () => {
                             </div>
                             <h3 className="text-sm font-black text-slate-900 tracking-tight">Identity Profile</h3>
                             {deliveryProfile?.user?.isVerified && (
-                                <div className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md flex items-center gap-1">
-                                    <ShieldCheck size={10} className="fill-emerald-800 text-white" />
+                                <div className="px-2 py-0.5 bg-pink-100 text-[#FF5C8A] rounded-md flex items-center gap-1">
+                                    <ShieldCheck size={10} className="fill-[#FF5C8A] text-white" />
                                     <span className="text-[8px] font-black uppercase tracking-widest">Verified</span>
                                 </div>
                             )}
@@ -290,13 +290,13 @@ const DeliveryProfile = () => {
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden group">
                     <div className="p-6 flex items-center justify-between border-b border-slate-50">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-800">
+                            <div className="w-10 h-10 bg-pink-100 rounded-xl flex items-center justify-center text-[#FF5C8A]">
                                 <CreditCard size={18} />
                             </div>
                             <h3 className="text-sm font-black text-slate-900 tracking-tight">Financial Routing</h3>
                         </div>
                         {isEditing !== 'bank' && (
-                            <button onClick={() => setIsEditing('bank')} className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 hover:text-emerald-800 hover:bg-emerald-100 transition-all">
+                            <button onClick={() => setIsEditing('bank')} className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 hover:text-[#FF5C8A] hover:bg-pink-100 transition-all">
                                 <Edit3 size={16} />
                             </button>
                         )}
@@ -308,22 +308,22 @@ const DeliveryProfile = () => {
                                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-4">
                                     <div>
                                         <label className="text-[9px] font-black text-slate-400 tracking-widest mb-1 block">Account Holder Name</label>
-                                        <input type="text" value={bankInfo.accountName} onChange={(e) => setBankInfo({ ...bankInfo, accountName: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 focus:outline-none focus:border-emerald-800 transition-all" />
+                                        <input type="text" value={bankInfo.accountName} onChange={(e) => setBankInfo({ ...bankInfo, accountName: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 focus:outline-none focus:border-[#FF5C8A] transition-all" />
                                     </div>
                                     <div>
                                         <label className="text-[9px] font-black text-slate-400 tracking-widest mb-1 block">Bank Name</label>
-                                        <input type="text" value={bankInfo.bank} onChange={(e) => setBankInfo({ ...bankInfo, bank: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 focus:outline-none focus:border-emerald-800 transition-all" />
+                                        <input type="text" value={bankInfo.bank} onChange={(e) => setBankInfo({ ...bankInfo, bank: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 focus:outline-none focus:border-[#FF5C8A] transition-all" />
                                     </div>
                                     <div>
                                         <label className="text-[9px] font-black text-slate-400 tracking-widest mb-1 block">Account Number</label>
-                                        <input type="text" value={bankInfo.accountNo} onChange={(e) => setBankInfo({ ...bankInfo, accountNo: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 focus:outline-none focus:border-emerald-800 transition-all" />
+                                        <input type="text" value={bankInfo.accountNo} onChange={(e) => setBankInfo({ ...bankInfo, accountNo: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 focus:outline-none focus:border-[#FF5C8A] transition-all" />
                                     </div>
                                     <div>
                                         <label className="text-[9px] font-black text-slate-400 tracking-widest mb-1 block">IFSC Code</label>
-                                        <input type="text" value={bankInfo.ifsc} onChange={(e) => setBankInfo({ ...bankInfo, ifsc: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 focus:outline-none focus:border-emerald-800 transition-all" />
+                                        <input type="text" value={bankInfo.ifsc} onChange={(e) => setBankInfo({ ...bankInfo, ifsc: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 focus:outline-none focus:border-[#FF5C8A] transition-all" />
                                     </div>
                                     <div className="flex gap-3 pt-2">
-                                        <button onClick={() => handleSave('bank')} className="flex-1 bg-emerald-800 text-white py-3 rounded-xl font-black text-[10px] tracking-widest shadow-md hover:bg-emerald-700 active:scale-95 transition-all flex justify-center items-center gap-2">
+                                        <button onClick={() => handleSave('bank')} className="flex-1 bg-[#FF5C8A] text-white py-3 rounded-xl font-black text-[10px] tracking-widest shadow-md hover:bg-primary-dark active:scale-95 transition-all flex justify-center items-center gap-2">
                                             <CheckCircle2 size={16} /> Save Securely
                                         </button>
                                         <button onClick={() => setIsEditing(null)} className="w-12 h-12 bg-slate-100 text-slate-500 rounded-xl flex items-center justify-center hover:bg-slate-200 transition-all">
@@ -340,7 +340,7 @@ const DeliveryProfile = () => {
                                         <p className="text-sm font-bold text-slate-900">{bankInfo.bank}</p>
                                     </div>
                                     <div className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100">
-                                        <ShieldCheck size={16} className="text-emerald-800" />
+                                        <ShieldCheck size={16} className="text-[#FF5C8A]" />
                                     </div>
                                 </div>
                                 <div>
@@ -391,7 +391,7 @@ const DeliveryProfile = () => {
                         </div>
                         <div>
                             <p className="text-sm font-black text-slate-900 tracking-tight">KYC Documents</p>
-                            <p className={`text-[9px] font-bold uppercase tracking-widest mt-0.5 ${kycStatus === 'Verified' ? 'text-emerald-800' :
+                            <p className={`text-[9px] font-bold uppercase tracking-widest mt-0.5 ${kycStatus === 'Verified' ? 'text-[#FF5C8A]' :
                                 kycStatus === 'Under Review' ? 'text-amber-500' : 'text-rose-500'
                                 }`}>
                                 {kycStatus}
@@ -546,7 +546,7 @@ const DeliveryProfile = () => {
                             </button>
 
                             <div className="text-center mb-8">
-                                <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-md">
+                                <div className="w-16 h-16 bg-pink-50 text-primary rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-md">
                                     <ShieldCheck size={32} />
                                 </div>
                                 <h3 className="text-2xl font-black text-slate-900 tracking-tight">Identity Verification</h3>
@@ -557,10 +557,10 @@ const DeliveryProfile = () => {
                                 {/* Aadhar Card Upload */}
                                 <div>
                                     <label className="text-[10px] font-black text-slate-700 tracking-widest mb-2 flex items-center gap-2 uppercase">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                                        <div className="w-1.5 h-1.5 rounded-full bg-pink-500"></div>
                                         Aadhar Core / Voter ID
                                     </label>
-                                    <label className="w-full h-24 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 flex flex-col items-center justify-center hover:bg-blue-50 hover:border-blue-200 hover:text-blue-500 transition-all text-slate-400 group cursor-pointer relative overflow-hidden">
+                                    <label className="w-full h-24 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 flex flex-col items-center justify-center hover:bg-pink-50 hover:border-blue-200 hover:text-primary transition-all text-slate-400 group cursor-pointer relative overflow-hidden">
                                         <input type="file" className="hidden" accept="image/*" onChange={async (e) => {
                                             if (e.target.files && e.target.files[0]) {
                                                 const file = e.target.files[0];
@@ -579,7 +579,7 @@ const DeliveryProfile = () => {
                                         {aadharImage ? (
                                             <div className="absolute inset-0 w-full h-full bg-slate-900/10 flex items-center justify-center backdrop-blur-sm">
                                                 <img src={aadharImage} alt="Aadhar" className="w-full h-full object-cover opacity-60" />
-                                                <CheckCircle2 size={32} className="text-emerald-800 absolute drop-shadow-md bg-white rounded-full" />
+                                                <CheckCircle2 size={32} className="text-[#FF5C8A] absolute drop-shadow-md bg-white rounded-full" />
                                             </div>
                                         ) : (
                                             <>
@@ -615,7 +615,7 @@ const DeliveryProfile = () => {
                                         {licenseImage ? (
                                             <div className="absolute inset-0 w-full h-full bg-slate-900/10 flex items-center justify-center backdrop-blur-sm">
                                                 <img src={licenseImage} alt="License" className="w-full h-full object-cover opacity-60" />
-                                                <CheckCircle2 size={32} className="text-emerald-800 absolute drop-shadow-md bg-white rounded-full" />
+                                                <CheckCircle2 size={32} className="text-[#FF5C8A] absolute drop-shadow-md bg-white rounded-full" />
                                             </div>
                                         ) : (
                                             <>
@@ -631,7 +631,7 @@ const DeliveryProfile = () => {
                                 onClick={handleKYCSubmit}
                                 className="w-full bg-slate-900 text-white rounded-2xl p-4 font-black tracking-widest text-xs hover:bg-black active:scale-95 transition-all shadow-xl flex items-center justify-center gap-2 uppercase"
                             >
-                                <CheckCircle2 size={16} className="text-emerald-800" /> Submit To Admin
+                                <CheckCircle2 size={16} className="text-[#FF5C8A]" /> Submit To Admin
                             </button>
 
                             <p className="text-center mt-4 text-[9px] font-black text-slate-300 uppercase tracking-widest leading-relaxed">

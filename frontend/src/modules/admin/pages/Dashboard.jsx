@@ -120,7 +120,7 @@ const AdminDashboard = () => {
             {/* Header section is in layout, just need page content here */}
             {isLoading && (
                  <div className="w-full h-1 bg-gray-100 overflow-hidden rounded-full absolute top-0 left-0 z-50">
-                     <div className="h-full bg-[#1e3932] animate-pulse w-1/3 rounded-full"></div>
+                     <div className="h-full bg-primary animate-pulse w-1/3 rounded-full"></div>
                  </div>
             )}
 
@@ -134,9 +134,9 @@ const AdminDashboard = () => {
                         key={idx}
                         className="bg-white p-5 lg:p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all group overflow-hidden relative"
                     >
-                        <div className="absolute -right-2 -top-2 h-16 w-16 bg-[#1e3932]/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                        <div className="absolute -right-2 -top-2 h-16 w-16 bg-primary/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
                         <div className="flex justify-between items-center relative z-10">
-                            <div className="p-3 bg-gray-50 text-[#1e3932] rounded-xl group-hover:bg-[#1e3932] group-hover:text-white transition-colors">
+                            <div className="p-3 bg-gray-50 text-primary rounded-xl group-hover:bg-primary group-hover:text-white transition-colors">
                                 {stat.icon}
                             </div>
                             {stat.change && (
@@ -193,7 +193,7 @@ const AdminDashboard = () => {
                                 <div key={idx} className="flex flex-col items-center flex-1 z-10 group">
                                     <div className="relative w-full max-w-[40px] flex justify-center flex-1 items-end">
                                         <div
-                                            className="w-full bg-[#d4e9e2] rounded-t-lg group-hover:bg-[#1e3932] transition-colors relative"
+                                            className="w-full bg-pink-50 rounded-t-lg group-hover:bg-primary transition-colors relative"
                                             style={{ height: `${(data.revenue / (maxRevenue || 1)) * 100}%` }}
                                         >
                                             <div className="opacity-0 group-hover:opacity-100 absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg pointer-events-none whitespace-nowrap transition-opacity">
@@ -215,10 +215,10 @@ const AdminDashboard = () => {
                                 <p className="text-[10px] lg:text-xs text-gray-400 mt-1 font-medium">Live marketplace activity</p>
                             </div>
                             <div className="flex gap-2">
-                                <button className="p-2 lg:p-2.5 text-gray-400 hover:text-[#1e3932] hover:bg-gray-50 rounded-xl transition-all border border-gray-100">
+                                <button className="p-2 lg:p-2.5 text-gray-400 hover:text-primary hover:bg-gray-50 rounded-xl transition-all border border-gray-100">
                                     <Search size={16} className="lg:w-[18px] lg:h-[18px]" />
                                 </button>
-                                <button className="p-2 lg:p-2.5 text-gray-400 hover:text-[#1e3932] hover:bg-gray-50 rounded-xl transition-all border border-gray-100">
+                                <button className="p-2 lg:p-2.5 text-gray-400 hover:text-primary hover:bg-gray-50 rounded-xl transition-all border border-gray-100">
                                     <Filter size={16} className="lg:w-[18px] lg:h-[18px]" />
                                 </button>
                             </div>
@@ -239,7 +239,7 @@ const AdminDashboard = () => {
                                         <tr key={order.id} className="hover:bg-gray-50/50 transition-colors group">
                                              <td className="px-5 lg:px-8 py-4 lg:py-5">
                                                  <div className="flex flex-col">
-                                                     <span className="text-[10px] lg:text-xs font-black text-[#1e3932] uppercase">{order.id}</span>
+                                                     <span className="text-[10px] lg:text-xs font-black text-primary uppercase">{order.id}</span>
                                                      <span className="text-xs lg:text-sm font-bold text-gray-900 mt-0.5">{order.service}</span>
                                                      <span className="text-[9px] lg:text-[10px] text-gray-400 font-medium">Customer: {order.customer}</span>
                                                  </div>
@@ -259,7 +259,7 @@ const AdminDashboard = () => {
                                                  </span>
                                              </td>
                                              <td className="px-5 lg:px-8 py-4 lg:py-5 text-right">
-                                                 <button className="text-gray-300 hover:text-[#1e3932] transition-colors p-1.5 lg:p-2 hover:bg-gray-50 rounded-lg">
+                                                 <button className="text-gray-300 hover:text-primary transition-colors p-1.5 lg:p-2 hover:bg-gray-50 rounded-lg">
                                                      <MoreHorizontal size={18} className="lg:w-[20px] lg:h-[20px]" />
                                                  </button>
                                              </td>
@@ -276,7 +276,7 @@ const AdminDashboard = () => {
                             </table>
                         </div>
                         <div className="p-4 lg:p-6 border-t border-gray-50 bg-gray-50/50 text-center">
-                            <button className="text-[10px] lg:text-xs font-black text-[#1e3932] uppercase tracking-[0.1em] hover:underline">
+                            <button className="text-[10px] lg:text-xs font-black text-primary uppercase tracking-[0.1em] hover:underline">
                                 View Full Marketplace Ledger
                             </button>
                         </div>
@@ -290,14 +290,14 @@ const AdminDashboard = () => {
                     <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="bg-gradient-to-br from-[#1e3932] to-[#0a211e] p-6 lg:p-8 rounded-[2rem] shadow-xl text-white relative overflow-hidden group"
+                        className="gradient-brand p-6 lg:p-8 rounded-[2rem] shadow-xl text-white relative overflow-hidden group"
                     >
                         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                             <Scissors size={80} />
                         </div>
                         <h4 className="text-base lg:text-lg font-black tracking-tight relative z-10">Tailor Applications</h4>
                         <p className="text-white/60 text-[10px] lg:text-xs mt-2 font-medium relative z-10 max-w-[200px]">You have {statsData.pendingTailorsCount || 0} new tailors waiting for document KYC verification.</p>
-                        <Link to="/admin/tailors" className="mt-6 w-full py-3 bg-white text-[#1e3932] font-black rounded-xl text-[10px] lg:text-xs uppercase tracking-widest hover:shadow-[0_8px_30px_rgb(255,255,255,0.12)] transition-all active:scale-95 relative z-10 flex items-center justify-center">
+                        <Link to="/admin/tailors" className="mt-6 w-full py-3 bg-white text-primary font-black rounded-xl text-[10px] lg:text-xs uppercase tracking-widest hover:shadow-[0_8px_30px_rgb(255,255,255,0.12)] transition-all active:scale-95 relative z-10 flex items-center justify-center">
                             Review Applications
                         </Link>
                     </motion.div>
@@ -306,13 +306,13 @@ const AdminDashboard = () => {
                     <div className="bg-white border border-gray-100 p-6 lg:p-8 rounded-[2rem] shadow-sm">
                         <h4 className="text-base lg:text-lg font-black text-gray-900 tracking-tight flex items-center justify-between">
                             Top Tailors
-                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest cursor-pointer hover:text-[#1e3932]">View All</span>
+                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest cursor-pointer hover:text-primary">View All</span>
                         </h4>
                         <div className="mt-6 space-y-4">
                             {topTailorsData.map((tailor, idx) => (
                                 <div key={idx} className="flex items-center justify-between group">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center text-[#1e3932] font-bold text-xs lg:text-sm group-hover:bg-[#1e3932] group-hover:text-white transition-colors">
+                                        <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center text-primary font-bold text-xs lg:text-sm group-hover:bg-primary group-hover:text-white transition-colors">
                                             {tailor.name.charAt(0)}
                                         </div>
                                         <div>

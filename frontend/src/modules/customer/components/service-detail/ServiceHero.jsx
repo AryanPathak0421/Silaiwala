@@ -34,7 +34,7 @@ const ServiceHero = ({ service }) => {
                 </div>
                 <div className="text-right">
                     <p className="text-xs text-gray-500 mb-0.5">Starting from</p>
-                    <span className="text-2xl font-bold text-[#1e3932]">₹{service.basePrice}</span>
+                    <span className="text-2xl font-bold text-primary">₹{service.basePrice}</span>
                 </div>
             </div>
 
@@ -44,7 +44,7 @@ const ServiceHero = ({ service }) => {
                     <Star size={14} className="fill-current" />
                     <span>{service.rating} ({service.reviews} reviews)</span>
                 </div>
-                <div className="flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-md text-blue-700 font-medium">
+                <div className="flex items-center gap-1 bg-pink-50 px-2 py-1 rounded-md text-blue-700 font-medium">
                     <Clock size={14} />
                     <span>Avg. {service.deliveryTime}</span>
                 </div>

@@ -24,7 +24,7 @@ const HomeHeader = ({ user }) => {
                             <img src={silaiwalaLogo} alt="Silaiwala" className="w-8 h-8 object-contain" />
                         </div>
                         <div>
-                            <h1 className="text-xl font-black text-gray-900 leading-none tracking-tight">Silai<span className="text-[#1e3932]">wala</span></h1>
+                            <h1 className="text-xl font-black text-gray-900 leading-none tracking-tight">Silai<span className="text-[#FF5C8A]">wala</span></h1>
                             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter mt-1">Modern Stitching</p>
                         </div>
                     </div>
@@ -32,7 +32,7 @@ const HomeHeader = ({ user }) => {
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setShowNotifications(!showNotifications)}
-                            className="relative p-2.5 bg-gray-50 rounded-2xl text-gray-400 border border-gray-100 hover:bg-white hover:text-[#1e3932] transition-all active:scale-90"
+                            className="relative p-2.5 bg-gray-50 rounded-2xl text-gray-400 border border-gray-100 hover:bg-white hover:text-[#FF5C8A] transition-all active:scale-90"
                         >
                             <Bell size={20} />
                             {unreadCount > 0 && (
@@ -42,18 +42,18 @@ const HomeHeader = ({ user }) => {
 
                         <Link
                             to="/cart"
-                            className="p-2.5 bg-gray-50 rounded-2xl text-gray-400 border border-gray-100 hover:bg-white hover:text-[#1e3932] transition-all active:scale-90 relative"
+                            className="p-2.5 bg-gray-50 rounded-2xl text-gray-400 border border-gray-100 hover:bg-white hover:text-[#FF5C8A] transition-all active:scale-90 relative"
                         >
                             <ShoppingBag size={20} />
                             {cartCount > 0 && (
-                                <span className="absolute -top-1 -right-1 h-5 w-5 bg-[#1e3932] text-white text-[10px] font-black flex items-center justify-center rounded-full border-2 border-white shadow-md">
+                                <span className="absolute -top-1 -right-1 h-5 w-5 bg-[#FF5C8A] text-white text-[10px] font-black flex items-center justify-center rounded-full border-2 border-white shadow-md">
                                     {cartCount}
                                 </span>
                             )}
                         </Link>
 
                         <Link to="/profile" className="ml-1 active:scale-90 transition-transform">
-                            <div className="w-11 h-11 rounded-[1.25rem] border-2 border-[#1e3932]/10 p-0.5 overflow-hidden shadow-sm">
+                            <div className="w-11 h-11 rounded-[1.25rem] border-2 border-[#FF5C8A]/10 p-0.5 overflow-hidden shadow-sm">
                                 <img
                                     src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`}
                                     className="w-full h-full object-cover bg-gray-100 rounded-[1rem]"
@@ -67,12 +67,12 @@ const HomeHeader = ({ user }) => {
                 {/* Search Bar - Modernized */}
                 <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Search className="h-4 w-4 text-gray-400 group-focus-within:text-[#1e3932] transition-colors" />
+                        <Search className="h-4 w-4 text-gray-400 group-focus-within:text-[#FF5C8A] transition-colors" />
                     </div>
                     <input
                         type="text"
                         placeholder="Search tailors, fabrics, designs..."
-                        className="w-full bg-gray-100 border border-transparent rounded-[1.25rem] py-3.5 pl-11 pr-4 text-sm font-medium focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#1e3932]/5 focus:border-[#1e3932]/20 transition-all placeholder:text-gray-400 shadow-inner"
+                        className="w-full bg-gray-100 border border-transparent rounded-[1.25rem] py-3.5 pl-11 pr-4 text-sm font-medium focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#FF5C8A]/5 focus:border-[#FF5C8A]/20 transition-all placeholder:text-gray-400 shadow-inner"
                     />
                 </div>
             </div>
@@ -109,7 +109,7 @@ const HomeHeader = ({ user }) => {
                                     <div
                                         key={n._id}
                                         onClick={() => markAsRead(n._id)}
-                                        className={`p-4 rounded-2xl border transition-all cursor-pointer ${!n.isRead ? 'bg-green-50/50 border-green-100 shadow-sm' : 'bg-white border-gray-100'}`}
+                                        className={`p-4 rounded-2xl border transition-all cursor-pointer ${!n.isRead ? 'bg-pink-50/50 border-pink-100 shadow-sm' : 'bg-white border-gray-100'}`}
                                     >
                                         <div className="flex justify-between items-start mb-1.5">
                                             <span className="text-xs font-black text-gray-900 leading-none">{n.title}</span>
@@ -127,7 +127,7 @@ const HomeHeader = ({ user }) => {
                                 )}
                             </div>
 
-                            <button className="w-full mt-6 py-3 text-xs font-black text-[#1e3932] uppercase tracking-widest border border-[#1e3932]/10 rounded-2xl hover:bg-[#1e3932]/5 transition-all">
+                            <button className="w-full mt-6 py-3 text-xs font-black text-[#FF5C8A] uppercase tracking-widest border border-[#FF5C8A]/10 rounded-2xl hover:bg-[#FF5C8A]/5 transition-all">
                                 View Activity History
                             </button>
                         </motion.div>

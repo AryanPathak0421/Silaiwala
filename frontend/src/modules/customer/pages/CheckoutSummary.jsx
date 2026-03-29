@@ -20,7 +20,7 @@ const CheckoutSummary = () => {
     const addOrder = useOrderStore(state => state.addOrder);
     const clearCheckout = useCheckoutStore(state => state.clearCheckout);
 
-    const isServiceCheckout = !!(serviceDetails?.id || serviceDetails?._id || (addons && addons.length > 0));
+    const isServiceCheckout = !!(serviceDetails?.id || serviceDetails?._id || (configuration?.addons && configuration.addons.length > 0));
     const isCartCheckout = cartItems.length > 0;
 
     const [isProcessing, setIsProcessing] = useState(false);
@@ -34,12 +34,12 @@ const CheckoutSummary = () => {
             return;
         }
         
-        console.log('Checkout State:', { isServiceCheckout, isCartCheckout, serviceDetails, addons, cartItems });
+        console.log('Checkout State:', { isServiceCheckout, isCartCheckout, serviceDetails, configuration, cartItems });
 
         if (!isServiceCheckout && !isCartCheckout) {
             navigate('/store'); // Navigate to store instead of services if empty
         }
-    }, [isServiceCheckout, isCartCheckout, selectedAddress, navigate, isProcessing, addons, serviceDetails, cartItems]);
+    }, [isServiceCheckout, isCartCheckout, selectedAddress, navigate, isProcessing, configuration, serviceDetails, cartItems]);
 
     if ((!isServiceCheckout && !isCartCheckout && !isProcessing) || !selectedAddress) return null;
 
@@ -52,7 +52,7 @@ const CheckoutSummary = () => {
 
     // Recalculate total for cart (including delivery/platform fee if needed)
     // For simplicity, reusing logic
-    const finalTotal = Math.round(isServiceCheckout ? pricing.total + 10 : currentPricing.total + currentPricing.delivery);
+    const finalTotal = Math.round(isServiceCheckout ? currentPricing.total + 10 : currentPricing.total + currentPricing.delivery);
 
     const handlePayment = async () => {
         setIsProcessing(true);
@@ -69,7 +69,9 @@ const CheckoutSummary = () => {
                         selectedFabric: configuration.selectedFabric?._id || configuration.selectedFabric?.id,
                         quantity: 1,
                         price: pricing.base,
-                        measurements: configuration.measurements
+                        measurements: configuration.measurements,
+                        isTailorAtHome: configuration.isTailorAtHome,
+                        addons: configuration.addons
                     }],
                     totalAmount: finalTotal,
                     deliveryAddress: {
@@ -144,7 +146,7 @@ const CheckoutSummary = () => {
                     contact: selectedAddress?.phone || ""
                 },
                 theme: {
-                    color: "#1e3932"
+                    color: "#FF5C8A"
                 }
             };
 
@@ -165,108 +167,118 @@ const CheckoutSummary = () => {
     return (
         <div className="min-h-screen bg-gray-50 pb-32 font-sans text-gray-900">
             {/* 1. Header */}
-            <div className="sticky top-0 z-50 bg-[#1e3932] shadow-md border-b border-[#1e3932] px-4 py-3 flex items-center gap-3 pt-safe">
+            <div className="sticky top-0 z-50 bg-[#FF5C8A] shadow-md border-b border-[#FF5C8A] px-4 py-3 flex items-center gap-3 pt-safe">
                 <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-white/10 text-white transition-colors">
                     <ArrowLeft size={20} />
                 </button>
                 <div className="flex-1">
                     <h1 className="text-sm font-bold text-white">Order Summary</h1>
-                    <p className="text-[10px] text-gray-300">Step 3 of 3</p>
+                    <p className="text-[10px] text-gray-300">Final Step</p>
                 </div>
             </div>
 
-            <div className="max-w-xl mx-auto p-4 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <div className="max-w-5xl mx-auto p-4 flex flex-col lg:flex-row gap-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
 
-                {/* 2. Review Section */}
-                {isServiceCheckout ? (
-                    <ServiceReviewCard
-                        service={serviceDetails}
-                        config={configuration}
-                    />
-                ) : (
-                    <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm mb-4">
-                        <h3 className="text-sm font-bold text-gray-900 mb-3">Cart Items ({cartItems.length})</h3>
-                        <div className="space-y-3">
-                            {cartItems.map((item) => (
-                                <div key={item.cartId} className="flex gap-3">
-                                    <div className="w-12 h-16 bg-gray-50 rounded-lg overflow-hidden border border-gray-100 shrink-0">
-                                        <img src={item.images?.[0] || item.image} alt={item.title} className="w-full h-full object-cover" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <h4 className="text-xs font-bold text-gray-900 line-clamp-1">{item.title}</h4>
-                                        <p className="text-[10px] text-gray-500">Size: {item.selectedSize} • {item.selectedColor}</p>
-                                        <div className="flex justify-between items-center mt-1">
-                                            <span className="text-xs font-bold text-[#1e3932]">₹{item.price}</span>
-                                            <span className="text-[10px] text-gray-400">Qty: {item.quantity}</span>
+                <div className="flex-1 space-y-4">
+                    {/* 2. Review Section */}
+                    {isServiceCheckout ? (
+                        <ServiceReviewCard
+                            service={serviceDetails}
+                            config={configuration}
+                        />
+                    ) : (
+                        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm mb-4">
+                            <h3 className="text-sm font-bold text-gray-900 mb-3">Cart Items ({cartItems.length})</h3>
+                            <div className="space-y-4">
+                                {cartItems.map((item) => (
+                                    <div key={item.cartId} className="flex gap-4">
+                                        <div className="w-16 h-20 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 shrink-0">
+                                            <img src={item.images?.[0] || item.image} alt={item.title} className="w-full h-full object-cover" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h4 className="text-sm font-bold text-gray-900 line-clamp-1">{item.title}</h4>
+                                            <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest mt-1">Size: {item.selectedSize} • {item.selectedColor}</p>
+                                            <div className="flex justify-between items-center mt-2">
+                                                <span className="text-sm font-bold text-[#FF5C8A]">₹{item.price}</span>
+                                                <span className="text-[10px] font-black text-gray-400">QTY: {item.quantity}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 3. Address Preview */}
+                    <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                                <MapPin size={16} className="text-[#FF5C8A]" />
+                                Delivery Details
+                            </h3>
+                            <button
+                                onClick={() => navigate('/checkout/address')}
+                                className="text-[10px] font-bold text-[#FF5C8A] uppercase tracking-wider hover:underline"
+                            >
+                                Change
+                            </button>
+                        </div>
+                        <div className="bg-[#FF5C8A]/[0.02] p-4 rounded-xl border border-[#FF5C8A]/10 text-xs text-gray-600 leading-relaxed">
+                            <p className="font-bold text-gray-900 mb-2">{selectedAddress?.receiverName} <span className="ml-2 px-2 py-0.5 bg-[#FF5C8A]/10 text-[#FF5C8A] rounded-full text-[9px] uppercase tracking-widest">{selectedAddress?.type}</span></p>
+                            <p className="text-gray-600">{selectedAddress?.street}, {selectedAddress?.city}, {selectedAddress?.state} - {selectedAddress?.zipCode}</p>
+                            <p className="mt-2 font-bold text-[#FF5C8A]">Contact: {selectedAddress?.phone}</p>
                         </div>
                     </div>
-                )}
+                </div>
 
-                {/* 3. Address Preview */}
-                <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm mb-4">
-                    <div className="flex justify-between items-center mb-3">
-                        <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                            <MapPin size={14} className="text-[#1e3932]" />
-                            Delivery Address
+                <div className="w-full lg:w-96 space-y-4">
+                    {/* 4. Bill Details */}
+                    <BillDetails pricing={currentPricing} />
+
+                    {/* 5. Payment Method */}
+                    <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                        <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <CreditCard size={16} className="text-[#FF5C8A]" />
+                            Payment Method
                         </h3>
+                        <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center shadow-sm">
+                                <span className="font-bold text-[10px] text-gray-900">UPI</span>
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-xs font-bold text-gray-900">Razorpay Secure</p>
+                                <p className="text-[10px] text-gray-500">Fast & Encrypted</p>
+                            </div>
+                            <Lock size={14} className="text-[#FF5C8A]" />
+                        </div>
+                        
                         <button
-                            onClick={() => navigate('/checkout/address')}
-                            className="text-[10px] font-bold text-[#1e3932] uppercase tracking-wider hover:underline"
+                            onClick={handlePayment}
+                            disabled={isProcessing}
+                            className="w-full mt-6 py-4 rounded-xl bg-[#FF5C8A] text-white text-sm font-bold shadow-lg shadow-pink-200 hover:bg-[#cc496e] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                         >
-                            Change
+                            {isProcessing ? 'Initializing...' : `Pay ₹${finalTotal}`} <ArrowRight size={18} />
                         </button>
-                    </div>
-                    {/* Render minimal address view */}
-                    <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-xs text-gray-600 leading-relaxed">
-                        <p className="font-bold text-gray-900 mb-1">{selectedAddress?.receiverName} ({selectedAddress?.type})</p>
-                        <p>{selectedAddress?.street}, {selectedAddress?.city}, {selectedAddress?.state} - {selectedAddress?.zipCode}</p>
-                        <p className="mt-1 font-medium">Phone: {selectedAddress?.phone}</p>
-                    </div>
-                </div>
 
-                {/* 4. Bill Details */}
-                <BillDetails pricing={currentPricing} />
-
-                {/* 5. Payment Method (Mock) */}
-                <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm mb-4">
-                    <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-                        <CreditCard size={14} className="text-[#1e3932]" />
-                        Running Payment
-                    </h3>
-                    <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 flex items-center gap-3 cursor-not-allowed opacity-70">
-                        <div className="w-8 h-8 rounded-full bg-white border flex items-center justify-center">
-                            <span className="font-bold text-[10px]">UPI</span>
+                        <div className="mt-4 text-[10px] text-center text-gray-400 flex items-center justify-center gap-1">
+                            <ShieldCheck size={12} className="text-green-500" />
+                            Secure Payment Powered by Razorpay
                         </div>
-                        <div className="flex-1">
-                            <p className="text-xs font-bold text-gray-900">Razorpay Secure</p>
-                            <p className="text-[10px] text-gray-500">All UPI, Cards & Netbanking</p>
-                        </div>
-                        <Lock size={12} className="text-gray-400" />
-                    </div>
-                    <div className="mt-2 text-[10px] text-center text-gray-400 flex items-center justify-center gap-1">
-                        <ShieldCheck size={10} />
-                        100% Safe & Secure Payments by Razorpay
                     </div>
                 </div>
 
             </div>
 
-            {/* 6. Sticky Footer Button */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 pb-safe z-40 md:static md:bg-transparent md:border-t-0 md:p-0">
-                <div className="max-w-xl mx-auto md:p-4">
-                    <button
-                        onClick={handlePayment}
-                        className="w-full py-3.5 rounded-full bg-[#1e3932] text-white text-sm font-bold shadow-lg shadow-[#1e3932]/20 hover:bg-[#152e28] active:scale-95 transition-all flex items-center justify-center gap-2"
-                    >
-                        Pay ₹{finalTotal} <ArrowRight size={16} />
-                    </button>
-                </div>
+            {/* Mobile Footer Action (Only shown on small screens if not sticky above) */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 pb-safe z-40">
+                <button
+                    onClick={handlePayment}
+                    disabled={isProcessing}
+                    className="w-full py-3.5 rounded-xl bg-[#FF5C8A] text-white text-sm font-bold shadow-lg shadow-pink-100 hover:bg-[#cc496e] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+                >
+                    {isProcessing ? 'Wait...' : `Pay ₹${finalTotal}`} <ArrowRight size={16} />
+                </button>
             </div>
-
         </div>
     );
 };

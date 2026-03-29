@@ -38,7 +38,7 @@ const PincodeCheck = () => {
                 <button
                     onClick={handleCheck}
                     disabled={pincode.length !== 6 || status === 'loading'}
-                    className="text-xs font-bold text-[#1e3932] hover:bg-gray-200 px-4 rounded-lg bg-gray-100 disabled:opacity-50"
+                    className="text-xs font-bold text-primary hover:bg-gray-200 px-4 rounded-lg bg-gray-100 disabled:opacity-50"
                 >
                     {status === 'loading' ? <Loader2 size={16} className="animate-spin" /> : 'Check'}
                 </button>

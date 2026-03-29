@@ -41,7 +41,7 @@ const FabricSelector = ({ selected, onSelect, selectedFabric, onSelectFabric, ta
                     onClick={() => onSelect('customer')}
                     className={cn(
                         "p-3 rounded-xl border cursor-pointer transition-all text-center",
-                        selected === 'customer' ? "border-[#1e3932] bg-[#f2fcf9] ring-1 ring-[#1e3932]" : "border-gray-100 hover:border-gray-200"
+                        selected === 'customer' ? "border-primary bg-[#f2fcf9] ring-1 ring-primary" : "border-gray-100 hover:border-gray-200"
                     )}
                 >
                     <div className="w-10 h-10 mx-auto bg-gray-100 rounded-full flex items-center justify-center text-gray-600 mb-2">
@@ -59,10 +59,10 @@ const FabricSelector = ({ selected, onSelect, selectedFabric, onSelectFabric, ta
                     }}
                     className={cn(
                         "p-3 rounded-xl border cursor-pointer transition-all text-center",
-                        selected === 'platform' ? "border-[#1e3932] bg-[#f2fcf9] ring-1 ring-[#1e3932]" : "border-gray-100 hover:border-gray-200"
+                        selected === 'platform' ? "border-primary bg-[#f2fcf9] ring-1 ring-primary" : "border-gray-100 hover:border-gray-200"
                     )}
                 >
-                    <div className="w-10 h-10 mx-auto bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mb-2">
+                    <div className="w-10 h-10 mx-auto bg-pink-50 rounded-full flex items-center justify-center text-primary mb-2">
                         <ShoppingBag size={20} />
                     </div>
                     <p className="text-xs font-bold text-gray-900">Buy from Tailor</p>
@@ -72,7 +72,7 @@ const FabricSelector = ({ selected, onSelect, selectedFabric, onSelectFabric, ta
 
             {/* Selected Fabric Info (NEW) */}
             {selectedFabric && selected === 'platform' ? (
-                <div className="mt-4 p-3 bg-gray-50 rounded-xl border border-dashed border-[#1e3932]/30 flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                <div className="mt-4 p-3 bg-gray-50 rounded-xl border border-dashed border-primary/30 flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
                     <div className="w-12 h-12 rounded-lg overflow-hidden border border-gray-200">
                         <img src={selectedFabric.image} alt={selectedFabric.name} className="w-full h-full object-cover" />
                     </div>
@@ -81,10 +81,10 @@ const FabricSelector = ({ selected, onSelect, selectedFabric, onSelectFabric, ta
                         <h4 className="text-xs font-bold text-gray-900">{selectedFabric.name}</h4>
                     </div>
                     <div className="text-right flex flex-col items-end">
-                        <p className="text-xs font-bold text-[#1e3932]">₹{selectedFabric.price}</p>
+                        <p className="text-xs font-bold text-primary">₹{selectedFabric.price}</p>
                         <button
                             onClick={() => setShowFabricPicker(true)}
-                            className="text-[9px] text-[#1e3932] font-bold underline mt-1"
+                            className="text-[9px] text-primary font-bold underline mt-1"
                         >
                             Change
                         </button>
@@ -99,7 +99,7 @@ const FabricSelector = ({ selected, onSelect, selectedFabric, onSelectFabric, ta
                     ) : (
                         <button
                             onClick={() => setShowFabricPicker(true)}
-                            className="w-full p-3 bg-[#1e3932] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md active:scale-95 transition-transform"
+                            className="w-full p-3 bg-primary text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md active:scale-95 transition-transform"
                         >
                             Select Fabric from {tailor.shopName || tailor.name} <ChevronRight size={14} />
                         </button>
@@ -124,7 +124,7 @@ const FabricSelector = ({ selected, onSelect, selectedFabric, onSelectFabric, ta
                         <div className="max-h-[60vh] overflow-y-auto no-scrollbar pb-4">
                             {isLoading ? (
                                 <div className="flex flex-col items-center justify-center py-12 gap-3">
-                                    <Loader2 className="animate-spin text-[#1e3932]" size={32} />
+                                    <Loader2 className="animate-spin text-primary" size={32} />
                                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Fetching Fabrics...</p>
                                 </div>
                             ) : error ? (
@@ -132,7 +132,7 @@ const FabricSelector = ({ selected, onSelect, selectedFabric, onSelectFabric, ta
                                     <p className="text-xs text-red-500 font-medium">{error}</p>
                                     <button 
                                         onClick={() => setShowFabricPicker(false)}
-                                        className="mt-4 text-[10px] font-black uppercase text-[#1e3932] underline"
+                                        className="mt-4 text-[10px] font-black uppercase text-primary underline"
                                     >
                                         Go Back
                                     </button>
@@ -155,14 +155,14 @@ const FabricSelector = ({ selected, onSelect, selectedFabric, onSelectFabric, ta
                                             }}
                                             className={cn(
                                                 "p-2 rounded-2xl border transition-all cursor-pointer group",
-                                                selectedFabric?._id === fabric._id ? "border-[#1e3932] bg-[#f2fcf9]" : "border-gray-100 hover:border-gray-200"
+                                                selectedFabric?._id === fabric._id ? "border-primary bg-[#f2fcf9]" : "border-gray-100 hover:border-gray-200"
                                             )}
                                         >
                                             <div className="aspect-square rounded-xl overflow-hidden mb-2 border border-gray-50">
                                                 <img src={fabric.image || fabric.images?.[0]} alt={fabric.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                             </div>
                                             <h4 className="text-[11px] font-bold text-gray-800 truncate">{fabric.name}</h4>
-                                            <p className="text-[10px] font-bold text-[#1e3932]">₹{fabric.price}</p>
+                                            <p className="text-[10px] font-bold text-primary">₹{fabric.price}</p>
                                         </div>
                                     ))}
                                 </div>

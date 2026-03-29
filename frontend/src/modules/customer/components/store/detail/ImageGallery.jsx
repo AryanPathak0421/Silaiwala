@@ -23,7 +23,7 @@ const ImageGallery = ({ images }) => {
                         onClick={() => setSelectedImage(img)}
                         className={cn(
                             "flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border-2 transition-all",
-                            selectedImage === img ? "border-[#1e3932]" : "border-transparent hover:border-gray-200"
+                            selectedImage === img ? "border-primary" : "border-transparent hover:border-gray-200"
                         )}
                     >
                         <img src={img} alt={`Thumbnail ${index + 1}`} className="w-full h-full object-cover" />
@@ -57,7 +57,7 @@ const ImageGallery = ({ images }) => {
                             key={idx}
                             className={cn(
                                 "w-1.5 h-1.5 rounded-full transition-colors",
-                                images[idx] === selectedImage ? "bg-[#1e3932]" : "bg-white/50"
+                                images[idx] === selectedImage ? "bg-primary" : "bg-white/50"
                             )}
                         />
                     ))}

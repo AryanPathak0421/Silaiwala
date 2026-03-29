@@ -11,7 +11,7 @@ const ServicesHeader = () => {
                 <Link to="/" className="p-2 -ml-2 rounded-full hover:bg-gray-50 text-gray-700">
                     <ArrowLeft size={20} />
                 </Link>
-                <h1 className="text-xl font-bold text-[#1e3932]">Stitching Services</h1>
+                <h1 className="text-xl font-bold text-primary">Stitching Services</h1>
             </div>
 
             {/* Search & Filter */}
@@ -33,7 +33,7 @@ const ServicesHeader = () => {
                 {['All', 'Popular', 'New Arrival', 'Under ₹500', 'Express Delivery'].map((filter) => (
                     <button
                         key={filter}
-                        className="flex-shrink-0 px-3 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-medium text-gray-600 hover:border-[#1e3932] hover:text-[#1e3932] transition-all whitespace-nowrap snap-start"
+                        className="flex-shrink-0 px-3 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-medium text-gray-600 hover:border-primary hover:text-primary transition-all whitespace-nowrap snap-start"
                     >
                         {filter}
                     </button>

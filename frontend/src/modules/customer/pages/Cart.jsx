@@ -31,7 +31,7 @@ const CartPage = () => {
                 <p className="text-sm text-gray-500 mb-6 max-w-xs">Looks like you haven't added anything to your cart yet.</p>
                 <Link
                     to="/store"
-                    className="px-6 py-3 rounded-xl bg-[#1e3932] text-white font-bold text-sm shadow-lg hover:bg-[#152e28] transition-all"
+                    className="px-6 py-3 rounded-xl bg-[#FF5C8A] text-white font-bold text-sm shadow-lg hover:bg-[#cc496e] transition-all"
                 >
                     Start Shopping
                 </Link>
@@ -54,87 +54,99 @@ const CartPage = () => {
                 </div>
             </div>
 
-            <div className="max-w-xl mx-auto p-4 space-y-4 animate-in fade-in duration-300">
+            <div className="max-w-4xl mx-auto p-4 flex flex-col lg:flex-row gap-6 animate-in fade-in duration-300">
 
-                {/* 2. Cart Items */}
-                <div className="space-y-3">
-                    {items.map((item) => (
-                        <CartItem
-                            key={item.cartId}
-                            item={item}
-                            onUpdateQuantity={updateQuantity}
-                            onRemove={removeItem}
-                        />
-                    ))}
-                </div>
+                <div className="flex-1 space-y-4">
+                    {/* 2. Cart Items */}
+                    <div className="space-y-3">
+                        {items.map((item) => (
+                            <CartItem
+                                key={item.cartId}
+                                item={item}
+                                onUpdateQuantity={updateQuantity}
+                                onRemove={removeItem}
+                            />
+                        ))}
+                    </div>
 
-                {/* 3. Offers & Coupons (Placeholder) */}
-                <div className="bg-white rounded-xl p-3 border border-dashed border-gray-200 flex items-center gap-3 cursor-pointer hover:bg-green-50/50 hover:border-green-200 transition-colors">
-                    <div className="w-8 h-8 rounded-lg bg-green-50 text-green-700 flex items-center justify-center font-bold text-xs">%</div>
-                    <div className="flex-1">
-                        <p className="text-xs font-bold text-gray-900">Apply Coupon</p>
-                        <p className="text-[10px] text-gray-400">Save more on this order</p>
+                    {/* 3. Offers & Coupons */}
+                    <div className="bg-white rounded-xl p-3 border border-dashed border-gray-200 flex items-center gap-3 cursor-pointer hover:bg-pink-50/50 hover:border-pink-200 transition-colors">
+                        <div className="w-8 h-8 rounded-lg bg-pink-50 text-pink-700 flex items-center justify-center font-bold text-xs">%</div>
+                        <div className="flex-1">
+                            <p className="text-xs font-bold text-gray-900">Apply Coupon</p>
+                            <p className="text-[10px] text-gray-400">Save more on this order</p>
+                        </div>
                     </div>
                 </div>
 
-                {/* 4. Bill Details */}
-                <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm relative overflow-hidden">
-                    <h3 className="text-sm font-bold text-gray-900 mb-3">Bill Summary</h3>
+                {/* 4. Order Summary Section */}
+                <div className="w-full lg:w-96 space-y-4">
+                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm sticky top-20">
+                        <h3 className="text-sm font-bold text-gray-900 mb-4">Order Summary</h3>
 
-                    <div className="space-y-2.5">
-                        <div className="flex justify-between text-xs text-gray-600">
-                            <span>Item Total</span>
-                            <span>₹{totalPrice}</span>
-                        </div>
-                        <div className="flex justify-between text-xs text-gray-600">
-                            <span>Delivery Fee</span>
-                            {deliveryFee === 0 ? (
-                                <span className="text-green-600 font-bold">FREE</span>
-                            ) : (
-                                <span>₹{deliveryFee}</span>
-                            )}
-                        </div>
-                        {deliveryFee === 0 && (
-                            <div className="text-[10px] text-green-600 bg-green-50 px-2 py-0.5 rounded w-fit flex items-center gap-1">
-                                <Info size={10} />
-                                Free delivery on orders above ₹999
+                        <div className="space-y-3">
+                            <div className="flex justify-between text-xs text-gray-600">
+                                <span>Subtotal</span>
+                                <span>₹{totalPrice}</span>
                             </div>
-                        )}
+                            <div className="flex justify-between text-xs text-gray-600">
+                                <span>Delivery Fee</span>
+                                {deliveryFee === 0 ? (
+                                    <span className="text-[#FF5C8A] font-bold">FREE</span>
+                                ) : (
+                                    <span>₹{deliveryFee}</span>
+                                )}
+                            </div>
+                            {deliveryFee === 0 && (
+                                <div className="text-[10px] text-[#FF5C8A] bg-pink-50 px-2 py-1.5 rounded-lg flex items-center gap-2">
+                                    <Info size={12} />
+                                    Free delivery applied over ₹999
+                                </div>
+                            )}
 
-                        <div className="h-px bg-gray-100 my-1" />
+                            <div className="h-px bg-gray-100 my-2" />
 
-                        <div className="flex justify-between items-center text-sm font-bold text-gray-900">
-                            <span>To Pay</span>
-                            <span>₹{finalTotal}</span>
+                            <div className="flex justify-between items-center text-base font-bold text-gray-900 mb-6">
+                                <span>Total Payable</span>
+                                <span>₹{finalTotal}</span>
+                            </div>
+
+                            <button
+                                onClick={handleCheckout}
+                                disabled={isCheckoutLoading}
+                                className="w-full py-4 rounded-xl bg-[#FF5C8A] text-white text-sm font-bold shadow-lg shadow-pink-200 hover:bg-[#cc496e] active:scale-[0.98] transition-all flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
+                            >
+                                {isCheckoutLoading ? 'Processing...' : 'Proceed to Checkout'}
+                            </button>
                         </div>
-                    </div>
-                </div>
 
-                {/* 5. Trust Badges */}
-                <div className="grid grid-cols-2 gap-2 text-[10px] text-gray-400 font-medium text-center">
-                    <div className="bg-white/50 border border-gray-100 rounded-lg p-2">
-                        100% Safe Payments
-                    </div>
-                    <div className="bg-white/50 border border-gray-100 rounded-lg p-2">
-                        Easy Returns
+                        {/* Trust Badges */}
+                        <div className="grid grid-cols-2 gap-2 mt-6 text-[10px] text-gray-400 font-medium text-center">
+                            <div className="bg-gray-50 rounded-lg p-2">
+                                100% Secure
+                            </div>
+                            <div className="bg-gray-50 rounded-lg p-2">
+                                Trusted Delivery
+                            </div>
+                        </div>
                     </div>
                 </div>
 
             </div>
 
-            {/* 6. Sticky Footer Checkout */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 pb-safe z-40 md:static md:bg-transparent md:border-t-0 md:p-0 md:max-w-xl md:mx-auto">
+            {/* Mobile Footer Sticky Action */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 pb-safe z-40">
                 <button
                     onClick={handleCheckout}
                     disabled={isCheckoutLoading}
-                    className="w-full py-3.5 rounded-xl bg-[#1e3932] text-white text-sm font-bold shadow-lg hover:bg-[#152e28] active:scale-95 transition-all flex items-center justify-between px-6 disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="w-full py-3.5 rounded-xl bg-[#FF5C8A] text-white text-sm font-bold shadow-lg hover:bg-[#cc496e] active:scale-95 transition-all flex items-center justify-between px-6 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                     <div className="text-left">
-                        <p className="text-[10px] opacity-80 uppercase tracking-wider font-medium">Total</p>
-                        <p className="text-base font-bold">₹{finalTotal}</p>
+                        <p className="text-[10px] opacity-80 uppercase tracking-wider font-medium text-white">Total Amount</p>
+                        <p className="text-base font-bold text-white">₹{finalTotal}</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                        {isCheckoutLoading ? 'Processing...' : 'Proceed to Pay'}
+                    <div className="flex items-center gap-2 text-white">
+                        {isCheckoutLoading ? 'Wait...' : 'Checkout'}
                     </div>
                 </button>
             </div>

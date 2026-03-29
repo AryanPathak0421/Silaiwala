@@ -222,7 +222,7 @@ const Products = () => {
         <div className="space-y-6">
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h3 className="text-2xl font-black text-[#1e3932] tracking-tighter">
+                    <h3 className="text-2xl font-black text-[#FF5C8A] tracking-tighter">
                         {activeTab === 'samples' ? 'Stitching Services' : 'Fabric Inventory'}
                     </h3>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
@@ -234,7 +234,7 @@ const Products = () => {
                         setIsEditing(false);
                         setShowModal(true);
                     }}
-                    className="h-12 w-12 bg-[#1e3932] text-white rounded-2xl flex items-center justify-center shadow-lg shadow-green-900/10 hover:bg-[#152a25] active:scale-90 transition-all"
+                    className="h-12 w-12 bg-[#FF5C8A] text-white rounded-2xl flex items-center justify-center shadow-lg shadow-pink-900/10 hover:bg-primary-dark active:scale-90 transition-all"
                 >
                     <Plus size={24} />
                 </button>
@@ -244,13 +244,13 @@ const Products = () => {
             <div className="flex p-1 bg-gray-100 rounded-[1.25rem] gap-1">
                 <button
                     onClick={() => setActiveTab('samples')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 text-[10px] font-black uppercase tracking-widest rounded-[1rem] transition-all ${activeTab === 'samples' ? 'bg-[#1e3932] text-white shadow-md' : 'text-gray-400'}`}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 text-[10px] font-black uppercase tracking-widest rounded-[1rem] transition-all ${activeTab === 'samples' ? 'bg-[#FF5C8A] text-white shadow-md' : 'text-gray-400'}`}
                 >
                     <Layers size={14} /> Stitching Services
                 </button>
                 <button
                     onClick={() => setActiveTab('fabrics')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 text-[10px] font-black uppercase tracking-widest rounded-[1rem] transition-all ${activeTab === 'fabrics' ? 'bg-[#1e3932] text-white shadow-md' : 'text-gray-400'}`}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 text-[10px] font-black uppercase tracking-widest rounded-[1rem] transition-all ${activeTab === 'fabrics' ? 'bg-[#FF5C8A] text-white shadow-md' : 'text-gray-400'}`}
                 >
                     <ShoppingBag size={14} /> Fabric Inventory
                 </button>
@@ -263,7 +263,7 @@ const Products = () => {
                     placeholder={`Search ${activeTab === 'samples' ? 'samples' : 'fabrics'}...`}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 bg-white border border-gray-100 rounded-2xl focus:outline-none focus:border-[#1e3932] shadow-sm text-sm transition-colors"
+                    className="w-full pl-12 pr-4 py-4 bg-white border border-gray-100 rounded-2xl focus:outline-none focus:border-[#FF5C8A] shadow-sm text-sm transition-colors"
                 />
             </div>
 
@@ -278,7 +278,7 @@ const Products = () => {
                             {activeTab === 'samples' ? <Scissors size={32} className="text-gray-200" /> : <Package size={32} className="text-gray-200" />}
                         </div>
                         <p className="text-gray-400 font-bold text-sm tracking-tight uppercase">No {activeTab} found</p>
-                        <button onClick={() => { setIsEditing(false); setShowModal(true); }} className="mt-4 text-[#1e3932] text-[10px] font-black underline uppercase tracking-widest">Add your first {activeTab.slice(0, -1)}</button>
+                        <button onClick={() => { setIsEditing(false); setShowModal(true); }} className="mt-4 text-[#FF5C8A] text-[10px] font-black underline uppercase tracking-widest">Add your first {activeTab.slice(0, -1)}</button>
                     </div>
                 ) : (
                     filteredItems.map((item) => (
@@ -295,7 +295,7 @@ const Products = () => {
                                 <div className="absolute top-4 right-4 flex gap-2 translate-y-[-10px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
                                     <button
                                         onClick={() => handleEdit(item)}
-                                        className="p-2.5 bg-white shadow-xl rounded-xl text-gray-600 hover:text-[#1e3932] hover:bg-green-50 active:scale-95 transition-all"
+                                        className="p-2.5 bg-white shadow-xl rounded-xl text-gray-600 hover:text-[#FF5C8A] hover:bg-pink-50 active:scale-95 transition-all"
                                     >
                                         <Edit3 size={16} />
                                     </button>
@@ -308,7 +308,7 @@ const Products = () => {
                                 </div>
                                 
                                 <div className="absolute bottom-4 left-4 flex flex-wrap gap-2 max-w-[80%]">
-                                    <div className="bg-[#1e3932] text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest shadow-lg border border-white/10 backdrop-blur-md">
+                                    <div className="bg-[#FF5C8A] text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest shadow-lg border border-white/10 backdrop-blur-md">
                                         {item.category?.name || 'General'}
                                     </div>
                                     {activeTab === 'samples' && (
@@ -317,7 +317,7 @@ const Products = () => {
                                                 {item.serviceType || 'STITCHING'}
                                             </div>
                                             {item.tags && item.tags.map((tag, idx) => (
-                                                <div key={idx} className="bg-yellow-400 text-[#1e3932] px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest shadow-lg border border-white/10">
+                                                <div key={idx} className="bg-yellow-400 text-[#FF5C8A] px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest shadow-lg border border-white/10">
                                                     {tag}
                                                 </div>
                                             ))}
@@ -329,20 +329,20 @@ const Products = () => {
                             <div className="p-6">
                                 <div className="flex justify-between items-start">
                                     <div className="flex-1 pr-4">
-                                        <h4 className="text-lg font-black text-gray-900 tracking-tight leading-none group-hover:text-[#1e3932] transition-colors">
+                                        <h4 className="text-lg font-black text-gray-900 tracking-tight leading-none group-hover:text-primary transition-colors">
                                             {item.title || item.name}
                                         </h4>
                                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-3 flex items-center gap-1.5">
                                             {activeTab === 'samples' ? (
                                                 <><Scissors size={10} /> EST DELIVERY: {item.deliveryTime || '10-15 DAYS'}</>
                                             ) : (
-                                                <><Package size={10} /> STOCK AVAILABLE: <span className="text-[#1e3932] font-black">{item.stock || 0} METERS</span></>
+                                                <><Package size={10} /> STOCK AVAILABLE: <span className="text-[#FF5C8A] font-black">{item.stock || 0} METERS</span></>
                                             )}
                                         </p>
                                     </div>
                                     <div className="text-right">
                                         <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest mb-1">{activeTab === 'samples' ? 'Base Price' : 'Per Meter'}</p>
-                                        <p className="text-2xl font-black text-[#1e3932] italic tracking-tighter">
+                                        <p className="text-2xl font-black text-[#FF5C8A] italic tracking-tighter">
                                             ₹{(item.basePrice || item.price || item.laborPrice || 0).toLocaleString()}
                                         </p>
                                     </div>
@@ -355,7 +355,7 @@ const Products = () => {
 
             {/* Add New Modal */}
             {showModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#1e3932]/40 backdrop-blur-xl animate-in fade-in duration-500">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#FF5C8A]/20 backdrop-blur-xl animate-in fade-in duration-500">
                     <div className="bg-white w-full max-w-xl rounded-[3rem] shadow-[0_32px_100px_rgba(0,0,0,0.18)] flex flex-col overflow-hidden animate-in zoom-in-95 duration-500 relative max-h-[92vh]">
                         {/* Close Button Top Right */}
                         <button 
@@ -367,7 +367,7 @@ const Products = () => {
 
                         <div className="p-8 md:p-12 pt-12 md:pt-16 pb-4 md:pb-6">
                             <div>
-                                <h4 className="text-3xl md:text-4xl font-black text-[#1e3932] tracking-tighter uppercase italic leading-none">{isEditing ? 'Edit' : 'Upload'} {activeTab === 'samples' ? 'Service' : 'Fabric'}</h4>
+                                <h4 className="text-3xl md:text-4xl font-black text-[#FF5C8A] tracking-tighter uppercase italic leading-none">{isEditing ? 'Edit' : 'Upload'} {activeTab === 'samples' ? 'Service' : 'Fabric'}</h4>
                                 <p className="text-[10px] md:text-[11px] font-bold text-gray-400 uppercase tracking-[0.25em] mt-3">{isEditing ? `Update your existing ${activeTab.slice(0, -1)} details` : (activeTab === 'samples' ? 'Add a new stitching service for customers' : 'Add new fabric material to your shop')}</p>
                             </div>
                         </div>
@@ -378,7 +378,7 @@ const Products = () => {
                                 <label className="text-[11px] font-black text-gray-300 uppercase tracking-widest ml-4">Title / Name</label>
                                 <input 
                                     required
-                                    className="w-full px-8 py-5 bg-[#f8f9fa] border-2 border-transparent focus:border-[#1e3932]/10 rounded-full focus:outline-none focus:ring-8 ring-[#1e3932]/5 focus:bg-white transition-all text-sm font-black text-[#1e3932] placeholder:text-gray-300 shadow-inner"
+                                    className="w-full px-8 py-5 bg-[#f8f9fa] border-2 border-transparent focus:border-[#FF5C8A]/10 rounded-full focus:outline-none focus:ring-8 ring-[#FF5C8A]/5 focus:bg-white transition-all text-sm font-black text-[#FF5C8A] placeholder:text-gray-300 shadow-inner"
                                     placeholder={activeTab === 'samples' ? "e.g. Royal Silk Sherwani" : "e.g. Italian Wool Fabric"}
                                     value={activeTab === 'samples' ? newItem.title : newItem.name}
                                     onChange={(e) => activeTab === 'samples' 
@@ -396,7 +396,7 @@ const Products = () => {
                                     <div className="relative">
                                         <select 
                                             required
-                                            className="w-full px-8 py-5 bg-[#f8f9fa] border-2 border-transparent focus:border-[#1e3932]/10 rounded-full focus:outline-none focus:ring-8 ring-[#1e3932]/5 focus:bg-white transition-all text-sm font-black text-[#1e3932] appearance-none cursor-pointer"
+                                            className="w-full px-8 py-5 bg-[#f8f9fa] border-2 border-transparent focus:border-[#FF5C8A]/10 rounded-full focus:outline-none focus:ring-8 ring-[#FF5C8A]/5 focus:bg-white transition-all text-sm font-black text-[#FF5C8A] appearance-none cursor-pointer"
                                             value={activeTab === 'fabrics' ? selectedParent : newItem.category}
                                             onChange={(e) => {
                                                 if (activeTab === 'fabrics') {
@@ -414,7 +414,7 @@ const Products = () => {
                                                     <option key={cat._id} value={cat._id}>{cat.name}</option>
                                                 ))}
                                         </select>
-                                        <div className="absolute right-8 top-1/2 -translate-y-1/2 pointer-events-none text-[#1e3932]/30">
+                                        <div className="absolute right-8 top-1/2 -translate-y-1/2 pointer-events-none text-[#FF5C8A]/30">
                                             <ChevronRight className="rotate-90" size={20} />
                                         </div>
                                     </div>
@@ -427,7 +427,7 @@ const Products = () => {
                                         <div className="relative">
                                             <select 
                                                 required
-                                                className="w-full px-8 py-5 bg-[#f8f9fa] border-2 border-transparent focus:border-[#1e3932]/10 rounded-full focus:outline-none focus:ring-8 ring-[#1e3932]/5 focus:bg-white transition-all text-sm font-black text-[#1e3932] appearance-none cursor-pointer"
+                                                className="w-full px-8 py-5 bg-[#f8f9fa] border-2 border-transparent focus:border-[#FF5C8A]/10 rounded-full focus:outline-none focus:ring-8 ring-[#FF5C8A]/5 focus:bg-white transition-all text-sm font-black text-[#FF5C8A] appearance-none cursor-pointer"
                                                 value={newItem.category}
                                                 onChange={(e) => setNewItem({...newItem, category: e.target.value})}
                                             >
@@ -436,7 +436,7 @@ const Products = () => {
                                                     <option key={cat._id} value={cat._id}>{cat.name}</option>
                                                 ))}
                                             </select>
-                                            <div className="absolute right-8 top-1/2 -translate-y-1/2 pointer-events-none text-[#1e3932]/30">
+                                            <div className="absolute right-8 top-1/2 -translate-y-1/2 pointer-events-none text-[#FF5C8A]/30">
                                                 <ChevronRight className="rotate-90" size={20} />
                                             </div>
                                         </div>
@@ -451,7 +451,7 @@ const Products = () => {
                                     <input 
                                         required
                                         type="number"
-                                        className="w-full px-8 py-5 bg-[#f8f9fa] border-2 border-transparent focus:border-[#1e3932]/10 rounded-full focus:outline-none focus:ring-8 ring-[#1e3932]/5 focus:bg-white transition-all text-sm font-black text-[#1e3932]"
+                                        className="w-full px-8 py-5 bg-[#f8f9fa] border-2 border-transparent focus:border-[#FF5C8A]/10 rounded-full focus:outline-none focus:ring-8 ring-[#FF5C8A]/5 focus:bg-white transition-all text-sm font-black text-[#FF5C8A]"
                                         placeholder="0.00"
                                         value={activeTab === 'samples' ? newItem.basePrice : newItem.price}
                                         onChange={(e) => activeTab === 'samples'
@@ -467,7 +467,7 @@ const Products = () => {
                                     </label>
                                     <input 
                                         required
-                                        className="w-full px-8 py-5 bg-[#f8f9fa] border-2 border-transparent focus:border-[#1e3932]/10 rounded-full focus:outline-none focus:ring-8 ring-[#1e3932]/5 focus:bg-white transition-all text-sm font-black text-[#1e3932] placeholder:text-gray-300"
+                                        className="w-full px-8 py-5 bg-[#f8f9fa] border-2 border-transparent focus:border-[#FF5C8A]/10 rounded-full focus:outline-none focus:ring-8 ring-[#FF5C8A]/5 focus:bg-white transition-all text-sm font-black text-[#FF5C8A] placeholder:text-gray-300"
                                         placeholder={activeTab === 'samples' ? "2-4 DAYS" : "50"}
                                         value={activeTab === 'samples' ? newItem.deliveryTime : newItem.stock}
                                         onChange={(e) => activeTab === 'samples'
@@ -482,7 +482,7 @@ const Products = () => {
                                 <textarea 
                                     required
                                     rows="3"
-                                    className="w-full px-8 py-6 bg-[#f8f9fa] border-2 border-transparent focus:border-[#1e3932]/10 rounded-[2rem] focus:outline-none focus:ring-8 ring-[#1e3932]/5 focus:bg-white transition-all text-sm font-black text-[#1e3932] resize-none placeholder:text-gray-300 shadow-inner"
+                                    className="w-full px-8 py-6 bg-[#f8f9fa] border-2 border-transparent focus:border-[#FF5C8A]/10 rounded-[2rem] focus:outline-none focus:ring-8 ring-[#FF5C8A]/5 focus:bg-white transition-all text-sm font-black text-[#FF5C8A] resize-none placeholder:text-gray-300 shadow-inner"
                                     placeholder={`Describe your ${activeTab.slice(0, -1)}...`}
                                     value={newItem.description}
                                     onChange={(e) => setNewItem({...newItem, description: e.target.value})}
@@ -494,14 +494,14 @@ const Products = () => {
                                 <div className="space-y-2.5">
                                     <label className="text-[11px] font-black text-gray-300 uppercase tracking-widest ml-4">Tags (Comma separated)</label>
                                     <input 
-                                        className="w-full px-8 py-5 bg-[#f8f9fa] border-2 border-transparent focus:border-[#1e3932]/10 rounded-full focus:outline-none focus:ring-8 ring-[#1e3932]/5 focus:bg-white transition-all text-sm font-black text-[#1e3932] placeholder:text-gray-300 shadow-inner"
+                                        className="w-full px-8 py-5 bg-[#f8f9fa] border-2 border-transparent focus:border-[#FF5C8A]/10 rounded-full focus:outline-none focus:ring-8 ring-[#FF5C8A]/5 focus:bg-white transition-all text-sm font-black text-[#FF5C8A] placeholder:text-gray-300 shadow-inner"
                                         placeholder="e.g. POPULAR, EXPRESS, BRIDAL"
                                         value={newItem.tags}
                                         onChange={(e) => setNewItem({...newItem, tags: e.target.value.toUpperCase()})}
                                     />
                                     <div className="flex flex-wrap gap-2 mt-2 ml-2">
                                         {newItem.tags.split(',').map((tag, idx) => tag.trim() !== '' && (
-                                            <span key={idx} className="px-2 md:px-3 py-1 bg-[#1e3932] text-white text-[8px] md:text-[9px] font-black rounded-lg tracking-widest uppercase">
+                                            <span key={idx} className="px-2 md:px-3 py-1 bg-[#FF5C8A] text-white text-[8px] md:text-[9px] font-black rounded-lg tracking-widest uppercase">
                                                 {tag.trim()}
                                             </span>
                                         ))}
@@ -529,9 +529,9 @@ const Products = () => {
                                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
                                                 disabled={isImageUploading}
                                             />
-                                            <div className="w-full px-6 py-4 bg-[#f8f9fa] rounded-2xl text-[10px] font-black text-[#1e3932] flex items-center justify-center gap-2 hover:bg-white border border-transparent hover:border-gray-100 transition-all uppercase tracking-widest">
+                                            <div className="w-full px-6 py-4 bg-[#f8f9fa] rounded-2xl text-[10px] font-black text-[#FF5C8A] flex items-center justify-center gap-2 hover:bg-white border border-transparent hover:border-gray-100 transition-all uppercase tracking-widest">
                                                 {isImageUploading ? (
-                                                    <div className="w-4 h-4 border-2 border-[#1e3932] border-t-transparent animate-spin rounded-full" />
+                                                    <div className="w-4 h-4 border-2 border-[#FF5C8A] border-t-transparent animate-spin rounded-full" />
                                                 ) : (
                                                     <Plus size={16} />
                                                 )}
@@ -558,7 +558,7 @@ const Products = () => {
                             <button 
                                 onClick={handleSubmit}
                                 disabled={isSubmitting}
-                                className="w-full bg-[#1e3932] text-white rounded-full py-6 font-black uppercase tracking-[0.3em] italic text-sm shadow-[0_24px_50px_rgba(30,57,50,0.22)] hover:shadow-[0_28px_60px_rgba(30,57,50,0.3)] transition-all active:scale-95 disabled:opacity-50"
+                                className="w-full bg-[#FF5C8A] text-white rounded-full py-6 font-black uppercase tracking-[0.3em] italic text-sm shadow-[0_24px_50px_rgba(255,92,138,0.22)] hover:shadow-[0_28px_60px_rgba(255,92,138,0.3)] transition-all active:scale-95 disabled:opacity-50"
                             >
                                 {isSubmitting ? (isEditing ? 'Updating...' : 'Publishing...') : (isEditing ? 'Update ' : 'Publish ') + (activeTab === 'samples' ? 'Service' : 'Fabric')}
                             </button>

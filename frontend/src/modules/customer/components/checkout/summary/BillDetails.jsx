@@ -9,7 +9,7 @@ const BillDetails = ({ pricing }) => {
     return (
         <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm mb-4">
             <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-                <Tag size={14} className="text-[#1e3932]" />
+                <Tag size={14} className="text-primary" />
                 Bill Details
             </h3>
 
@@ -18,6 +18,20 @@ const BillDetails = ({ pricing }) => {
                     <span>Stitching Charges</span>
                     <span>₹{base}</span>
                 </div>
+
+                {pricing.addons > 0 && (
+                    <div className="flex justify-between text-xs text-gray-600">
+                        <span>Style Add-ons</span>
+                        <span>₹{pricing.addons}</span>
+                    </div>
+                )}
+
+                {pricing.tailorAtHome > 0 && (
+                    <div className="flex justify-between text-xs text-gray-600">
+                        <span>Tailor Visit Fee</span>
+                        <span>₹{pricing.tailorAtHome}</span>
+                    </div>
+                )}
 
                 {delivery > 0 ? (
                     <div className="flex justify-between text-xs text-gray-600">
@@ -45,7 +59,7 @@ const BillDetails = ({ pricing }) => {
 
                 <div className="flex justify-between items-center">
                     <span className="text-sm font-bold text-gray-900">Total Amount</span>
-                    <span className="text-sm font-bold text-[#1e3932]">₹{total + 10}</span>
+                    <span className="text-sm font-bold text-primary">₹{total + 10}</span>
                 </div>
             </div>
 

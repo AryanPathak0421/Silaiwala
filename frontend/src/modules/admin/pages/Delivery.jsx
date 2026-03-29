@@ -170,7 +170,7 @@ const AdminDelivery = () => {
                         <button
                             key={tab}
                             onClick={() => setSelectedTab(tab)}
-                            className={`px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap transition-all flex items-center gap-2 ${selectedTab === tab ? 'bg-white text-[#1e3932] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                            className={`px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap transition-all flex items-center gap-2 ${selectedTab === tab ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
                         >
                             {tab}
                             {tab === 'Manual Assignment' && (
@@ -205,7 +205,7 @@ const AdminDelivery = () => {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex-1 overflow-hidden flex flex-col relative">
                 {isLoading && (
                      <div className="w-full h-1 bg-gray-100 overflow-hidden absolute top-0 left-0 z-10">
-                         <div className="h-full bg-[#1e3932] animate-pulse w-1/3"></div>
+                         <div className="h-full bg-primary animate-pulse w-1/3"></div>
                      </div>
                 )}
                 {selectedTab === 'All Partners' ? (
@@ -225,18 +225,18 @@ const AdminDelivery = () => {
                                     <tr
                                         key={partner.id}
                                         onClick={() => setSelectedPartner(partner)}
-                                        className="hover:bg-[#1e3932]/5 transition-colors cursor-pointer group"
+                                        className="hover:bg-primary/5 transition-colors cursor-pointer group"
                                     >
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="h-10 w-10 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center text-[#1e3932] font-black text-sm">
+                                                <div className="h-10 w-10 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center text-primary font-black text-sm">
                                                     {partner.name.charAt(0)}
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-sm font-bold text-gray-900 group-hover:text-[#1e3932] transition-colors">{partner.name}</span>
+                                                        <span className="text-sm font-bold text-gray-900 group-hover:text-primary transition-colors">{partner.name}</span>
                                                         {partner.isVerified && (
-                                                            <ShieldCheck size={12} className="text-emerald-700 fill-emerald-50" />
+                                                            <ShieldCheck size={12} className="text-primary fill-pink-50" />
                                                         )}
                                                     </div>
                                                     <span className="text-[10px] text-gray-400 font-medium">{partner.phone}</span>
@@ -255,7 +255,7 @@ const AdminDelivery = () => {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={`px-2 py-0.5 rounded text-[10px] font-black ${partner.activeTasks > 0 ? 'bg-[#1e3932]/10 text-[#1e3932]' : 'text-gray-400'}`}>
+                                            <span className={`px-2 py-0.5 rounded text-[10px] font-black ${partner.activeTasks > 0 ? 'bg-primary/10 text-primary' : 'text-gray-400'}`}>
                                                 {partner.activeTasks} Task{partner.activeTasks !== 1 ? 's' : ''}
                                             </span>
                                         </td>
@@ -276,7 +276,7 @@ const AdminDelivery = () => {
                             <div key={app.id} className="bg-white border text-left border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
                                 <div>
                                     <div className="flex justify-between items-start">
-                                        <div className="h-12 w-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-[#1e3932] font-black text-lg">
+                                        <div className="h-12 w-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-primary font-black text-lg">
                                             {app.name.charAt(0)}
                                         </div>
                                         <span className="px-2 py-1 rounded-lg text-[9px] font-black border uppercase tracking-wider bg-orange-100 text-orange-700 border-orange-200">
@@ -297,7 +297,7 @@ const AdminDelivery = () => {
                                     </div>
                                 </div>
                                 <div className="mt-6">
-                                    <button onClick={() => setSelectedApp(app)} className="w-full py-2.5 bg-gray-50 text-[#1e3932] hover:bg-[#1e3932] hover:text-white transition-colors text-xs font-black uppercase tracking-widest rounded-xl border border-gray-100">
+                                    <button onClick={() => setSelectedApp(app)} className="w-full py-2.5 bg-gray-50 text-primary hover:bg-primary hover:text-white transition-colors text-xs font-black uppercase tracking-widest rounded-xl border border-gray-100">
                                         Review KYC
                                     </button>
                                 </div>
@@ -314,7 +314,7 @@ const AdminDelivery = () => {
                     <div className="p-6 overflow-y-auto space-y-4">
                         <div className="flex justify-between items-center mb-2">
                             <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Unassigned Tasks</h3>
-                            <button className="text-xs font-bold text-[#1e3932] hover:underline">Auto-Assign All</button>
+                            <button className="text-xs font-bold text-primary hover:underline">Auto-Assign All</button>
                         </div>
                         {unassignedTasks.length === 0 ? (
                             <div className="text-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
@@ -325,7 +325,7 @@ const AdminDelivery = () => {
                             <div key={order.fullId} className="bg-white border text-left border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                                 <div>
                                     <div className="flex items-center gap-2 mb-2">
-                                        <span className="text-[10px] font-black uppercase text-[#1e3932]">{order.id}</span>
+                                        <span className="text-[10px] font-black uppercase text-primary">{order.id}</span>
                                         <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${order.type === 'Pickup' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>
                                             {order.type}
                                         </span>
@@ -340,7 +340,7 @@ const AdminDelivery = () => {
                                         </div>
                                         <div className="text-gray-300">→</div>
                                         <div className="flex items-start gap-1.5">
-                                            <MapPin size={14} className="text-[#1e3932] mt-0.5 shrink-0" />
+                                            <MapPin size={14} className="text-primary mt-0.5 shrink-0" />
                                             <div>
                                                 <p className="text-[9px] text-gray-400 uppercase tracking-widest">To</p>
                                                 <p>{order.to}</p>
@@ -363,7 +363,7 @@ const AdminDelivery = () => {
                                     <button 
                                         onClick={() => handleAssignTask(order.fullId, pendingAssignments[order.fullId])}
                                         disabled={isAssigning || !pendingAssignments[order.fullId]}
-                                        className="w-full py-2 bg-[#1e3932] text-white text-[10px] font-black rounded-lg hover:bg-[#0a211e] transition-colors uppercase tracking-widest disabled:opacity-50"
+                                        className="w-full py-2 bg-primary text-white text-[10px] font-black rounded-lg hover:bg-primary-dark transition-colors uppercase tracking-widest disabled:opacity-50"
                                     >
                                         {isAssigning ? 'Assigning...' : 'Assign Task'}
                                     </button>
@@ -392,11 +392,11 @@ const AdminDelivery = () => {
                             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                             className="fixed top-0 right-0 h-full w-full sm:w-[450px] bg-white shadow-2xl z-50 flex flex-col border-l border-gray-100"
                         >
-                            <div className="p-6 border-b border-gray-100 flex justify-between items-start bg-gradient-to-br from-[#1e3932] to-[#0a211e] text-white">
+                            <div className="p-6 border-b border-gray-100 flex justify-between items-start bg-gradient-to-br from-primary to-primary-dark text-white">
                                 <div className="flex items-center gap-4">
                                     <div className="h-16 w-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white font-black text-2xl relative">
                                         {selectedPartner.name.charAt(0)}
-                                        <div className={`absolute -right-1 -top-1 w-4 h-4 rounded-full border-2 border-[#1e3932] ${selectedPartner.status === 'Online' ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                        <div className={`absolute -right-1 -top-1 w-4 h-4 rounded-full border-2 border-primary ${selectedPartner.status === 'Online' ? 'bg-green-500' : 'bg-gray-400'}`} />
                                     </div>
                                     <div>
                                         <h2 className="text-xl font-black tracking-tight">{selectedPartner.name}</h2>
@@ -419,7 +419,7 @@ const AdminDelivery = () => {
                                 {/* Live Status */}
                                 <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                        <div className="p-2 bg-pink-50 text-primary rounded-lg">
                                             <Truck size={20} />
                                         </div>
                                         <div>
@@ -429,7 +429,7 @@ const AdminDelivery = () => {
                                     </div>
                                     <div className="text-right">
                                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Active Tasks</p>
-                                        <p className="text-xl font-black text-[#1e3932]">{selectedPartner.activeTasks}</p>
+                                        <p className="text-xl font-black text-primary">{selectedPartner.activeTasks}</p>
                                     </div>
                                 </div>
 
@@ -441,7 +441,7 @@ const AdminDelivery = () => {
                                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Rating</p>
                                     </div>
                                     <div className="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm text-center">
-                                        <div className="flex justify-center mb-1 text-[#1e3932]"><Package size={20} /></div>
+                                        <div className="flex justify-center mb-1 text-primary"><Package size={20} /></div>
                                         <p className="text-2xl font-black text-gray-900">{selectedPartner.totalDeliveries}</p>
                                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Total Deliveries</p>
                                     </div>
@@ -454,7 +454,7 @@ const AdminDelivery = () => {
                                     </h3>
                                     <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm space-y-4">
                                         <div className="flex items-center gap-3 text-sm font-medium text-gray-700">
-                                            <Phone size={16} className="text-[#1e3932] opacity-70" /> {selectedPartner.phone}
+                                            <Phone size={16} className="text-primary opacity-70" /> {selectedPartner.phone}
                                         </div>
                                         <div className="flex justify-between items-center pt-4 border-t border-gray-50">
                                             <p className="text-xs font-bold text-gray-600">Joined Date</p>
@@ -470,7 +470,7 @@ const AdminDelivery = () => {
                                     onClick={() => handleUpdateUserStatus(selectedPartner.id, selectedPartner.status === 'Offline')}
                                     className={`px-4 py-3 border text-xs font-black rounded-xl transition-colors uppercase tracking-widest flex items-center justify-center gap-2 ${
                                         selectedPartner.status === 'Offline' 
-                                        ? 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100' 
+                                        ? 'bg-pink-50 text-primary border-pink-100 hover:bg-pink-100' 
                                         : 'bg-red-50 text-red-600 border-red-100 hover:bg-red-100'
                                     }`}
                                 >
@@ -479,7 +479,7 @@ const AdminDelivery = () => {
                                 </button>
                                 <button 
                                     onClick={() => toast.info('Tracking feature available in next update')}
-                                    className="px-4 py-3 bg-[#1e3932] text-white text-xs font-black rounded-xl hover:bg-[#0a211e] shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest flex items-center justify-center gap-2"
+                                    className="px-4 py-3 bg-primary text-white text-xs font-black rounded-xl hover:bg-primary-dark shadow-lg shadow-pink-900/20 transition-all uppercase tracking-widest flex items-center justify-center gap-2"
                                 >
                                     View Tracking
                                 </button>
@@ -516,12 +516,12 @@ const AdminDelivery = () => {
 
                                 <div className="p-6 flex-1 overflow-y-auto space-y-8 custom-scrollbar">
                                     <div className="flex items-center gap-6">
-                                        <div className="h-20 w-20 rounded-2xl bg-[#1e3932]/10 flex items-center justify-center text-[#1e3932] font-black text-3xl">
+                                        <div className="h-20 w-20 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-3xl">
                                             {selectedApp.name.charAt(0)}
                                         </div>
                                         <div>
                                             <h3 className="text-2xl font-black text-gray-900">{selectedApp.name}</h3>
-                                            <p className="text-sm font-bold text-[#1e3932] uppercase tracking-widest">{selectedApp.vehicle} Driver</p>
+                                            <p className="text-sm font-bold text-primary uppercase tracking-widest">{selectedApp.vehicle} Driver</p>
                                             <div className="flex gap-4 mt-2">
                                                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
                                                     <Truck size={14} /> {selectedApp.vehicleNumber || 'No Number'}
@@ -539,7 +539,7 @@ const AdminDelivery = () => {
                                                     <div key={i} className="group relative">
                                                         <div className="flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-xl">
                                                             <div className="flex items-center gap-3">
-                                                                <div className="text-[#1e3932]/70"><FileText size={16} /></div>
+                                                                <div className="text-primary/70"><FileText size={16} /></div>
                                                                 <span className="text-sm font-bold text-gray-700">{doc.name}</span>
                                                             </div>
                                                             <div className={`text-[10px] font-bold px-2 py-1 rounded ${
@@ -554,7 +554,7 @@ const AdminDelivery = () => {
                                                             href={doc.url} 
                                                             target="_blank" 
                                                             rel="noopener noreferrer"
-                                                            className="absolute inset-0 flex items-center justify-center bg-[#1e3932]/10 opacity-0 group-hover:opacity-100 backdrop-blur-[2px] rounded-xl transition-all font-black text-[10px] text-[#1e3932] uppercase tracking-widest"
+                                                            className="absolute inset-0 flex items-center justify-center bg-primary/10 opacity-0 group-hover:opacity-100 backdrop-blur-[2px] rounded-xl transition-all font-black text-[10px] text-primary uppercase tracking-widest"
                                                         >
                                                             View Document
                                                         </a>
@@ -573,7 +573,7 @@ const AdminDelivery = () => {
                                     <button onClick={() => handleReject(selectedApp.id)} className="py-3 bg-white border border-gray-200 text-red-600 text-xs font-black rounded-xl hover:bg-red-50 hover:border-red-100 transition-colors uppercase tracking-widest">
                                         Reject Application
                                     </button>
-                                    <button onClick={() => handleApprove(selectedApp.id)} className="py-3 bg-[#1e3932] text-white text-xs font-black rounded-xl hover:bg-[#0a211e] shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest">
+                                    <button onClick={() => handleApprove(selectedApp.id)} className="py-3 bg-primary text-white text-xs font-black rounded-xl hover:bg-primary-dark shadow-lg shadow-pink-900/20 transition-all uppercase tracking-widest">
                                         Approve Rider
                                     </button>
                                 </div>

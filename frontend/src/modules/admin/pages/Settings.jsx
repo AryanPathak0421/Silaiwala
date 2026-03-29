@@ -80,7 +80,7 @@ const AdminSettings = () => {
                 <button 
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-[#1e3932] text-white text-xs font-black rounded-xl hover:bg-[#0a211e] disabled:opacity-50 shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest"
+                    className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white text-xs font-black rounded-xl hover:bg-primary-dark disabled:opacity-50 shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest"
                 >
                     {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} 
                     {isSaving ? 'Saving...' : 'Save Changes'}
@@ -96,16 +96,16 @@ const AdminSettings = () => {
                                 key={tab.id}
                                 onClick={() => setSelectedTab(tab.id)}
                                 className={`w-full text-left px-4 py-3 rounded-xl transition-all flex items-center gap-3 ${selectedTab === tab.id
-                                        ? 'bg-[#1e3932]/10 text-[#1e3932] font-black'
+                                        ? 'bg-primary/10 text-primary font-black'
                                         : 'text-gray-600 font-bold hover:bg-gray-50'
                                     }`}
                             >
-                                <span className={selectedTab === tab.id ? 'text-[#1e3932]' : 'text-gray-400'}>
+                                <span className={selectedTab === tab.id ? 'text-primary' : 'text-gray-400'}>
                                     {tab.icon}
                                 </span>
                                 <div>
                                     <p className="text-xs">{tab.id}</p>
-                                    <p className={`text-[9px] font-medium mt-0.5 ${selectedTab === tab.id ? 'text-[#1e3932]/70' : 'text-gray-400'}`}>
+                                    <p className={`text-[9px] font-medium mt-0.5 ${selectedTab === tab.id ? 'text-primary/70' : 'text-gray-400'}`}>
                                         {tab.desc}
                                     </p>
                                 </div>
@@ -131,7 +131,7 @@ const AdminSettings = () => {
                                         type="text" 
                                         value={settings.general.platformName} 
                                         onChange={(e) => updateNestedSetting('general', 'platformName', e.target.value)}
-                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 outline-none focus:border-[#1e3932] transition-colors shadow-sm" 
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 outline-none focus:border-primary transition-colors shadow-sm" 
                                     />
                                 </div>
                                 <div>
@@ -140,7 +140,7 @@ const AdminSettings = () => {
                                         type="email" 
                                         value={settings.general.supportEmail} 
                                         onChange={(e) => updateNestedSetting('general', 'supportEmail', e.target.value)}
-                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 outline-none focus:border-[#1e3932] transition-colors shadow-sm" 
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 outline-none focus:border-primary transition-colors shadow-sm" 
                                     />
                                 </div>
                                 <div>
@@ -149,7 +149,7 @@ const AdminSettings = () => {
                                         type="tel" 
                                         value={settings.general.supportPhone} 
                                         onChange={(e) => updateNestedSetting('general', 'supportPhone', e.target.value)}
-                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 outline-none focus:border-[#1e3932] transition-colors shadow-sm" 
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 outline-none focus:border-primary transition-colors shadow-sm" 
                                     />
                                 </div>
                                 <div>
@@ -157,7 +157,7 @@ const AdminSettings = () => {
                                     <select 
                                         value={settings.general.currencyDefault}
                                         onChange={(e) => updateNestedSetting('general', 'currencyDefault', e.target.value)}
-                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 outline-none focus:border-[#1e3932] transition-colors appearance-none shadow-sm"
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 outline-none focus:border-primary transition-colors appearance-none shadow-sm"
                                     >
                                         <option value="INR">INR (₹)</option>
                                         <option value="USD">USD ($)</option>
@@ -182,7 +182,7 @@ const AdminSettings = () => {
                                             checked={settings.maintenanceMode.enabled}
                                             onChange={(e) => updateNestedSetting('maintenanceMode', 'enabled', e.target.checked)}
                                         />
-                                        <div className="w-12 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-[#1e3932]"></div>
+                                        <div className="w-12 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary"></div>
                                     </label>
                                 </div>
                             </div>
@@ -199,7 +199,7 @@ const AdminSettings = () => {
                             <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
                                 <div className="p-6 flex items-center justify-between border-b border-gray-50 bg-gray-50/30">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-white rounded-xl border border-gray-200 flex items-center justify-center font-bold text-blue-600 shadow-sm">RP</div>
+                                        <div className="w-12 h-12 bg-white rounded-xl border border-gray-200 flex items-center justify-center font-bold text-primary shadow-sm">RP</div>
                                         <div>
                                             <p className="text-sm font-black text-gray-900">Razorpay</p>
                                             <p className="text-[10px] text-gray-500 font-medium">Standard Indian payment gateway</p>
@@ -274,7 +274,7 @@ const AdminSettings = () => {
                                 ].map((admin, idx) => (
                                     <div key={idx} className="flex items-center justify-between p-5 border border-gray-100 rounded-2xl hover:border-gray-200 transition-all hover:shadow-sm bg-white">
                                         <div className="flex items-center gap-4">
-                                            <div className="h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center text-[#1e3932] border border-gray-100">
+                                            <div className="h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center text-primary border border-gray-100">
                                                 <User size={18} />
                                             </div>
                                             <div>
@@ -286,7 +286,7 @@ const AdminSettings = () => {
                                             <span className={`px-2.5 py-1 text-[8px] font-black uppercase tracking-widest rounded-lg border ${admin.status === 'Active' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>
                                                 {admin.role}
                                             </span>
-                                            <button className="text-[10px] font-black text-[#1e3932] hover:underline uppercase tracking-widest">Manage</button>
+                                            <button className="text-[10px] font-black text-primary hover:underline uppercase tracking-widest">Manage</button>
                                         </div>
                                     </div>
                                 ))}
@@ -305,7 +305,7 @@ const AdminSettings = () => {
                             </div>
                             <h3 className="text-lg font-black text-gray-900 uppercase tracking-widest">{selectedTab} Configuration</h3>
                             <p className="text-xs mt-3 max-w-sm font-medium leading-relaxed">Integration for {selectedTab} is initialized. Detailed settings will appear here shortly.</p>
-                            <button onClick={fetchSettings} className="mt-8 flex items-center gap-2 text-[10px] font-black uppercase text-[#1e3932] tracking-widest hover:underline">
+                            <button onClick={fetchSettings} className="mt-8 flex items-center gap-2 text-[10px] font-black uppercase text-primary tracking-widest hover:underline">
                                 <RefreshCw size={12} /> Sync Latest
                             </button>
                         </div>

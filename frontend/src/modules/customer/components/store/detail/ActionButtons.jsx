@@ -31,7 +31,7 @@ const ActionButtons = ({ size, color, quantity }) => {
                 disabled={isAdded}
                 className={`flex-1 flex items-center justify-center gap-2 py-3 px-6 rounded-lg text-sm font-bold border-2 transition-all ${isAdded
                         ? 'bg-green-100 border-green-500 text-green-700'
-                        : 'bg-white border-[#1e3932] text-[#1e3932] hover:bg-gray-50'
+                        : 'bg-white border-primary text-primary hover:bg-gray-50'
                     }`}
             >
                 <ShoppingCart className="h-4 w-4" />
@@ -41,7 +41,7 @@ const ActionButtons = ({ size, color, quantity }) => {
             {/* Buy Now Button */}
             <button
                 onClick={handleBuyNow}
-                className="flex-1 flex items-center justify-center gap-2 py-3 px-6 rounded-lg text-sm font-bold bg-[#1e3932] text-white hover:bg-[#152e28] shadow-lg hover:shadow-xl transition-all active:scale-95"
+                className="flex-1 flex items-center justify-center gap-2 py-3 px-6 rounded-lg text-sm font-bold bg-primary text-white hover:bg-primary-dark shadow-lg hover:shadow-xl transition-all active:scale-95"
             >
                 <ShoppingBag className="h-4 w-4" />
                 Buy Now

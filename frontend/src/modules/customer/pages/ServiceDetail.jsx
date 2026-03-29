@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import BookingStepper from '../components/BookingStepper';
-import { ArrowLeft, ChevronDown, ChevronUp, ChevronRight, Clock, ShoppingBag, Ruler, CheckCircle2, ShieldCheck, Info, Tag, Scissors } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, ChevronRight, Clock, ShoppingBag, Ruler, CheckCircle2, ShieldCheck, Info, Tag, Scissors, Wand2, MapPin, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../../utils/cn';
 import ServiceHero from '../components/service-detail/ServiceHero';
@@ -10,6 +10,7 @@ import MeasurementSelector from '../components/service-detail/MeasurementSelecto
 import FabricSelector from '../components/service-detail/FabricSelector';
 import DesignUpload from '../components/service-detail/DesignUpload';
 import PriceSummary from '../components/service-detail/PriceSummary';
+import StyleAddonModal from '../components/service-detail/StyleAddonModal';
 import useCheckoutStore from '../../../store/checkoutStore';
 import useMeasurementStore from '../../../store/measurementStore';
 import api from '../../../utils/api';
@@ -22,8 +23,8 @@ const FAQItem = ({ question, answer }) => {
                 className="w-full flex justify-between items-center py-4 text-left group"
                 onClick={() => setIsOpen(!isOpen)}
             >
-                <span className="text-[13px] font-bold text-gray-800 group-hover:text-[#1e3932] transition-colors">{question}</span>
-                {isOpen ? <ChevronUp size={16} className="text-[#1e3932]" /> : <ChevronDown size={16} className="text-gray-400" />}
+                <span className="text-[13px] font-bold text-gray-800 group-hover:text-primary transition-colors">{question}</span>
+                {isOpen ? <ChevronUp size={16} className="text-primary" /> : <ChevronDown size={16} className="text-gray-400" />}
             </button>
             <motion.div
                 initial={false}
@@ -52,6 +53,9 @@ const ServiceDetail = () => {
 
     const [deliveryType, setDeliveryType] = useState('standard');
     const [measurementType, setMeasurementType] = useState(null);
+    const [isTailorAtHome, setIsTailorAtHome] = useState(false);
+    const [selectedAddons, setSelectedAddons] = useState([]);
+    const [isAddonModalOpen, setIsAddonModalOpen] = useState(false);
     const [fabricSource, setFabricSource] = useState(location.state?.fabricSource || 'customer');
     const [selectedFabric, setSelectedFabric] = useState(location.state?.selectedFabric || null);
     const [selectedSavedProfile, setSelectedSavedProfile] = useState(null);
@@ -89,19 +93,21 @@ const ServiceDetail = () => {
     }, [id, location.state]);
 
     if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-10 h-10 border-4 border-[#1e3932] border-t-transparent rounded-full animate-spin" />
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
     </div>;
 
     if (!serviceData) return <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
         <h2 className="text-xl font-bold text-gray-900">Service Not Found</h2>
-        <button onClick={() => navigate(-1)} className="mt-4 text-[#1e3932] font-bold">Go Back</button>
+        <button onClick={() => navigate(-1)} className="mt-4 text-primary font-bold underline">Go Back</button>
     </div>;
 
     // Pricing Logic
     const basePrice = serviceData.basePrice || 0;
     const deliveryPrice = deliveryType === 'express' ? 150 : (deliveryType === 'premium' ? 350 : 0);
     const fabricPrice = (fabricSource === 'platform' && selectedFabric) ? selectedFabric.price : 0;
-    const subtotal = basePrice + deliveryPrice + fabricPrice;
+    const addonsPrice = selectedAddons.reduce((sum, a) => sum + a.price, 0);
+    const tailorAtHomePrice = isTailorAtHome ? 250 : 0;
+    const subtotal = basePrice + deliveryPrice + fabricPrice + addonsPrice + tailorAtHomePrice;
     const taxes = Math.round(subtotal * 0.05);
     const total = subtotal + taxes;
 
@@ -139,8 +145,24 @@ const ServiceDetail = () => {
 
         initializeCheckout({
             service: serviceData,
-            config: { deliveryType, fabricSource, selectedFabric, measurements: finalMeasurements },
-            pricing: { base: basePrice, delivery: deliveryPrice, fabric: fabricPrice, taxes, total, deliveryDays: getDeliveryDays() },
+            config: { 
+                deliveryType, 
+                fabricSource, 
+                selectedFabric, 
+                measurements: finalMeasurements,
+                isTailorAtHome,
+                addons: selectedAddons
+            },
+            pricing: { 
+                base: basePrice, 
+                delivery: deliveryPrice, 
+                fabric: fabricPrice, 
+                addons: addonsPrice,
+                tailorAtHome: tailorAtHomePrice,
+                taxes, 
+                total, 
+                deliveryDays: getDeliveryDays() 
+            },
             tailorId: preSelectedTailor?._id || null,
             tailorName: preSelectedTailor?.shopName || preSelectedTailor?.user?.name || null
         });
@@ -160,13 +182,13 @@ const ServiceDetail = () => {
                         </button>
                         <div>
                             <h1 className="text-lg font-black text-gray-900 leading-none">{serviceData.title}</h1>
-                            <p className="text-[10px] text-[#1e3932] font-bold uppercase tracking-widest mt-1">Configuring Order</p>
+                            <p className="text-[10px] text-primary font-bold uppercase tracking-widest mt-1">Configuring Order</p>
                         </div>
                     </div>
                     {preSelectedTailor && (
-                        <div className="flex items-center gap-2 bg-[#f2fcf9] px-3 py-1.5 rounded-xl border border-[#1e3932]/10">
-                            <ShieldCheck size={14} className="text-[#1e3932]" />
-                            <span className="text-[10px] font-black text-[#1e3932] truncate max-w-[80px]">{preSelectedTailor.shopName || preSelectedTailor.user?.name}</span>
+                        <div className="flex items-center gap-2 bg-pink-50 px-3 py-1.5 rounded-xl border border-primary/10">
+                            <ShieldCheck size={14} className="text-primary" />
+                            <span className="text-[10px] font-black text-primary truncate max-w-[80px]">{preSelectedTailor.shopName || preSelectedTailor.user?.name}</span>
                         </div>
                     )}
                 </div>
@@ -190,11 +212,66 @@ const ServiceDetail = () => {
                 <section className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <MeasurementSelector
                         selectedType={measurementType}
-                        onSelectType={setMeasurementType}
+                        onSelectType={(type) => {
+                            if (type === 'home') {
+                                setIsTailorAtHome(true);
+                                setMeasurementType('home');
+                                setMeasurements({ type: 'home', notes: 'Tailor will visit home' });
+                            } else {
+                                setIsTailorAtHome(false);
+                                setMeasurementType(type);
+                            }
+                        }}
                         onMeasurementComplete={setMeasurements}
                         selectedSavedProfile={selectedSavedProfile}
                         onSelectSavedProfile={setSelectedSavedProfile}
                     />
+                </section>
+
+                {/* 3.5 Style Add-ons Section */}
+                <section className="animate-in fade-in slide-in-from-bottom-5 duration-600">
+                    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-pink-50 rounded-xl flex items-center justify-center text-primary">
+                                    <Wand2 size={18} />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Style Add-ons</h3>
+                                    <p className="text-[10px] text-gray-400 font-bold">Pockets, Padding, etc.</p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setIsAddonModalOpen(true)}
+                                className="px-4 py-2 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-primary/20 transition-all active:scale-95"
+                            >
+                                {selectedAddons.length > 0 ? 'Edit Selection' : 'Browse Styles'}
+                            </button>
+                        </div>
+
+                        {selectedAddons.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                                {selectedAddons.map(addon => (
+                                    <div key={addon._id} className="flex items-center gap-2 bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-xl group">
+                                        <div className="w-4 h-4 rounded-full bg-white flex items-center justify-center border border-gray-200">
+                                            <CheckCircle2 size={10} className="text-green-500" />
+                                        </div>
+                                        <span className="text-[10px] font-bold text-gray-700">{addon.name}</span>
+                                        <button 
+                                            onClick={() => setSelectedAddons(prev => prev.filter(a => a._id !== addon._id))}
+                                            className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <X size={10} className="text-red-400" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="p-4 border-2 border-dashed border-gray-100 rounded-2xl text-center">
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">No add-ons selected</p>
+                            </div>
+                        )}
+                    </div>
                 </section>
 
                 {/* 4. Delivery Selection */}
@@ -205,7 +282,7 @@ const ServiceDetail = () => {
                 {/* 5. Additional Info Card */}
                 <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 bg-[#1e3932]/5 rounded-xl flex items-center justify-center text-[#1e3932]">
+                        <div className="w-10 h-10 bg-pink-50 rounded-xl flex items-center justify-center text-primary">
                             <Info size={18} />
                         </div>
                         <div>
@@ -242,8 +319,8 @@ const ServiceDetail = () => {
                     <div className="flex justify-between items-center mb-3">
                         <div className="flex flex-col">
                             <div className="flex items-center gap-1.5 mb-0.5">
-                                <span className="text-[9px] font-black text-[#1e3932] uppercase tracking-tighter">Live Bill</span>
-                                <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                <span className="text-[9px] font-black text-primary uppercase tracking-tighter">Live Bill</span>
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
                             </div>
                             <h4 className="text-xl font-black text-gray-900 flex items-baseline gap-1 leading-none">
                                 ₹{total.toLocaleString()}
@@ -252,7 +329,7 @@ const ServiceDetail = () => {
                         </div>
                         <div className="text-right">
                             <p className="text-[8px] font-black text-gray-400 uppercase tracking-tighter mb-0.5">Est. Arrival</p>
-                            <div className="flex items-center justify-end gap-1 text-[#1e3932] bg-[#f2fcf9] px-2 py-0.5 rounded-lg border border-[#1e3932]/10">
+                            <div className="flex items-center justify-end gap-1 text-primary bg-pink-50 px-2 py-0.5 rounded-lg border border-primary/10">
                                 <Clock size={10} />
                                 <span className="text-[10px] font-black">{getDeliveryDays()} Days</span>
                             </div>
@@ -277,6 +354,18 @@ const ServiceDetail = () => {
                                 <span className="text-[9px] font-black text-gray-500 uppercase">Express: ₹{deliveryPrice}</span>
                             </div>
                         )}
+                        {addonsPrice > 0 && (
+                            <div className="shrink-0 bg-gray-50 px-2 py-1 rounded-md border border-gray-100 flex items-center gap-1.5">
+                                <Wand2 size={8} className="text-gray-400" />
+                                <span className="text-[9px] font-black text-gray-500 uppercase">Addons: ₹{addonsPrice}</span>
+                            </div>
+                        )}
+                        {tailorAtHomePrice > 0 && (
+                            <div className="shrink-0 bg-gray-50 px-2 py-1 rounded-md border border-gray-100 flex items-center gap-1.5">
+                                <MapPin size={8} className="text-gray-400" />
+                                <span className="text-[9px] font-black text-gray-500 uppercase">Home Visit: ₹{tailorAtHomePrice}</span>
+                            </div>
+                        )}
                     </div>
 
                     {/* Primary Button - Slimmer */}
@@ -284,8 +373,8 @@ const ServiceDetail = () => {
                         onClick={handleProceed}
                         disabled={!measurementType}
                         className={cn(
-                            "w-full py-3 rounded-xl font-black text-[11px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg",
-                            measurementType ? "bg-[#1e3932] text-white shadow-[#1e3932]/20 active:scale-[0.98]" : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            "w-full py-4 rounded-xl font-black text-[11px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg",
+                            measurementType ? "bg-primary text-white shadow-pink-100 active:scale-[0.98] hover:bg-primary-dark" : "bg-gray-100 text-gray-400 cursor-not-allowed"
                         )}
                     >
                         {measurementType ? (
@@ -295,10 +384,19 @@ const ServiceDetail = () => {
                         )}
                     </button>
                     {measurementType && !measurements && measurementType !== 'saved' && (
-                        <p className="text-center text-[8px] text-amber-600 font-black uppercase mt-2 tracking-widest">Action Required: Input details above</p>
+                        <p className="text-center text-[8px] text-primary font-black uppercase mt-2 tracking-widest">Action Required: Input details above</p>
                     )}
                 </div>
             </div>
+
+            {/* Modals */}
+            <StyleAddonModal
+                isOpen={isAddonModalOpen}
+                onClose={() => setIsAddonModalOpen(false)}
+                selectedAddons={selectedAddons}
+                onUpdate={setSelectedAddons}
+                category={serviceData.category?.name || serviceData.category}
+            />
         </div>
     );
 };

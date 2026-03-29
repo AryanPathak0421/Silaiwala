@@ -164,7 +164,7 @@ const AdminStyleAddons = () => {
                         <button
                             key={cat}
                             onClick={() => setSelectedCategory(cat)}
-                            className={`px-4 py-2 text-xs font-semibold rounded-lg whitespace-nowrap transition-all ${selectedCategory === cat ? 'bg-white text-[#FF5C8A] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                            className={`px-4 py-2 text-xs font-semibold rounded-lg whitespace-nowrap transition-all ${selectedCategory === cat ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
                         >
                             {cat}
                         </button>
@@ -257,7 +257,7 @@ const AdminStyleAddons = () => {
                                             <div className="flex justify-end gap-2">
                                                 <button
                                                     onClick={() => openEditModal(addon)}
-                                                    className="p-2 text-gray-400 hover:text-[#FF5C8A] hover:bg-[#FF5C8A]/10 rounded-xl transition-all"
+                                                    className="p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-xl transition-all"
                                                 >
                                                     <Edit2 size={16} />
                                                 </button>

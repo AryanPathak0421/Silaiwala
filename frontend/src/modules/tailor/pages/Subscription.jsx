@@ -6,7 +6,7 @@ const Subscription = () => {
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
             {/* Current Plan Card */}
-            <div className="bg-gradient-to-br from-[#1e3932] to-[#0a211e] p-8 rounded-[3rem] shadow-2xl text-white relative overflow-hidden group">
+            <div className="gradient-brand p-8 rounded-[3rem] shadow-2xl text-white relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
                     <Zap size={100} />
                 </div>
@@ -17,7 +17,7 @@ const Subscription = () => {
                             <span className="bg-white/10 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/20">Active Plan</span>
                             <h3 className="text-3xl font-black mt-4 tracking-tighter">Premium Plus</h3>
                         </div>
-                        <ArrowUpCircle size={40} className="text-green-400" />
+                        <ArrowUpCircle size={40} className="text-pink-300" />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 mt-8 pt-8 border-t border-white/10">
@@ -51,7 +51,7 @@ const Subscription = () => {
                             <p className="text-[10px] text-gray-400 font-bold italic tracking-tighter">0% Platform Fee + Priority Support</p>
                         </div>
                     </div>
-                    <button className="text-[#1e3932] font-black text-xs uppercase tracking-widest hover:underline">
+                    <button className="text-primary font-black text-xs uppercase tracking-widest hover:underline">
                         View
                     </button>
                 </div>

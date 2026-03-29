@@ -9,7 +9,7 @@ const AccordionItem = ({ title, content }) => {
                 className="w-full flex justify-between items-center py-4 text-left group"
                 onClick={() => setIsOpen(!isOpen)}
             >
-                <span className="text-sm font-semibold text-gray-800 group-hover:text-[#1e3932] transition-colors">{title}</span>
+                <span className="text-sm font-semibold text-gray-800 group-hover:text-primary transition-colors">{title}</span>
                 {isOpen ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
             </button>
             {isOpen && <div className="text-xs text-gray-600 pb-4 leading-relaxed animate-in slide-in-from-top-1">{content}</div>}

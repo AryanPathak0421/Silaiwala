@@ -100,7 +100,7 @@ const AdminFinance = () => {
                         <button
                             key={tab}
                             onClick={() => setSelectedTab(tab)}
-                            className={`px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap transition-all ${selectedTab === tab ? 'bg-white text-[#1e3932] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                            className={`px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap transition-all ${selectedTab === tab ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
                         >
                             {tab}
                         </button>
@@ -135,7 +135,7 @@ const AdminFinance = () => {
                                             className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm"
                                         >
                                             <div className="flex justify-between items-start">
-                                                <div className="p-2 bg-[#1e3932]/10 text-[#1e3932] rounded-xl">
+                                                <div className="p-2 bg-primary/10 text-primary rounded-xl">
                                                     {stat.icon}
                                                 </div>
                                                 <div className={`flex items-center gap-1 text-[9px] font-black px-2 py-1 rounded-lg ${stat.positive ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`}>
@@ -171,7 +171,7 @@ const AdminFinance = () => {
                                                         <motion.div
                                                             initial={{ height: 0 }}
                                                             animate={{ height: `${(data.revenue / maxRevenue) * 100}%` }}
-                                                            className="w-[70%] bg-[#d4e9e2] rounded-t-lg group-hover:bg-[#1e3932] transition-colors relative"
+                                                            className="w-[70%] bg-[#d4e9e2] rounded-t-lg group-hover:bg-primary transition-colors relative"
                                                         >
                                                             <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[9px] font-black px-2 py-1 rounded shadow-lg pointer-events-none whitespace-nowrap z-20">
                                                                 ₹{data.revenue}
@@ -185,7 +185,7 @@ const AdminFinance = () => {
                                     </div>
 
                                     {/* Sidebar Info - Pending Action */}
-                                    <div className="bg-[#1e3932] p-6 rounded-2xl shadow-xl text-white relative overflow-hidden flex flex-col justify-between">
+                                    <div className="bg-primary p-6 rounded-2xl shadow-xl text-white relative overflow-hidden flex flex-col justify-between">
                                         <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
                                             <IndianRupee size={150} />
                                         </div>
@@ -208,7 +208,7 @@ const AdminFinance = () => {
                                         
                                         <button 
                                             onClick={() => setSelectedTab('Payouts')}
-                                            className="mt-8 w-full py-3 bg-white text-[#1e3932] font-black rounded-xl text-[10px] uppercase tracking-[0.2em] hover:bg-gray-100 transition-all shadow-lg"
+                                            className="mt-8 w-full py-3 bg-white text-primary font-black rounded-xl text-[10px] uppercase tracking-[0.2em] hover:bg-gray-100 transition-all shadow-lg"
                                         >
                                             Process All Now
                                         </button>
@@ -229,7 +229,7 @@ const AdminFinance = () => {
                                             onChange={(e) => setSearchTerm(e.target.value)}
                                             onKeyDown={handleSearch}
                                             placeholder="Search Txn ID..." 
-                                            className="pl-9 pr-4 py-2 text-xs font-bold bg-white border border-gray-200 rounded-xl outline-none focus:border-[#1e3932] transition-colors" 
+                                            className="pl-9 pr-4 py-2 text-xs font-bold bg-white border border-gray-200 rounded-xl outline-none focus:border-primary transition-colors" 
                                         />
                                     </div>
                                 </div>
@@ -248,9 +248,9 @@ const AdminFinance = () => {
                                         </thead>
                                         <tbody className="divide-y divide-gray-50">
                                             {transactions.map((txn, i) => (
-                                                <tr key={i} className="hover:bg-[#1e3932]/5 transition-colors group">
+                                                <tr key={i} className="hover:bg-primary/5 transition-colors group">
                                                     <td className="px-6 py-4">
-                                                        <span className="text-xs font-black text-[#1e3932]">{txn.id}</span>
+                                                        <span className="text-xs font-black text-primary">{txn.id}</span>
                                                         <p className="text-[9px] text-gray-400 mt-0.5 font-bold uppercase">{new Date(txn.date).toLocaleDateString()}</p>
                                                     </td>
                                                     <td className="px-6 py-4 font-bold text-xs text-gray-600">#{txn.orderId}</td>
@@ -270,7 +270,7 @@ const AdminFinance = () => {
                                                         </span>
                                                     </td>
                                                     <td className="px-6 py-4 text-right">
-                                                        <button className="text-gray-400 hover:text-[#1e3932] transition-colors p-1.5 hover:bg-gray-50 rounded-xl">
+                                                        <button className="text-gray-400 hover:text-primary transition-colors p-1.5 hover:bg-gray-50 rounded-xl">
                                                             <Download size={16} />
                                                         </button>
                                                     </td>
@@ -303,7 +303,7 @@ const AdminFinance = () => {
                                         </thead>
                                         <tbody className="divide-y divide-gray-50">
                                             {payouts.map((payout, i) => (
-                                                <tr key={i} className="hover:bg-[#1e3932]/5 transition-colors group">
+                                                <tr key={i} className="hover:bg-primary/5 transition-colors group">
                                                     <td className="px-6 py-4">
                                                         <span className="text-xs font-black text-gray-900">{payout.payoutId}</span>
                                                         <p className="text-[9px] text-gray-400 mt-0.5 font-bold">{new Date(payout.createdAt).toLocaleDateString()}</p>
@@ -312,7 +312,7 @@ const AdminFinance = () => {
                                                         <div className="flex flex-col">
                                                             <div className="flex items-center gap-2">
                                                                 <span className="text-xs font-black text-gray-900">{payout.tailor?.name}</span>
-                                                                <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded border ${payout.tailor?.role === 'delivery' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`}>
+                                                                <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded border ${payout.tailor?.role === 'delivery' ? 'bg-pink-50 text-primary border-pink-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`}>
                                                                     {payout.tailor?.role}
                                                                 </span>
                                                             </div>
@@ -326,7 +326,7 @@ const AdminFinance = () => {
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <span className="text-xs font-black text-[#1e3932]">₹{payout.amount.toLocaleString()}</span>
+                                                        <span className="text-xs font-black text-primary">₹{payout.amount.toLocaleString()}</span>
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <span className={`px-2 py-1 rounded-lg text-[9px] font-black border uppercase tracking-wider flex items-center w-max gap-1.5 ${getStatusStyle(payout.status)}`}>
@@ -338,12 +338,12 @@ const AdminFinance = () => {
                                                         {payout.status === 'pending' ? (
                                                             <button 
                                                                 onClick={() => handleProcessPayout(payout._id)}
-                                                                className="text-[10px] font-black uppercase text-[#1e3932] bg-[#1e3932]/10 px-4 py-2 rounded-xl hover:bg-[#1e3932] hover:text-white transition-all shadow-sm"
+                                                                className="text-[10px] font-black uppercase text-primary bg-primary/10 px-4 py-2 rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm"
                                                             >
                                                                 Process Payout
                                                             </button>
                                                         ) : (
-                                                            <button className="text-gray-400 hover:text-[#1e3932] transition-colors p-2 hover:bg-gray-50 rounded-xl">
+                                                            <button className="text-gray-400 hover:text-primary transition-colors p-2 hover:bg-gray-50 rounded-xl">
                                                                 <FileText size={16} />
                                                             </button>
                                                         )}
@@ -369,7 +369,7 @@ const AdminFinance = () => {
                                 <h3 className="text-xl font-black text-gray-900 tracking-tight">Taxation & Compliance</h3>
                                 <p className="text-xs text-gray-500 mt-3 max-w-sm leading-relaxed font-medium">Generate automated GST reports, TDS summaries and monthly tax records for platform earnings and payouts.</p>
                                 <div className="mt-10 flex gap-3">
-                                    <button className="px-8 py-3 bg-[#1e3932] text-white text-[10px] font-black rounded-xl hover:bg-[#0a211e] uppercase tracking-[0.2em] shadow-lg shadow-green-900/20 transition-all">
+                                    <button className="px-8 py-3 bg-primary text-white text-[10px] font-black rounded-xl hover:bg-primary-dark uppercase tracking-[0.2em] shadow-lg shadow-green-900/20 transition-all">
                                         Download GST Report
                                     </button>
                                     <button className="px-8 py-3 bg-white border border-gray-200 text-gray-500 text-[10px] font-black rounded-xl hover:bg-gray-50 uppercase tracking-[0.2em] transition-all">

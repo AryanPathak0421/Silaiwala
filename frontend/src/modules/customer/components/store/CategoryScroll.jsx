@@ -9,7 +9,7 @@ const CategoryScroll = ({ onSelectCategory, activeCategory }) => {
     const [history, setHistory] = useState([]); // Stack of { id, name, data }
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchCategories = async (parentId = 'null') => {
+    const fetchCategories = async (parentId = null) => {
         setIsLoading(true);
         try {
             const response = await api.get('/products/categories', {
@@ -107,10 +107,10 @@ const CategoryScroll = ({ onSelectCategory, activeCategory }) => {
                             }}
                             className={`flex flex-col items-center gap-2 min-w-[80px] snap-center transition-all duration-300 ${activeCategory === "All" ? 'scale-105' : 'opacity-80 hover:opacity-100'}`}
                         >
-                            <div className={`w-16 h-16 rounded-full overflow-hidden border-2 flex items-center justify-center bg-gray-50 ${activeCategory === "All" ? 'border-[#1e3932] shadow-lg' : 'border-gray-100'}`}>
-                                <span className="text-[10px] font-black uppercase text-[#1e3932]">All</span>
+                            <div className={`w-16 h-16 rounded-full overflow-hidden border-2 flex items-center justify-center bg-gray-50 ${activeCategory === "All" ? 'border-[#FF5C8A] shadow-lg' : 'border-gray-100'}`}>
+                                <span className="text-[10px] font-black uppercase text-[#FF5C8A]">All</span>
                             </div>
-                            <span className={`text-xs font-medium text-center ${activeCategory === "All" ? 'text-[#1e3932] font-bold' : 'text-gray-600'}`}>
+                            <span className={`text-xs font-medium text-center ${activeCategory === "All" ? 'text-[#FF5C8A] font-bold' : 'text-gray-600'}`}>
                                 All Fabrics
                             </span>
                         </button>
@@ -130,7 +130,7 @@ const CategoryScroll = ({ onSelectCategory, activeCategory }) => {
                                 onClick={() => handleCategoryClick(category)}
                                 className={`flex flex-col items-center gap-2 min-w-[80px] snap-center transition-all duration-300 ${activeCategory === category.name ? 'scale-105' : 'opacity-80 hover:opacity-100'}`}
                             >
-                                <div className={`w-16 h-16 rounded-full overflow-hidden border-2 flex items-center justify-center bg-gray-50 ${activeCategory === category.name ? 'border-[#1e3932] shadow-lg' : 'border-gray-100'}`}>
+                                <div className={`w-16 h-16 rounded-full overflow-hidden border-2 flex items-center justify-center bg-gray-50 ${activeCategory === category.name ? 'border-[#FF5C8A] shadow-lg' : 'border-gray-100'}`}>
                                     <img
                                         src={getImageUrl(category.image) || 'https://via.placeholder.com/150?text=' + category.name}
                                         alt={category.name}
@@ -138,7 +138,7 @@ const CategoryScroll = ({ onSelectCategory, activeCategory }) => {
                                         onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=' + category.name; }}
                                     />
                                 </div>
-                                <span className={`text-xs font-medium text-center whitespace-nowrap ${activeCategory === category.name ? 'text-[#1e3932] font-bold' : 'text-gray-600'}`}>
+                                <span className={`text-xs font-medium text-center whitespace-nowrap ${activeCategory === category.name ? 'text-[#FF5C8A] font-bold' : 'text-gray-600'}`}>
                                     {category.name}
                                 </span>
                             </button>

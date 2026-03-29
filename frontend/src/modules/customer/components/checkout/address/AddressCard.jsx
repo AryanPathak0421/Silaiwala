@@ -14,14 +14,14 @@ const AddressCard = ({ address, isSelected, onSelect }) => {
             onClick={onSelect}
             className={cn(
                 "relative p-4 rounded-xl border transition-all cursor-pointer bg-white group hover:shadow-sm",
-                isSelected ? "border-[#1e3932] ring-1 ring-[#1e3932] bg-[#f2fcf9]" : "border-gray-200 hover:border-gray-300"
+                isSelected ? "border-primary ring-1 ring-primary bg-pink-50" : "border-gray-200 hover:border-gray-300"
             )}
         >
             <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center gap-2">
                     <div className={cn(
                         "w-8 h-8 rounded-full flex items-center justify-center",
-                        isSelected ? "bg-[#1e3932] text-white" : "bg-gray-100 text-gray-500"
+                        isSelected ? "bg-primary text-white" : "bg-gray-100 text-gray-500"
                     )}>
                         <Icon size={14} />
                     </div>
@@ -32,8 +32,8 @@ const AddressCard = ({ address, isSelected, onSelect }) => {
                 </div>
 
                 {isSelected ? (
-                    <div className="text-[#1e3932]">
-                        <CheckCircle2 size={20} fill="#1e3932" className="text-white" />
+                    <div className="text-primary">
+                        <CheckCircle2 size={20} fill="#FF5C8A" className="text-white" />
                     </div>
                 ) : (
                     <div className="w-5 h-5 rounded-full border-2 border-gray-300 group-hover:border-gray-400" />

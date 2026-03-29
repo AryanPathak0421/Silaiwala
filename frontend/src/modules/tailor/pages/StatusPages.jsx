@@ -12,7 +12,7 @@ export const UnderReview = () => {
     return (
         <AppContainer>
             <div className="flex-1 flex flex-col items-center justify-center p-10 text-center animate-in fade-in duration-500">
-                <div className="h-24 w-24 bg-blue-50 text-blue-600 rounded-[2rem] flex items-center justify-center mb-8 shadow-xl shadow-blue-500/5">
+                <div className="h-24 w-24 bg-pink-50 text-primary rounded-[2rem] flex items-center justify-center mb-8 shadow-xl shadow-pink-500/5">
                     <Clock size={40} strokeWidth={2.5} className="animate-pulse" />
                 </div>
                 <h2 className="text-2xl font-black text-gray-900 tracking-tight">Account Under Review</h2>
@@ -24,7 +24,7 @@ export const UnderReview = () => {
                     <Button variant="secondary" className="border-gray-100 text-gray-600" onClick={() => { logout(); navigate('/partner/login'); }}>
                         <LogOut size={18} /> Sign Out
                     </Button>
-                    <Button variant="ghost" className="text-blue-600">
+                    <Button variant="ghost" className="text-primary">
                         <MessageCircle size={18} /> Contact Support
                     </Button>
                 </div>

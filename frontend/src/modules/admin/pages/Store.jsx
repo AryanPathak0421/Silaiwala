@@ -177,7 +177,7 @@ const AdminStore = () => {
                 {selectedTab !== 'Inventory' && (
                     <button
                         onClick={() => { resetForm(); setIsAddModalOpen(true); }}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-[#1e3932] text-white text-xs font-black rounded-xl hover:bg-[#0a211e] shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest"
+                        className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white text-xs font-black rounded-xl hover:bg-primary-dark shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest"
                     >
                         <Plus size={16} /> Add {selectedTab.slice(0, -1)}
                     </button>
@@ -191,7 +191,7 @@ const AdminStore = () => {
                         <button
                             key={tab}
                             onClick={() => setSelectedTab(tab)}
-                            className={`px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap transition-all flex items-center gap-2 ${selectedTab === tab ? 'bg-white text-[#1e3932] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                            className={`px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap transition-all flex items-center gap-2 ${selectedTab === tab ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
                         >
                             {tab}
                         </button>
@@ -255,7 +255,7 @@ const AdminStore = () => {
                             </thead>
                             <tbody className="divide-y divide-gray-50">
                                 {data.map((item) => (
-                                    <tr key={item._id} className="hover:bg-[#1e3932]/5 transition-colors group">
+                                    <tr key={item._id} className="hover:bg-primary/5 transition-colors group">
                                         {/* --- PRODUCTS TAB --- */}
                                         {selectedTab === 'Products' && (
                                             <>
@@ -274,7 +274,7 @@ const AdminStore = () => {
                                                     <span className="text-[10px] font-black uppercase text-gray-500 bg-gray-50 px-2 py-1 rounded border">{item.category?.name || 'Uncategorized'}</span>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <span className="text-sm font-black text-[#1e3932]">₹{item.price}</span>
+                                                    <span className="text-sm font-black text-primary">₹{item.price}</span>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span className={`px-2 py-1 rounded-lg text-[9px] font-black border uppercase tracking-wider ${getStatusStyle(item.stock)}`}>
@@ -350,7 +350,7 @@ const AdminStore = () => {
                                         {/* --- ACTIONS --- */}
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex justify-end gap-2">
-                                                <button onClick={() => handleEdit(item)} className="p-2 text-gray-400 hover:text-[#1e3932] hover:bg-gray-50 border border-transparent hover:border-gray-100 rounded-xl transition-all">
+                                                <button onClick={() => handleEdit(item)} className="p-2 text-gray-400 hover:text-primary hover:bg-gray-50 border border-transparent hover:border-gray-100 rounded-xl transition-all">
                                                     <Edit2 size={16} />
                                                 </button>
                                                 <button onClick={() => handleDelete(item._id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-100 rounded-xl transition-all">
@@ -400,30 +400,30 @@ const AdminStore = () => {
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="col-span-2">
                                                     <label className="block text-xs font-black uppercase text-gray-400 tracking-widest mb-1.5">Product Name</label>
-                                                    <input type="text" value={newProduct.name} onChange={(e) => setNewProduct({...newProduct, name: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-[#1e3932] transition-all" />
+                                                    <input type="text" value={newProduct.name} onChange={(e) => setNewProduct({...newProduct, name: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-primary transition-all" />
                                                 </div>
                                                 <div>
                                                     <label className="block text-xs font-black uppercase text-gray-400 tracking-widest mb-1.5">Category</label>
-                                                    <select value={newProduct.category} onChange={(e) => setNewProduct({...newProduct, category: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-[#1e3932] transition-all appearance-none">
+                                                    <select value={newProduct.category} onChange={(e) => setNewProduct({...newProduct, category: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-primary transition-all appearance-none">
                                                         <option value="">Select Category</option>
                                                         {categories.map(cat => <option key={cat._id} value={cat._id}>{cat.name}</option>)}
                                                     </select>
                                                 </div>
                                                 <div>
                                                     <label className="block text-xs font-black uppercase text-gray-400 tracking-widest mb-1.5">Stock Quantity</label>
-                                                    <input type="number" value={newProduct.stock} onChange={(e) => setNewProduct({...newProduct, stock: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-[#1e3932] transition-all" />
+                                                    <input type="number" value={newProduct.stock} onChange={(e) => setNewProduct({...newProduct, stock: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-primary transition-all" />
                                                 </div>
                                                 <div>
                                                     <label className="block text-xs font-black uppercase text-gray-400 tracking-widest mb-1.5">Sale Price</label>
-                                                    <input type="number" value={newProduct.price} onChange={(e) => setNewProduct({...newProduct, price: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-[#1e3932] transition-all" />
+                                                    <input type="number" value={newProduct.price} onChange={(e) => setNewProduct({...newProduct, price: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-primary transition-all" />
                                                 </div>
                                                 <div>
                                                     <label className="block text-xs font-black uppercase text-gray-400 tracking-widest mb-1.5">MRP (Optional)</label>
-                                                    <input type="number" value={newProduct.originalPrice} onChange={(e) => setNewProduct({...newProduct, originalPrice: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-[#1e3932] transition-all" />
+                                                    <input type="number" value={newProduct.originalPrice} onChange={(e) => setNewProduct({...newProduct, originalPrice: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-primary transition-all" />
                                                 </div>
                                                 <div className="col-span-2">
                                                     <label className="block text-xs font-black uppercase text-gray-400 tracking-widest mb-1.5">Image URL</label>
-                                                    <input type="text" value={newProduct.image} onChange={(e) => setNewProduct({...newProduct, image: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-[#1e3932] transition-all" />
+                                                    <input type="text" value={newProduct.image} onChange={(e) => setNewProduct({...newProduct, image: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-primary transition-all" />
                                                 </div>
                                             </div>
                                         </>
@@ -434,11 +434,11 @@ const AdminStore = () => {
                                         <div className="space-y-4">
                                             <div>
                                                 <label className="block text-xs font-black uppercase text-gray-400 tracking-widest mb-1.5">Category Name</label>
-                                                <input type="text" value={newCategory.name} onChange={(e) => setNewCategory({...newCategory, name: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-[#1e3932] transition-all" />
+                                                <input type="text" value={newCategory.name} onChange={(e) => setNewCategory({...newCategory, name: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-primary transition-all" />
                                             </div>
                                             <div>
                                                 <label className="block text-xs font-black uppercase text-gray-400 tracking-widest mb-1.5">Description</label>
-                                                <textarea rows={3} value={newCategory.description} onChange={(e) => setNewCategory({...newCategory, description: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-[#1e3932] transition-all" />
+                                                <textarea rows={3} value={newCategory.description} onChange={(e) => setNewCategory({...newCategory, description: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-primary transition-all" />
                                             </div>
                                         </div>
                                     )}
@@ -448,22 +448,22 @@ const AdminStore = () => {
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-xs font-black uppercase text-gray-400 tracking-widest mb-1.5">Coupon Code</label>
-                                                <input type="text" value={newCoupon.code} onChange={(e) => setNewCoupon({...newCoupon, code: e.target.value.toUpperCase()})} placeholder="E.G. SUMMER50" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-[#1e3932] transition-all" />
+                                                <input type="text" value={newCoupon.code} onChange={(e) => setNewCoupon({...newCoupon, code: e.target.value.toUpperCase()})} placeholder="E.G. SUMMER50" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-primary transition-all" />
                                             </div>
                                             <div>
                                                 <label className="block text-xs font-black uppercase text-gray-400 tracking-widest mb-1.5">Discount Type</label>
-                                                <select value={newCoupon.discountType} onChange={(e) => setNewCoupon({...newCoupon, discountType: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-[#1e3932] transition-all appearance-none">
+                                                <select value={newCoupon.discountType} onChange={(e) => setNewCoupon({...newCoupon, discountType: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-primary transition-all appearance-none">
                                                     <option value="percentage">Percentage (%)</option>
                                                     <option value="fixed">Fixed Amount (₹)</option>
                                                 </select>
                                             </div>
                                             <div>
                                                 <label className="block text-xs font-black uppercase text-gray-400 tracking-widest mb-1.5">Discount Value</label>
-                                                <input type="number" value={newCoupon.discountValue} onChange={(e) => setNewCoupon({...newCoupon, discountValue: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-[#1e3932] transition-all" />
+                                                <input type="number" value={newCoupon.discountValue} onChange={(e) => setNewCoupon({...newCoupon, discountValue: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-primary transition-all" />
                                             </div>
                                             <div>
                                                 <label className="block text-xs font-black uppercase text-gray-400 tracking-widest mb-1.5">Min Order Amount</label>
-                                                <input type="number" value={newCoupon.minOrderAmount} onChange={(e) => setNewCoupon({...newCoupon, minOrderAmount: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-[#1e3932] transition-all" />
+                                                <input type="number" value={newCoupon.minOrderAmount} onChange={(e) => setNewCoupon({...newCoupon, minOrderAmount: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold shadow-sm outline-none focus:border-primary transition-all" />
                                             </div>
                                         </div>
                                     )}
@@ -476,7 +476,7 @@ const AdminStore = () => {
                                     <button 
                                         onClick={handleFormSubmit}
                                         disabled={isSubmitting}
-                                        className="px-6 py-3 bg-[#1e3932] text-white text-xs font-black rounded-xl hover:bg-[#0a211e] shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest flex items-center gap-2"
+                                        className="px-6 py-3 bg-primary text-white text-xs font-black rounded-xl hover:bg-primary-dark shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest flex items-center gap-2"
                                     >
                                         {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                                         {isEditing ? 'Save Changes' : `Publish ${selectedTab.slice(0, -1)}`}

@@ -41,16 +41,16 @@ const DeliveryCheck = () => {
                         maxLength={6}
                         value={pincode}
                         onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
-                        className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md focus:ring-[#1e3932] focus:border-[#1e3932] text-sm"
+                        className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary text-sm"
                     />
                     {deliveryStatus === 'checking' && (
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin h-4 w-4 border-2 border-gray-300 border-t-[#1e3932] rounded-full"></div>
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin h-4 w-4 border-2 border-gray-300 border-t-primary rounded-full"></div>
                     )}
                 </div>
                 <button
                     onClick={handleCheck}
                     disabled={deliveryStatus === 'checking'}
-                    className="px-4 py-2 bg-[#1e3932] text-white text-sm font-bold rounded-md hover:bg-[#152e28] disabled:opacity-70 transition-colors"
+                    className="px-4 py-2 bg-primary text-white text-sm font-bold rounded-md hover:bg-primary-dark disabled:opacity-70 transition-colors"
                 >
                     Check
                 </button>

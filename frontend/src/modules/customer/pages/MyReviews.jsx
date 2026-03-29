@@ -39,7 +39,7 @@ const MyReviews = () => {
     return (
         <div className="min-h-screen bg-gray-50 pb-20 font-sans text-gray-900">
             {/* Header */}
-            <div className="sticky top-0 z-50 bg-[#1e3932] text-white px-4 py-4 flex items-center gap-3 shadow-lg">
+            <div className="sticky top-0 z-50 bg-primary text-white px-4 py-4 flex items-center gap-3 shadow-lg">
                 <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors">
                     <ArrowLeft size={20} />
                 </button>
@@ -49,7 +49,7 @@ const MyReviews = () => {
             <div className="max-w-xl mx-auto p-4 py-8">
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center py-20">
-                        <Loader2 size={48} className="text-[#1e3932] animate-spin mb-4" />
+                        <Loader2 size={48} className="text-primary animate-spin mb-4" />
                         <p className="mt-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Loading reviews...</p>
                     </div>
                 ) : reviews.length === 0 ? (
@@ -61,7 +61,7 @@ const MyReviews = () => {
                         <p className="text-sm text-gray-500 mb-8 max-w-[200px] mx-auto">Share your feedback on your completed orders.</p>
                         <button 
                             onClick={() => navigate('/orders')}
-                            className="px-8 py-3 bg-[#1e3932] text-white rounded-full font-bold text-sm shadow-lg active:scale-95 transition-all outline-none"
+                            className="px-8 py-3 bg-primary text-white rounded-full font-bold text-sm shadow-lg active:scale-95 transition-all outline-none"
                         >
                             View Completed Orders
                         </button>
@@ -70,7 +70,7 @@ const MyReviews = () => {
                     <div className="space-y-4">
                         <div className="flex items-center justify-between mb-4 px-2">
                             <h2 className="text-xs font-black text-gray-400 uppercase tracking-widest">All Reviews ({reviews.length})</h2>
-                            <div className="flex items-center gap-1.5 px-3 py-1 bg-[#1e3932] rounded-full text-white">
+                            <div className="flex items-center gap-1.5 px-3 py-1 bg-primary rounded-full text-white">
                                 <Star size={12} className="fill-yellow-400 text-yellow-400" />
                                 <span className="text-[10px] font-black uppercase tracking-tight">
                                     {(reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)} Avg
@@ -89,7 +89,7 @@ const MyReviews = () => {
                                 {/* Target Ribbon */}
                                 <div className="absolute top-0 right-0">
                                     <div className={`px-4 py-1.5 text-[8px] font-black uppercase tracking-widest text-white ${
-                                        review.targetType === 'Tailor' ? 'bg-[#1e3932]' : 
+                                        review.targetType === 'Tailor' ? 'bg-primary' : 
                                         review.targetType === 'DeliveryPartner' ? 'bg-amber-600' : 'bg-blue-600'
                                     } rounded-bl-2xl flex items-center gap-2`}>
                                         {review.targetType === 'Tailor' ? <Calendar size={10} /> : <Truck size={10} />}

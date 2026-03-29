@@ -136,7 +136,7 @@ const AdminServices = () => {
                 </div>
                 <button
                     onClick={() => setIsAddModalOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-[#1e3932] text-white text-xs font-black rounded-xl hover:bg-[#0a211e] shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest"
+                    className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white text-xs font-black rounded-xl hover:bg-primary-dark shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest"
                 >
                     <Plus size={16} /> Add Category
                 </button>
@@ -149,7 +149,7 @@ const AdminServices = () => {
                         <button
                             key={tab}
                             onClick={() => setSelectedTab(tab)}
-                            className={`px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap transition-all flex items-center gap-2 ${selectedTab === tab ? 'bg-white text-[#1e3932] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                            className={`px-4 py-2 text-xs font-bold rounded-lg whitespace-nowrap transition-all flex items-center gap-2 ${selectedTab === tab ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
                         >
                             {tab}
                         </button>
@@ -188,7 +188,7 @@ const AdminServices = () => {
                                 {filteredCategories.map((service) => (
                                     <tr
                                         key={service._id}
-                                        className="hover:bg-[#1e3932]/5 transition-colors group"
+                                        className="hover:bg-primary/5 transition-colors group"
                                     >
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-4">
@@ -201,7 +201,7 @@ const AdminServices = () => {
                                                         {service.description}
                                                     </span>
                                                     {service.productCount > 0 && (
-                                                        <span className="mt-1 text-[9px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-md w-fit">
+                                                        <span className="mt-1 text-[9px] font-bold text-primary bg-pink-50 px-1.5 py-0.5 rounded-md w-fit">
                                                             {service.productCount} Linked Products
                                                         </span>
                                                     )}
@@ -209,7 +209,7 @@ const AdminServices = () => {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className="text-sm font-black text-[#1e3932]">₹{service.basePrice || service.price}</span>
+                                            <span className="text-sm font-black text-primary">₹{service.basePrice || service.price}</span>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-1.5 text-xs font-bold text-gray-700">
@@ -223,7 +223,7 @@ const AdminServices = () => {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex justify-end gap-2">
-                                                <button className="p-2 text-gray-400 hover:text-[#1e3932] hover:bg-[#1e3932]/10 rounded-xl transition-all border border-transparent">
+                                                <button className="p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-xl transition-all border border-transparent">
                                                     <Edit2 size={16} />
                                                 </button>
                                                 <button 
@@ -243,7 +243,7 @@ const AdminServices = () => {
                     <div className="flex-1 overflow-y-auto p-6 bg-gray-50/30">
                         {isLoading ? (
                             <div className="h-full flex items-center justify-center">
-                                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#1e3932]"></div>
+                                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
                             </div>
                         ) : Object.keys(servicesByCategory).length === 0 ? (
                             <div className="h-full flex flex-col items-center justify-center text-gray-400 space-y-2">
@@ -255,7 +255,7 @@ const AdminServices = () => {
                                 {Object.entries(servicesByCategory).map(([category, services]) => (
                                     <div key={category} className="space-y-4">
                                         <div className="flex items-center gap-3">
-                                            <Tag size={16} className="text-[#1e3932]" />
+                                            <Tag size={16} className="text-primary" />
                                             <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider">{category}</h3>
                                             <div className="h-px bg-gray-100 flex-1"></div>
                                             <span className="text-[10px] font-bold text-gray-400">{services.length} Services</span>
@@ -275,7 +275,7 @@ const AdminServices = () => {
                                                         <div className="flex-1 min-w-0">
                                                             <div className="flex justify-between items-start">
                                                                 <h4 className="text-sm font-black text-gray-900 truncate pr-2">{service.title}</h4>
-                                                                <span className="text-xs font-black text-[#1e3932]">₹{service.basePrice}</span>
+                                                                <span className="text-xs font-black text-primary">₹{service.basePrice}</span>
                                                             </div>
                                                             <div className="flex items-center gap-1.5 mt-1">
                                                                 <div className="h-4 w-4 rounded-full bg-gray-100 flex items-center justify-center text-[8px] font-bold text-gray-500">
@@ -317,8 +317,8 @@ const AdminServices = () => {
                                             <p className="text-[10px] text-gray-500 mt-0.5">Applied to tailor orders</p>
                                         </div>
                                         <div className="flex items-center gap-3">
-                                            <span className="text-lg font-black text-[#1e3932]">15%</span>
-                                            <button className="text-[10px] font-bold text-blue-600 hover:underline">Edit</button>
+                                            <span className="text-lg font-black text-primary">15%</span>
+                                            <button className="text-[10px] font-bold text-primary hover:underline">Edit</button>
                                         </div>
                                     </div>
                                     <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl border border-gray-100">
@@ -327,8 +327,8 @@ const AdminServices = () => {
                                             <p className="text-[10px] text-gray-500 mt-0.5">Applied to marketplace vendors</p>
                                         </div>
                                         <div className="flex items-center gap-3">
-                                            <span className="text-lg font-black text-[#1e3932]">10%</span>
-                                            <button className="text-[10px] font-bold text-blue-600 hover:underline">Edit</button>
+                                            <span className="text-lg font-black text-primary">10%</span>
+                                            <button className="text-[10px] font-bold text-primary hover:underline">Edit</button>
                                         </div>
                                     </div>
                                 </div>
@@ -348,7 +348,7 @@ const AdminServices = () => {
                                         </div>
                                         <div className="flex items-center gap-3">
                                             <span className="text-lg font-black text-gray-900">₹40</span>
-                                            <button className="text-[10px] font-bold text-blue-600 hover:underline">Edit</button>
+                                            <button className="text-[10px] font-bold text-primary hover:underline">Edit</button>
                                         </div>
                                     </div>
                                     <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl border border-gray-100">
@@ -358,7 +358,7 @@ const AdminServices = () => {
                                         </div>
                                         <div className="flex items-center gap-3">
                                             <span className="text-lg font-black text-gray-900">₹8</span>
-                                            <button className="text-[10px] font-bold text-blue-600 hover:underline">Edit</button>
+                                            <button className="text-[10px] font-bold text-primary hover:underline">Edit</button>
                                         </div>
                                     </div>
                                 </div>
@@ -401,7 +401,7 @@ const AdminServices = () => {
                                             value={newService.title}
                                             onChange={e => setNewService({...newService, title: e.target.value})}
                                             placeholder="e.g. Designer Saree" 
-                                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-[#1e3932] transition-colors shadow-sm" 
+                                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-primary transition-colors shadow-sm" 
                                         />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
@@ -412,7 +412,7 @@ const AdminServices = () => {
                                                 value={newService.price}
                                                 onChange={e => setNewService({...newService, price: e.target.value})}
                                                 placeholder="400" 
-                                                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-[#1e3932] transition-colors shadow-sm" 
+                                                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-primary transition-colors shadow-sm" 
                                             />
                                         </div>
                                         <div>
@@ -422,7 +422,7 @@ const AdminServices = () => {
                                                 value={newService.deliveryTime}
                                                 onChange={e => setNewService({...newService, deliveryTime: e.target.value})}
                                                 placeholder="3-5 days" 
-                                                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-[#1e3932] transition-colors shadow-sm" 
+                                                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-primary transition-colors shadow-sm" 
                                             />
                                         </div>
                                     </div>
@@ -433,7 +433,7 @@ const AdminServices = () => {
                                             value={newService.description}
                                             onChange={e => setNewService({...newService, description: e.target.value})}
                                             placeholder="Describe the service..." 
-                                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-[#1e3932] transition-colors shadow-sm resize-none"
+                                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-primary transition-colors shadow-sm resize-none"
                                         ></textarea>
                                     </div>
                                     <div>
@@ -453,7 +453,7 @@ const AdminServices = () => {
                                                     />
                                                     <div className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-500 flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors">
                                                         {isImageUploading ? (
-                                                            <div className="w-4 h-4 border-2 border-[#1e3932] border-t-transparent animate-spin rounded-full" />
+                                                            <div className="w-4 h-4 border-2 border-primary border-t-transparent animate-spin rounded-full" />
                                                         ) : (
                                                             <Plus size={14} />
                                                         )}
@@ -479,7 +479,7 @@ const AdminServices = () => {
                                     <button 
                                         onClick={handleAddService}
                                         disabled={isSubmitting}
-                                        className="px-6 py-3 bg-[#1e3932] text-white text-xs font-black rounded-xl hover:bg-[#0a211e] shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest disabled:opacity-50"
+                                        className="px-6 py-3 bg-primary text-white text-xs font-black rounded-xl hover:bg-primary-dark shadow-lg shadow-green-900/20 transition-all uppercase tracking-widest disabled:opacity-50"
                                     >
                                         {isSubmitting ? 'Saving...' : 'Save Category'}
                                     </button>

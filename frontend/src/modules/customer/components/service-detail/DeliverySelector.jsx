@@ -9,8 +9,8 @@ const options = [
         days: 15,
         price: 0,
         icon: Truck,
-        color: 'text-blue-600',
-        bg: 'bg-blue-50',
+        color: 'text-primary',
+        bg: 'bg-pink-50',
     },
     {
         id: 'express',
@@ -18,7 +18,7 @@ const options = [
         days: 10,
         price: 150,
         icon: Zap,
-        color: 'text-[#1e3932]',
+        color: 'text-primary',
         bg: 'bg-green-50',
         badge: 'POPULAR'
     },
@@ -28,8 +28,8 @@ const options = [
         days: 7,
         price: 350,
         icon: Crown,
-        color: 'text-purple-600',
-        bg: 'bg-purple-50',
+        color: 'text-primary',
+        bg: 'bg-pink-50',
     }
 ];
 
@@ -55,11 +55,11 @@ const DeliverySelector = ({ selected, onSelect }) => {
                             onClick={() => onSelect(opt.id)}
                             className={cn(
                                 "relative p-3 rounded-xl border cursor-pointer transition-all duration-200 text-center flex flex-col items-center justify-between min-h-[140px]",
-                                isSelected ? "border-[#1e3932] bg-[#f2fcf9] shadow-md ring-1 ring-[#1e3932]" : "border-gray-100 hover:border-gray-200"
+                                isSelected ? "border-primary bg-[#f2fcf9] shadow-md ring-1 ring-primary" : "border-gray-100 hover:border-gray-200"
                             )}
                         >
                             {opt.badge && (
-                                <div className="absolute top-0 right-0 bg-[#1e3932] text-white text-[8px] font-bold px-1.5 py-0.5 rounded-bl-lg rounded-tr-lg">
+                                <div className="absolute top-0 right-0 bg-primary text-white text-[8px] font-bold px-1.5 py-0.5 rounded-bl-lg rounded-tr-lg">
                                     {opt.badge}
                                 </div>
                             )}
@@ -69,9 +69,9 @@ const DeliverySelector = ({ selected, onSelect }) => {
                                     <Icon size={16} />
                                 </div>
 
-                                <p className={cn("text-[11px] font-bold mb-0.5", isSelected ? "text-[#1e3932]" : "text-gray-700")}>{opt.label}</p>
+                                <p className={cn("text-[11px] font-bold mb-0.5", isSelected ? "text-primary" : "text-gray-700")}>{opt.label}</p>
                                 <p className="text-[9px] text-gray-500 font-medium">{opt.days} Days</p>
-                                <p className="text-[9px] text-[#1e3932] font-black uppercase mt-1">by {estDate}</p>
+                                <p className="text-[9px] text-primary font-black uppercase mt-1">by {estDate}</p>
                             </div>
 
                             <p className={cn("text-[10px] font-black mt-2", opt.price > 0 ? opt.color : "text-green-600")}>

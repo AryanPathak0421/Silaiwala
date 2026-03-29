@@ -34,7 +34,7 @@ const TailorLayout = () => {
             {/* Top Navbar - Hide on Overview and Settings so they can have custom headers */}
             {(!isOverview && location.pathname !== '/partner/settings' && location.pathname !== '/partner/wallet' && location.pathname !== '/partner/earnings') && (
                 <div className="relative sticky top-0 z-10 w-full mb-4">
-                    <header className="bg-[#FF5C8A] pt-6 pb-4 px-6 flex items-center justify-between text-white transition-all shadow-[0_4px_20px_rgb(0,0,0,0.1)]">
+                    <header className="bg-primary pt-6 pb-4 px-6 flex items-center justify-between text-white transition-all shadow-[0_4px_20px_rgb(0,0,0,0.1)]">
                         <div>
                             <h2 className="text-xl font-black tracking-tight drop-shadow-sm">
                                 {menuItems.find(i => i.path === location.pathname)?.label || 'Silaiwala'}
@@ -51,7 +51,7 @@ const TailorLayout = () => {
                         </div>
                     </header>
                     {/* SVG Wave Curve matching the aesthetic */}
-                    <svg className="w-full h-8 text-[#FF5C8A] fill-current absolute top-full left-0 z-10" viewBox="0 0 100 20" preserveAspectRatio="none">
+                    <svg className="w-full h-8 text-primary fill-current absolute top-full left-0 z-10" viewBox="0 0 100 20" preserveAspectRatio="none">
                         <path d="M0,0 C30,20 70,20 100,0 L100,0 L0,0 Z" />
                     </svg>
                 </div>
@@ -70,9 +70,9 @@ const TailorLayout = () => {
                         <Link
                             key={item.path}
                             to={item.path}
-                            className={`flex flex-col items-center gap-1 group transition-all ${isActive ? 'text-[#FF5C8A]' : 'text-gray-400'}`}
+                            className={`flex flex-col items-center gap-1 group transition-all ${isActive ? 'text-primary' : 'text-gray-400'}`}
                         >
-                            <div className={`p-3 rounded-[1.25rem] transition-all flex items-center justify-center ${isActive ? 'bg-[#FF5C8A]/10 shadow-inner' : 'group-hover:bg-white/5'}`}>
+                            <div className={`p-3 rounded-[1.25rem] transition-all flex items-center justify-center ${isActive ? 'bg-primary/10 shadow-inner' : 'group-hover:bg-white/5'}`}>
                                 {React.cloneElement(item.icon, { 
                                     size: 22,
                                     strokeWidth: isActive ? 2.5 : 2
@@ -84,9 +84,9 @@ const TailorLayout = () => {
                 {/* Profile Link as the last item */}
                 <Link
                     to="/partner/settings"
-                    className={`flex flex-col items-center gap-1 group transition-all ${location.pathname === '/partner/settings' ? 'text-[#FF5C8A]' : 'text-gray-400'}`}
+                    className={`flex flex-col items-center gap-1 group transition-all ${location.pathname === '/partner/settings' ? 'text-primary' : 'text-gray-400'}`}
                 >
-                    <div className={`p-3 rounded-[1.25rem] transition-all flex items-center justify-center ${location.pathname === '/partner/settings' ? 'bg-[#FF5C8A]/10 shadow-inner' : 'group-hover:bg-white/5'}`}>
+                    <div className={`p-3 rounded-[1.25rem] transition-all flex items-center justify-center ${location.pathname === '/partner/settings' ? 'bg-primary/10 shadow-inner' : 'group-hover:bg-white/5'}`}>
                         <UserCircle size={22} strokeWidth={location.pathname === '/partner/settings' ? 2.5 : 2} />
                     </div>
                 </Link>

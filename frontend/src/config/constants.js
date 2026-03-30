@@ -5,7 +5,21 @@ const getBackendBase = () => {
     return `http://${currentHost}:5000`; // Dynamically use the host IP for API calls
 };
 
-export const SOCKET_URL = getBackendBase();
+const getBase = () => {
+    const apiEnv = import.meta.env.VITE_API_URL;
+    if (apiEnv) {
+        // Extract base from /api/v1
+        try {
+            const url = new URL(apiEnv);
+            return `${url.protocol}//${url.host}`;
+        } catch (e) {
+            return apiEnv.split('/api/v1')[0];
+        }
+    }
+    return getBackendBase();
+};
+
+export const SOCKET_URL = getBase();
 export const API_URL = import.meta.env.VITE_API_URL || `${SOCKET_URL}/api/v1`;
 
 

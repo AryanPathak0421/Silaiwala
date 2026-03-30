@@ -14,7 +14,6 @@ const DeliverySignup = () => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        phoneNumber: '',
         password: '',
         confirmPassword: '',
         phoneNumber: '',

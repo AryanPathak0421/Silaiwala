@@ -47,9 +47,9 @@ exports.createRazorpayOrder = asyncHandler(async (req, res, next) => {
  * @access  Private (Customer)
  */
 exports.verifyPayment = asyncHandler(async (req, res, next) => {
-  const { 
-    razorpay_order_id, 
-    razorpay_payment_id, 
+  const {
+    razorpay_order_id,
+    razorpay_payment_id,
     razorpay_signature,
     orderObjectId // This is the MongoDB Order ID
   } = req.body;
@@ -76,70 +76,75 @@ exports.verifyPayment = asyncHandler(async (req, res, next) => {
     order.razorpayOrderId = razorpay_order_id;
     order.platformFee = platformFee;
     order.deliveryFee = deliveryFee;
-    
-    await order.save();
-    
-    // Send Notification only AFTER successful payment validation
+
+    // Update status based on requirements
     const fabricPickupRequired = order.items.some(item => item.fabricSource === 'customer');
-    
+    if (fabricPickupRequired) {
+      order.status = "fabric-ready-for-pickup";
+    }
+
+    await order.save();
+
+    // Send Notification only AFTER successful payment validation
+
     await sendNotification({
-        recipient: order.tailor,
-        type: "ORDER_CREATED",
-        title: "New Request Received!",
-        message: `You have received a new order ${order.orderId}. ${fabricPickupRequired ? 'Wait for fabric delivery from customer.' : 'You can start processing once accepted.'}`,
-        data: { orderId: order._id, targetUrl: "/partner/orders" }
+      recipient: order.tailor,
+      type: "ORDER_CREATED",
+      title: "New Request Received!",
+      message: `You have received a new order ${order.orderId}. ${fabricPickupRequired ? 'Wait for fabric delivery from customer.' : 'You can start processing once accepted.'}`,
+      data: { orderId: order._id, targetUrl: "/partner/orders" }
     });
 
     // Notify Customer about successful payment and order placement
     await sendNotification({
-        recipient: order.customer,
-        type: "PAYMENT_SUCCESS",
-        title: "Order Placed Successfully!",
-        message: `Your payment for order ${order.orderId} was successful. Our tailor will start working on it soon.`,
-        data: { orderId: order._id, targetUrl: "/profile/orders" }
+      recipient: order.customer,
+      type: "PAYMENT_SUCCESS",
+      title: "Order Placed Successfully!",
+      message: `Your payment for order ${order.orderId} was successful. Our tailor will start working on it soon.`,
+      data: { orderId: order._id, targetUrl: "/profile/orders" }
     });
 
     // --- Referral Flow ---
     // Check if this is the customer's first order
     const customerProfile = await Customer.findOne({ user: order.customer });
     if (customerProfile && customerProfile.totalOrders === 0) {
-        customerProfile.totalOrders = 1;
+      customerProfile.totalOrders = 1;
 
-        // If referred by someone, give them both a bonus
-        if (customerProfile.referredBy) {
-            const referrerProfile = await Customer.findOne({ user: customerProfile.referredBy });
-            if (referrerProfile) {
-                const REFERRER_BONUS = 50;
-                const CUSTOMER_BONUS = 25;
+      // If referred by someone, give them both a bonus
+      if (customerProfile.referredBy) {
+        const referrerProfile = await Customer.findOne({ user: customerProfile.referredBy });
+        if (referrerProfile) {
+          const REFERRER_BONUS = 50;
+          const CUSTOMER_BONUS = 25;
 
-                // 1. Reward Referrer
-                referrerProfile.walletBalance += REFERRER_BONUS;
-                referrerProfile.referralEarnings += REFERRER_BONUS;
-                await referrerProfile.save();
+          // 1. Reward Referrer
+          referrerProfile.walletBalance += REFERRER_BONUS;
+          referrerProfile.referralEarnings += REFERRER_BONUS;
+          await referrerProfile.save();
 
-                await WalletTransaction.create({
-                    user: referrerProfile.user,
-                    amount: REFERRER_BONUS,
-                    type: "credit",
-                    category: "referral_bonus",
-                    description: `Bonus for referring ${customerProfile.user.name || 'a new user'}`
-                });
+          await WalletTransaction.create({
+            user: referrerProfile.user,
+            amount: REFERRER_BONUS,
+            type: "credit",
+            category: "referral_bonus",
+            description: `Bonus for referring ${customerProfile.user.name || 'a new user'}`
+          });
 
-                // 2. Reward New Customer
-                customerProfile.walletBalance += CUSTOMER_BONUS;
-                await WalletTransaction.create({
-                    user: customerProfile.user,
-                    amount: CUSTOMER_BONUS,
-                    type: "credit",
-                    category: "referral_bonus",
-                    description: "Welcome bonus from referral"
-                });
-            }
+          // 2. Reward New Customer
+          customerProfile.walletBalance += CUSTOMER_BONUS;
+          await WalletTransaction.create({
+            user: customerProfile.user,
+            amount: CUSTOMER_BONUS,
+            type: "credit",
+            category: "referral_bonus",
+            description: "Welcome bonus from referral"
+          });
         }
-        await customerProfile.save();
+      }
+      await customerProfile.save();
     } else if (customerProfile) {
-        customerProfile.totalOrders += 1;
-        await customerProfile.save();
+      customerProfile.totalOrders += 1;
+      await customerProfile.save();
     }
     // ---------------------
 
@@ -163,7 +168,7 @@ exports.createOrder = asyncHandler(async (req, res, next) => {
 
   // 1. Validation: Ensure tailor exists and is active (Check both User and Tailor Profile IDs)
   let tailor = await User.findOne({ _id: tailorId, role: { $in: ["tailor", "admin"] } });
-  
+
   if (!tailor) {
     // If not found in User, check if it's a Tailor Profile ID
     const tailorProfile = await Tailor.findById(tailorId).populate("user");
@@ -221,7 +226,7 @@ exports.createOrder = asyncHandler(async (req, res, next) => {
           discountAmount = promo.discountValue;
         }
         finalAmount = totalAmount - discountAmount;
-        
+
         // Increment used count
         promo.usedCount += 1;
         await promo.save();
@@ -238,14 +243,22 @@ exports.createOrder = asyncHandler(async (req, res, next) => {
     totalAmount: finalAmount,
     discountAmount,
     couponCode: promoCode,
-    deliveryAddress,
+    deliveryAddress: {
+      ...deliveryAddress,
+      location: (deliveryAddress.coordinates && !isNaN(parseFloat(deliveryAddress.coordinates.lat)) && !isNaN(parseFloat(deliveryAddress.coordinates.lng)))
+        ? {
+          type: "Point",
+          coordinates: [parseFloat(deliveryAddress.coordinates.lng), parseFloat(deliveryAddress.coordinates.lat)]
+        }
+        : undefined
+    },
     status: initialStatus,
     fabricPickupRequired,
-    trackingHistory: [{ 
-        status: initialStatus, 
-        message: fabricPickupRequired 
-            ? "Order placed. Fabric pickup task created." 
-            : "Order placed successfully" 
+    trackingHistory: [{
+      status: initialStatus,
+      message: fabricPickupRequired
+        ? "Order placed. Fabric pickup task created."
+        : "Order placed successfully"
     }],
   });
   res.status(201).json({
@@ -302,12 +315,18 @@ exports.getOrderDetails = asyncHandler(async (req, res, next) => {
   }
 
   // Check ownership
-  if (
-    order.customer?._id?.toString() !== req.user.id &&
-    order.tailor?._id?.toString() !== req.user.id &&
-    order.deliveryPartner?.toString() !== req.user.id &&
-    req.user.role !== "admin"
-  ) {
+  const isCustomer = order.customer?._id?.toString() === req.user.id || order.customer?.toString() === req.user.id;
+  const isTailor = order.tailor?._id?.toString() === req.user.id || order.tailor?.toString() === req.user.id;
+  const isAssignedDelivery = order.deliveryPartner?._id?.toString() === req.user.id || order.deliveryPartner?.toString() === req.user.id;
+  const isAdmin = req.user.role === "admin";
+
+  // Allow delivery partners to view unassigned orders that are ready for pickup
+  const isAvailableForDelivery = req.user.role === "delivery" &&
+    ["fabric-ready-for-pickup", "ready-for-pickup"].includes(order.status) &&
+    !order.deliveryPartner;
+
+  if (!isCustomer && !isTailor && !isAssignedDelivery && !isAdmin && !isAvailableForDelivery) {
+    console.log(`Auth Failed for Order ${req.params.id}: User ${req.user.id} (${req.user.role})`);
     return next(new ErrorResponse("Not authorized to view this order", 403));
   }
 

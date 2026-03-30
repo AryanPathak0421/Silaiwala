@@ -13,6 +13,7 @@ import PriceSummary from '../components/service-detail/PriceSummary';
 import StyleAddonModal from '../components/service-detail/StyleAddonModal';
 import useCheckoutStore from '../../../store/checkoutStore';
 import useMeasurementStore from '../../../store/measurementStore';
+import useLocationStore from '../../../store/locationStore';
 import api from '../../../utils/api';
 
 const FAQItem = ({ question, answer }) => {
@@ -67,8 +68,8 @@ const ServiceDetail = () => {
             try {
                 const results = await Promise.allSettled([
                     api.get(`/services/${id}`),
-                    (location.state?.tailorId || storedDetails?.tailorId) ? 
-                        api.get(`/tailors/${location.state?.tailorId || storedDetails?.tailorId}`) : 
+                    (location.state?.tailorId || storedDetails?.tailorId) ?
+                        api.get(`/tailors/${location.state?.tailorId || storedDetails?.tailorId}`) :
                         Promise.resolve(null)
                 ]);
 
@@ -78,7 +79,7 @@ const ServiceDetail = () => {
                 if (results[1].status === 'fulfilled' && results[1].value) {
                     setPreSelectedTailor(results[1].value.data.data);
                 }
-                
+
                 if (location.state?.selectedFabric) {
                     setFabricSource('platform');
                     setSelectedFabric(location.state.selectedFabric);
@@ -91,6 +92,25 @@ const ServiceDetail = () => {
         };
         fetchData();
     }, [id, location.state]);
+
+    // ── NEW: Notify Nearby Partners when "I will provide" is selected ─────────────
+    const { coordinates: customerCoords } = useLocationStore();
+    useEffect(() => {
+        if (fabricSource === 'customer' && customerCoords) {
+            const notifyNearby = async () => {
+                try {
+                    await api.post('/deliveries/ping-nearby', {
+                        lat: customerCoords.lat,
+                        lng: customerCoords.lng,
+                        radius: 8000 // 8km
+                    });
+                } catch (err) {
+                    console.error('Proximity ping failed:', err);
+                }
+            };
+            notifyNearby();
+        }
+    }, [fabricSource, customerCoords]);
 
     if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
@@ -145,23 +165,23 @@ const ServiceDetail = () => {
 
         initializeCheckout({
             service: serviceData,
-            config: { 
-                deliveryType, 
-                fabricSource, 
-                selectedFabric, 
+            config: {
+                deliveryType,
+                fabricSource,
+                selectedFabric,
                 measurements: finalMeasurements,
                 isTailorAtHome,
                 addons: selectedAddons
             },
-            pricing: { 
-                base: basePrice, 
-                delivery: deliveryPrice, 
-                fabric: fabricPrice, 
+            pricing: {
+                base: basePrice,
+                delivery: deliveryPrice,
+                fabric: fabricPrice,
                 addons: addonsPrice,
                 tailorAtHome: tailorAtHomePrice,
-                taxes, 
-                total, 
-                deliveryDays: getDeliveryDays() 
+                taxes,
+                total,
+                deliveryDays: getDeliveryDays()
             },
             tailorId: preSelectedTailor?._id || null,
             tailorName: preSelectedTailor?.shopName || preSelectedTailor?.user?.name || null
@@ -241,7 +261,7 @@ const ServiceDetail = () => {
                                     <p className="text-[10px] text-gray-400 font-bold">Pockets, Padding, etc.</p>
                                 </div>
                             </div>
-                            <button 
+                            <button
                                 onClick={() => setIsAddonModalOpen(true)}
                                 className="px-4 py-2 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-primary/20 transition-all active:scale-95"
                             >
@@ -257,7 +277,7 @@ const ServiceDetail = () => {
                                             <CheckCircle2 size={10} className="text-green-500" />
                                         </div>
                                         <span className="text-[10px] font-bold text-gray-700">{addon.name}</span>
-                                        <button 
+                                        <button
                                             onClick={() => setSelectedAddons(prev => prev.filter(a => a._id !== addon._id))}
                                             className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                         >

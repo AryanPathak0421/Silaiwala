@@ -133,9 +133,9 @@ exports.getAssignedOrders = asyncHandler(async (req, res, next) => {
   const formattedOrders = await Promise.all(orders.map(async (order) => {
     // Determine taskType based on status AND fabricPickupRequired flag
     const isFabricPhase = ["fabric-ready-for-pickup", "fabric-picked-up"].includes(order.status);
-    const needsFabricPickup = order.fabricPickupRequired && 
+    const needsFabricPickup = order.fabricPickupRequired &&
       ["pending", "accepted", "fabric-ready-for-pickup", "fabric-picked-up"].includes(order.status);
-    const taskType = (isFabricPhase || (needsFabricPickup && !["ready-for-pickup", "out-for-delivery"].includes(order.status))) 
+    const taskType = (isFabricPhase || (needsFabricPickup && !["ready-for-pickup", "out-for-delivery"].includes(order.status)))
       ? "fabric-pickup" : "order-delivery";
 
     // Lookup Tailor profile to get shopName, location, phone
@@ -173,7 +173,7 @@ exports.getAssignedOrders = asyncHandler(async (req, res, next) => {
  */
 exports.getDashboardStats = asyncHandler(async (req, res, next) => {
   const delivery = await Delivery.findOne({ user: req.user.id });
-  
+
   if (!delivery) {
     return next(new ErrorResponse("Delivery profile not found", 404));
   }
@@ -184,7 +184,7 @@ exports.getDashboardStats = asyncHandler(async (req, res, next) => {
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
-  
+
   const yesterdayStart = new Date(todayStart);
   yesterdayStart.setDate(yesterdayStart.getDate() - 1);
 
@@ -198,13 +198,13 @@ exports.getDashboardStats = asyncHandler(async (req, res, next) => {
             $group: {
               _id: null,
               totalDeliveries: { $sum: { $cond: [{ $eq: ["$status", "delivered"] }, 1, 0] } },
-              activeDeliveries: { 
-                $sum: { 
+              activeDeliveries: {
+                $sum: {
                   $cond: [
-                    { $in: ["$status", ["pending", "accepted", "fabric-ready-for-pickup", "fabric-picked-up", "ready-for-pickup", "out-for-delivery"]] }, 
+                    { $in: ["$status", ["pending", "accepted", "fabric-ready-for-pickup", "fabric-picked-up", "ready-for-pickup", "out-for-delivery"]] },
                     1, 0
-                  ] 
-                } 
+                  ]
+                }
               },
               totalEarnings: { $sum: { $cond: [{ $eq: ["$status", "delivered"] }, "$deliveryFee", 0] } }
             }
@@ -241,12 +241,11 @@ exports.getDashboardStats = asyncHandler(async (req, res, next) => {
     growth: Math.round(growth * 10) / 10 // Round to 1 decimal place
   };
 
-  // Also use the wallet balance from the Delivery profile
+  // Also include the wallet balance from the Delivery profile
   res.status(200).json({
     success: true,
     data: {
       ...dashboardStats,
-      _id: undefined,
       walletBalance: delivery.walletBalance || 0,
       rating: delivery.rating,
       isAvailable: delivery.isAvailable
@@ -263,10 +262,10 @@ exports.updateDeliveryStatus = asyncHandler(async (req, res, next) => {
   const { status, message, proof } = req.body;
   const allowedStatuses = [
     "accepted",
-    "fabric-picked-up", 
-    "fabric-delivered", 
-    "out-for-delivery", 
-    "delivered", 
+    "fabric-picked-up",
+    "fabric-delivered",
+    "out-for-delivery",
+    "delivered",
     "failed-delivery"
   ];
 
@@ -302,7 +301,7 @@ exports.updateDeliveryStatus = asyncHandler(async (req, res, next) => {
   // so a new delivery partner (or same) can pick it up for final delivery later.
   if (status === "fabric-delivered") {
     order.deliveryPartner = null;
-    
+
     // Notify Tailor that fabric has arrived
     const { sendNotification } = require("../../../utils/notification");
     await sendNotification({
@@ -317,7 +316,7 @@ exports.updateDeliveryStatus = asyncHandler(async (req, res, next) => {
   if (status === "delivered") {
     order.deliveredAt = new Date();
     if (proof) order.deliveryProof = proof;
-    
+
     // Increment stats on delivery profile
     await Delivery.findOneAndUpdate(
       { user: req.user.id },
@@ -376,13 +375,29 @@ exports.updateDeliveryStatus = asyncHandler(async (req, res, next) => {
  * @access  Private (Delivery)
  */
 exports.getAvailableOrders = asyncHandler(async (req, res, next) => {
-  const orders = await Order.find({
+  const { lat, lng } = req.query;
+  const filter = {
     status: { $in: ["ready-for-pickup", "fabric-ready-for-pickup"] },
     $or: [
       { deliveryPartner: null },
       { deliveryPartner: { $exists: false } }
     ]
-  })
+  };
+
+  // If coordinates provided, filter by 8km radius (8000 meters)
+  if (lat && lng) {
+    filter["deliveryAddress.location"] = {
+      $near: {
+        $geometry: {
+          type: "Point",
+          coordinates: [parseFloat(lng), parseFloat(lat)]
+        },
+        $maxDistance: 8000 // 8km radius for efficiency
+      }
+    };
+  }
+
+  const orders = await Order.find(filter)
     .populate("customer", "name phoneNumber profileImage")
     .sort("-updatedAt")
     .lean();
@@ -440,7 +455,7 @@ exports.acceptOrder = asyncHandler(async (req, res, next) => {
 
   // Assign partner
   order.deliveryPartner = req.user.id;
-  
+
   const partnerName = req.user.name || "A delivery partner";
   const actionType = order.status === "fabric-ready-for-pickup" ? "pickup your fabric" : "deliver your order";
 
@@ -508,5 +523,55 @@ exports.submitDocuments = asyncHandler(async (req, res, next) => {
     success: true,
     message: "Documents submitted for verification",
     data: delivery.documents
+  });
+});
+
+/**
+ * @desc    Ping nearby delivery partners within a radius
+ * @route   POST /api/v1/deliveries/ping-nearby
+ * @access  Private (Customer)
+ */
+exports.notifyNearbyPartners = asyncHandler(async (req, res, next) => {
+  const { lat, lng, radius = 8000 } = req.body; // Default 8km
+
+  if (!lat || !lng) {
+    return next(new ErrorResponse("Latitude and longitude are required", 400));
+  }
+
+  // Find active and available delivery partners within radius
+  const nearbyPartners = await Delivery.find({
+    isAvailable: true,
+    status: "active",
+    currentLocation: {
+      $near: {
+        $geometry: {
+          type: "Point",
+          coordinates: [parseFloat(lng), parseFloat(lat)]
+        },
+        $maxDistance: radius
+      }
+    }
+  }).populate("user", "name phoneNumber");
+
+  // Push notifications/socket event to each nearby partner
+  const { getIO } = require("../../../config/socket");
+  const io = getIO();
+
+  if (io && nearbyPartners.length > 0) {
+    nearbyPartners.forEach(partner => {
+      // Emit to specific partner's room
+      io.to(`user_${partner.user._id}`).emit("new_proximity_alert", {
+        type: "FABRIC_PICKUP_REQUEST",
+        title: "Nearby Pickup Request!",
+        message: "A customer within 8km needs a fabric pickup. Open the app to view details.",
+        customerCoordinates: { lat, lng }
+      });
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    message: `Notified ${nearbyPartners.length} partners within ${radius / 1000}km`,
+    count: nearbyPartners.length
   });
 });

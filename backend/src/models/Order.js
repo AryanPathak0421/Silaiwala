@@ -48,26 +48,26 @@ const orderSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: [
-        "pending", 
+        "pending",
         "fabric-ready-for-pickup",
         "fabric-picked-up",
         "fabric-delivered",
-        "accepted", 
-        "in-progress", 
+        "accepted",
+        "in-progress",
         "cutting",
         "stitching",
-        "completed", 
-        "ready-for-pickup", 
-        "out-for-delivery", 
-        "delivered", 
-        "failed-delivery", 
+        "completed",
+        "ready-for-pickup",
+        "out-for-delivery",
+        "delivered",
+        "failed-delivery",
         "cancelled"
       ],
       default: "pending",
     },
     fabricPickupRequired: {
-        type: Boolean,
-        default: false
+      type: Boolean,
+      default: false
     },
     paymentStatus: {
       type: String,
@@ -81,6 +81,15 @@ const orderSchema = new mongoose.Schema(
       city: String,
       state: String,
       zipCode: String,
+      location: {
+        type: {
+          type: String,
+          enum: ["Point"],
+        },
+        coordinates: {
+          type: [Number], // [longitude, latitude]
+        },
+      },
     },
     trackingHistory: [
       {
@@ -120,6 +129,7 @@ const orderSchema = new mongoose.Schema(
 orderSchema.index({ customer: 1, status: 1 });
 orderSchema.index({ tailor: 1, status: 1 });
 orderSchema.index({ deliveryPartner: 1, status: 1 });
+orderSchema.index({ "deliveryAddress.location": "2dsphere" });
 
 const Order = mongoose.model("Order", orderSchema);
 

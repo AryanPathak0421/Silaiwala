@@ -10,11 +10,16 @@ const {
   acceptOrder,
   updateDeliveryStatus,
   submitDocuments,
+  notifyNearbyPartners,
 } = require("../controllers/delivery.controller");
 const { protect, authorize } = require("../../../middlewares/auth.middleware");
 
-// All routes are protected and for delivery partners only
 router.use(protect);
+
+// Routes accessible by customers and tailors
+router.post("/ping-nearby", authorize("customer", "tailor", "admin"), notifyNearbyPartners);
+
+// Routes restricted to delivery partners only
 router.use(authorize("delivery"));
 
 router.get("/me", getMyProfile);

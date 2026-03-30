@@ -34,8 +34,11 @@ const deliveryService = {
         return response.data;
     },
 
-    getAvailableOrders: async () => {
-        const response = await api.get('/deliveries/available-orders');
+    getAvailableOrders: async (coords = null) => {
+        const url = (coords && coords.lat && coords.lng)
+            ? `/deliveries/available-orders?lat=${coords.lat}&lng=${coords.lng}`
+            : '/deliveries/available-orders';
+        const response = await api.get(url);
         return response.data;
     },
 

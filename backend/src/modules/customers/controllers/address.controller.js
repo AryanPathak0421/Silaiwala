@@ -9,8 +9,8 @@ const ErrorResponse = require("../../../utils/errorResponse");
  */
 exports.getAddresses = asyncHandler(async (req, res, next) => {
   let customer = await Customer.findOne({ user: req.user.id });
-  
-  // Auto-create profile if role is customer/admin but profile is missing
+
+  // Auto-create profile if missing
   if (!customer) {
     customer = await Customer.create({ user: req.user.id });
   }
@@ -38,8 +38,8 @@ exports.getAddresses = asyncHandler(async (req, res, next) => {
  */
 exports.addAddress = asyncHandler(async (req, res, next) => {
   let customer = await Customer.findOne({ user: req.user.id });
-  
-  // Auto-create profile if role is customer/admin but profile is missing
+
+  // Auto-create profile if profile is missing
   if (!customer) {
     customer = await Customer.create({ user: req.user.id });
   }
@@ -55,7 +55,17 @@ exports.addAddress = asyncHandler(async (req, res, next) => {
     req.body.isDefault = true; // First address is always default
   }
 
-  customer.addresses.push(req.body);
+  const addressData = { ...req.body };
+
+  // Format coordinates into GeoJSON point if provided
+  if (req.body.coordinates && !isNaN(parseFloat(req.body.coordinates.lat)) && !isNaN(parseFloat(req.body.coordinates.lng))) {
+    addressData.location = {
+      type: "Point",
+      coordinates: [parseFloat(req.body.coordinates.lng), parseFloat(req.body.coordinates.lat)]
+    };
+  }
+
+  customer.addresses.push(addressData);
   await customer.save();
 
   res.status(201).json({

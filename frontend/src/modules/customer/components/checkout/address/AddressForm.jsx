@@ -25,8 +25,14 @@ const AddressForm = ({ onCancel, onSuccess }) => {
     const [isLocating, setIsLocating] = useState(false);
 
     const [form, setForm] = useState({
-        receiverName: '', phone: '', zipCode: '',
-        street: '', city: '', state: '', type: 'Home'
+        receiverName: '',
+        phone: '',
+        zipCode: '',
+        street: '',
+        city: '',
+        state: '',
+        type: 'Home',
+        coordinates: null // { lat, lng }
     });
 
     const [errors, setErrors] = useState({});
@@ -35,20 +41,42 @@ const AddressForm = ({ onCancel, onSuccess }) => {
         setIsLocating(true);
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(async (position) => {
+                const { latitude, longitude } = position.coords;
+                const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
                 try {
-                    const { latitude, longitude } = position.coords;
-                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
+                    // Use Google Maps Geocoding API for better results in India
+                    const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`);
                     const data = await res.json();
-                    
-                    if (data && data.address) {
-                        const addr = data.address;
+
+                    if (data.status === 'OK' && data.results.length > 0) {
+                        const addrComponents = data.results[0].address_components;
+
+                        const getComponent = (types) =>
+                            addrComponents.find(c => types.some(t => c.types.includes(t)))?.long_name || '';
+
                         setForm(prev => ({
                             ...prev,
-                            street: data.display_name || '',
-                            city: addr.city || addr.town || addr.village || addr.suburb || '',
-                            state: addr.state || '',
-                            zipCode: addr.postcode || ''
+                            coordinates: { lat: latitude, lng: longitude },
+                            street: data.results[0].formatted_address || '',
+                            city: getComponent(['locality', 'administrative_area_level_2']),
+                            state: getComponent(['administrative_area_level_1']),
+                            zipCode: getComponent(['postal_code'])
                         }));
+                    } else {
+                        // Fallback to Nominatim if Google fails
+                        const resOsm = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
+                        const dataOsm = await resOsm.json();
+                        if (dataOsm && dataOsm.address) {
+                            setForm(prev => ({
+                                ...prev,
+                                coordinates: { lat: latitude, lng: longitude },
+                                street: dataOsm.display_name || '',
+                                city: dataOsm.address.city || dataOsm.address.town || '',
+                                state: dataOsm.address.state || '',
+                                zipCode: dataOsm.address.postcode || ''
+                            }));
+                        }
                     }
                 } catch (error) {
                     console.error("Geocoding failed:", error);
@@ -91,8 +119,8 @@ const AddressForm = ({ onCancel, onSuccess }) => {
                         New Address Details
                     </h3>
                 </div>
-                
-                <button 
+
+                <button
                     type="button"
                     onClick={handleAutoLocation}
                     disabled={isLocating}

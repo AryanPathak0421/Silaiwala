@@ -10,6 +10,7 @@ import ServiceReviewCard from '../components/checkout/summary/ServiceReviewCard'
 import { cn } from '../../../utils/cn';
 
 import useOrderStore from '../../../store/orderStore';
+import useLocationStore from '../../../store/locationStore';
 
 const CheckoutSummary = () => {
     const navigate = useNavigate();
@@ -33,7 +34,7 @@ const CheckoutSummary = () => {
             navigate('/checkout/address');
             return;
         }
-        
+
         console.log('Checkout State:', { isServiceCheckout, isCartCheckout, serviceDetails, configuration, cartItems });
 
         if (!isServiceCheckout && !isCartCheckout) {
@@ -53,6 +54,8 @@ const CheckoutSummary = () => {
     // Recalculate total for cart (including delivery/platform fee if needed)
     // For simplicity, reusing logic
     const finalTotal = Math.round(isServiceCheckout ? currentPricing.total + 10 : currentPricing.total + currentPricing.delivery);
+
+    const { coordinates } = useLocationStore();
 
     const handlePayment = async () => {
         setIsProcessing(true);
@@ -78,11 +81,12 @@ const CheckoutSummary = () => {
                         street: selectedAddress.street,
                         city: selectedAddress.city,
                         state: selectedAddress.state || '',
-                        zipCode: selectedAddress.zipCode
+                        zipCode: selectedAddress.zipCode,
+                        coordinates: selectedAddress.coordinates || (selectedAddress.location?.coordinates ? { lat: selectedAddress.location.coordinates[1], lng: selectedAddress.location.coordinates[0] } : coordinates)
                     }
                 };
             } else {
-                const firstItemTailor = cartItems[0]?.tailor; 
+                const firstItemTailor = cartItems[0]?.tailor;
                 payload = {
                     tailorId: firstItemTailor,
                     items: cartItems.map(item => ({
@@ -95,7 +99,8 @@ const CheckoutSummary = () => {
                         street: selectedAddress.street,
                         city: selectedAddress.city,
                         state: selectedAddress.state || '',
-                        zipCode: selectedAddress.zipCode
+                        zipCode: selectedAddress.zipCode,
+                        coordinates: selectedAddress.coordinates || (selectedAddress.location?.coordinates ? { lat: selectedAddress.location.coordinates[1], lng: selectedAddress.location.coordinates[0] } : coordinates)
                     }
                 };
             }
@@ -131,9 +136,9 @@ const CheckoutSummary = () => {
                         if (verifyRes.data.success) {
                             if (isServiceCheckout) clearCheckout();
                             else clearCart();
-                            
-                            navigate('/checkout/success', { 
-                                state: { orderId: order._id, orderNumber: order.orderId } 
+
+                            navigate('/checkout/success', {
+                                state: { orderId: order._id, orderNumber: order.orderId }
                             });
                         }
                     } catch (err) {
@@ -251,7 +256,7 @@ const CheckoutSummary = () => {
                             </div>
                             <Lock size={14} className="text-[#FF5C8A]" />
                         </div>
-                        
+
                         <button
                             onClick={handlePayment}
                             disabled={isProcessing}

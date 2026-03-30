@@ -27,8 +27,81 @@ import { SOCKET_URL } from '../../../../config/constants';
 import useAuthStore from '../../../../store/authStore';
 import deliveryService from '../../services/deliveryService';
 import { io } from 'socket.io-client';
+import { GoogleMap, useJsApiLoader, MarkerF, DirectionsRenderer } from '@react-google-maps/api';
 import { Power } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+
+const MAP_CONTAINER_STYLE = {
+    width: '100%',
+    height: '100%'
+};
+
+const MAP_OPTIONS = {
+    disableDefaultUI: true,
+    zoomControl: true,
+    styles: [
+        { "featureType": "all", "elementType": "labels.text.fill", "stylers": [{ "color": "#000000" }] },
+        { "featureType": "administrative", "elementType": "geometry.fill", "stylers": [{ "color": "#fefefe" }, { "lightness": 20 }] },
+        { "featureType": "landscape", "elementType": "geometry", "stylers": [{ "color": "#f5f5f5" }, { "lightness": 20 }] },
+        { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#e9e9e9" }, { "lightness": 17 }] }
+    ]
+};
+
+const LIBRARIES = [];
+
+const LiveMap = ({ origin, destination }) => {
+    const { isLoaded, loadError } = useJsApiLoader({
+        id: 'google-map-script',
+        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+        libraries: LIBRARIES
+    });
+
+    const [directions, setDirections] = useState(null);
+
+    useEffect(() => {
+        if (isLoaded && origin && destination) {
+            const service = new window.google.maps.DirectionsService();
+            service.route(
+                {
+                    origin,
+                    destination,
+                    travelMode: window.google.maps.TravelMode.DRIVING
+                },
+                (result, status) => {
+                    if (status === 'OK') {
+                        setDirections(result);
+                    }
+                }
+            );
+        }
+    }, [isLoaded, origin, destination]);
+
+    if (loadError) return (
+        <div className="w-full h-full bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
+            <AlertCircle className="w-8 h-8 text-red-400 mb-2" />
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">MAP FAILED TO LOAD</p>
+            <p className="text-[10px] text-slate-400 mt-1">Please check your internet or VPN/DNS settings.</p>
+        </div>
+    );
+
+    if (!isLoaded) return <div className="w-full h-full animate-pulse bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-400">LOADING MAP...</div>;
+
+    return (
+        <GoogleMap
+            mapContainerStyle={MAP_CONTAINER_STYLE}
+            zoom={14}
+            center={origin || destination}
+            options={MAP_OPTIONS}
+        >
+            {directions && <DirectionsRenderer directions={directions} options={{
+                polylineOptions: { strokeColor: '#FF5C8A', strokeWeight: 5, strokeOpacity: 0.8 },
+                markerOptions: { visible: false }
+            }} />}
+            {origin && <MarkerF position={origin} label="Partner" />}
+            {destination && <MarkerF position={destination} label="Target" />}
+        </GoogleMap>
+    );
+};
 
 const DeliveryDashboard = () => {
     const navigate = useNavigate();
@@ -38,6 +111,7 @@ const DeliveryDashboard = () => {
     const [selectedAvailableTask, setSelectedAvailableTask] = useState(null);
     const [isAccepting, setIsAccepting] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [currentCoords, setCurrentCoords] = useState(null);
     const [dashboardData, setDashboardData] = useState({
         profile: null,
         activeOrders: [],
@@ -49,12 +123,12 @@ const DeliveryDashboard = () => {
         }
     });
 
-    const fetchDashboardData = async () => {
+    const fetchDashboardData = async (coords = null) => {
         try {
             const [statsRes, ordersRes, availableRes] = await Promise.all([
                 deliveryService.getStats(),
                 deliveryService.getAssignedOrders(),
-                deliveryService.getAvailableOrders()
+                deliveryService.getAvailableOrders(coords)
             ]);
 
             if (statsRes.success && ordersRes.success && availableRes.success) {
@@ -87,7 +161,7 @@ const DeliveryDashboard = () => {
         fetchDashboardData();
 
         const socket = io(SOCKET_URL);
-        
+
         // Join delivery fleet and personal room
         socket.emit('join', 'delivery_partners');
         if (user?._id) {
@@ -104,10 +178,28 @@ const DeliveryDashboard = () => {
             fetchDashboardData();
         });
 
+        // --- Real-time Location Updates ---
+        let watchId = null;
+        if ("geolocation" in navigator && isOnline) {
+            watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    // Send location update to backend
+                    const coords = { lat: latitude, lng: longitude };
+                    setCurrentCoords(coords);
+                    deliveryService.updateStatus(coords).catch(console.error);
+                    fetchDashboardData(coords);
+                },
+                (error) => console.warn("Location watch failed:", error),
+                { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+            );
+        }
+
         return () => {
             socket.disconnect();
+            if (watchId) navigator.geolocation.clearWatch(watchId);
         };
-    }, [user?._id]);
+    }, [user?._id, isOnline]);
 
     const handleAcceptTask = async (orderId) => {
         setIsAccepting(true);
@@ -134,7 +226,7 @@ const DeliveryDashboard = () => {
         // Logic to determine destination address
         const isFabricPickup = task.taskType === 'fabric-pickup';
         const isPickupStage = ['fabric-ready-for-pickup', 'ready-for-pickup'].includes(task.status);
-        
+
         let destination;
         if (isPickupStage) {
             destination = isFabricPickup ? task.deliveryAddress : task.tailor?.address;
@@ -147,10 +239,10 @@ const DeliveryDashboard = () => {
             return;
         }
 
-        const addressStr = typeof destination === 'string' 
-            ? destination 
+        const addressStr = typeof destination === 'string'
+            ? destination
             : `${destination.street || ''}, ${destination.city || ''}, ${destination.state || ''} ${destination.zipCode || ''}`;
-        
+
         const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(addressStr)}`;
         window.open(mapsUrl, '_blank');
     };
@@ -165,7 +257,7 @@ const DeliveryDashboard = () => {
     }
 
     const { stats: dashboardStats, activeOrders, availableOrders, profile } = dashboardData;
-    
+
     const stats = [
         { label: 'Active Tasks', value: dashboardStats.activeTasks.toString().padStart(2, '0'), icon: Truck, color: 'bg-primary', trend: 'In Progress' },
         { label: 'Wallet Balance', value: `₹${dashboardStats.earnings}`, icon: IndianRupee, color: 'bg-primary', trend: 'Earnings' },
@@ -199,7 +291,7 @@ const DeliveryDashboard = () => {
 
         if (isPickupStage) {
             // Where to pick up
-            return isFabricPickup 
+            return isFabricPickup
                 ? formatAddress(task.deliveryAddress) // Customer house
                 : (task.tailor?.shopName || 'Tailor Workshop');
         } else {
@@ -220,9 +312,9 @@ const DeliveryDashboard = () => {
                 <div className="flex items-center gap-3">
                     <div className="relative">
                         <div className="w-14 h-14 rounded-full border-2 border-white shadow-md overflow-hidden bg-pink-50">
-                            <img 
-                                src={user?.profileImage || "https://api.dicebear.com/7.x/avataaars/svg?seed=Chirag"} 
-                                alt="Profile" 
+                            <img
+                                src={user?.profileImage || "https://api.dicebear.com/7.x/avataaars/svg?seed=Chirag"}
+                                alt="Profile"
                                 className="w-full h-full object-cover"
                             />
                         </div>
@@ -247,13 +339,13 @@ const DeliveryDashboard = () => {
             {/* Premium Status Toggle */}
             <div className="bg-white/50 backdrop-blur-md p-1.5 rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden h-[72px]">
                 <div className="flex items-center h-full relative z-10">
-                    <button 
+                    <button
                         onClick={() => !isOnline && navigate('/delivery/profile')}
                         className={`flex-1 h-full rounded-[1.8rem] flex items-center justify-center gap-2 transition-all duration-500 ${isOnline ? 'text-primary-dark font-black' : 'text-slate-400 font-bold'}`}
                     >
                         <span className="text-[11px] uppercase tracking-[0.2em] ml-2">Online</span>
                     </button>
-                    <button 
+                    <button
                         onClick={() => isOnline && navigate('/delivery/profile')}
                         className={`flex-1 h-full rounded-[1.8rem] flex items-center justify-center gap-2 transition-all duration-500 ${!isOnline ? 'text-white font-black' : 'text-slate-400 font-bold'}`}
                     >
@@ -261,13 +353,13 @@ const DeliveryDashboard = () => {
                         {!isOnline && <CheckCircle2 size={18} className="text-white" />}
                     </button>
                 </div>
-                
+
                 {/* Sliding Background Indicator */}
-                <motion.div 
+                <motion.div
                     animate={{ x: isOnline ? 0 : '100%' }}
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     className="absolute inset-y-1.5 left-1.5 w-[calc(50%-6px)] rounded-[1.8rem] z-0 shadow-lg"
-                    style={{ 
+                    style={{
                         background: isOnline ? 'rgba(255, 92, 138, 0.1)' : '#00D161',
                         border: isOnline ? '1px solid rgba(255, 92, 138, 0.2)' : 'none'
                     }}
@@ -277,7 +369,7 @@ const DeliveryDashboard = () => {
             {/* Today's Stats Hero Card */}
             <div className="bg-white rounded-[2.5rem] p-7 shadow-2xl shadow-slate-200/50 border border-slate-50 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-bl-full -z-0 opacity-50"></div>
-                
+
                 <div className="relative z-10">
                     <div className="flex justify-between items-center mb-4">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Today's Earnings</p>
@@ -290,10 +382,10 @@ const DeliveryDashboard = () => {
                         </h3>
                         {dashboardStats.growth !== 0 && (
                             <div className={`flex items-center gap-1 ${dashboardStats.growth >= 0 ? 'bg-green-50 text-green-600 border-green-100' : 'bg-red-50 text-red-600 border-red-100'} px-1.5 py-0.5 rounded-full mb-1 border scale-90`}>
-                                <TrendingUp 
-                                    size={11} 
-                                    strokeWidth={3} 
-                                    className={dashboardStats.growth < 0 ? 'rotate-180' : ''} 
+                                <TrendingUp
+                                    size={11}
+                                    strokeWidth={3}
+                                    className={dashboardStats.growth < 0 ? 'rotate-180' : ''}
                                 />
                                 <span className="text-[9px] font-black">
                                     {dashboardStats.growth >= 0 ? '+' : ''}{dashboardStats.growth}%
@@ -304,44 +396,44 @@ const DeliveryDashboard = () => {
 
                     <div className="grid grid-cols-3 gap-2 pt-4 border-t border-slate-50">
                         <div className="text-center space-y-2">
-                             <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
+                            <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
                                 <Package size={18} strokeWidth={2.5} />
-                             </div>
-                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Today</p>
-                             <p className="text-sm font-black text-slate-900">{dashboardStats.todayCount || 0}</p>
+                            </div>
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Today</p>
+                            <p className="text-sm font-black text-slate-900">{dashboardStats.todayCount || 0}</p>
                         </div>
                         <div className="text-center space-y-2 relative">
-                             <div className="absolute inset-y-0 left-0 w-px bg-slate-100"></div>
-                             <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
+                            <div className="absolute inset-y-0 left-0 w-px bg-slate-100"></div>
+                            <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
                                 <TrendingUp size={18} strokeWidth={2.5} />
-                             </div>
-                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Wallet</p>
-                             <p className="text-sm font-black text-slate-900">₹{dashboardStats.earnings || 0}</p>
-                             <div className="absolute inset-y-0 right-0 w-px bg-slate-100"></div>
+                            </div>
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Wallet</p>
+                            <p className="text-sm font-black text-slate-900">₹{dashboardStats.earnings || 0}</p>
+                            <div className="absolute inset-y-0 right-0 w-px bg-slate-100"></div>
                         </div>
                         <div className="text-center space-y-2">
-                             <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
+                            <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
                                 <Package size={18} strokeWidth={2.5} />
-                             </div>
-                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total</p>
-                             <p className="text-sm font-black text-slate-900">{profile?.totalDeliveries || 0}</p>
+                            </div>
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total</p>
+                            <p className="text-sm font-black text-slate-900">{profile?.totalDeliveries || 0}</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Operational Map Background Indicator */}
-            <div 
+            <div
                 onClick={() => currentTask ? handleOpenMap(currentTask) : toast.error("No active task to navigate")}
                 className="bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200 h-60 relative overflow-hidden flex items-center justify-center group cursor-pointer hover:border-pink-200 transition-all"
             >
-                 <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#FF5C8A 0.5px, transparent 0.5px)', backgroundSize: '24px 24px' }}></div>
-                 <div className="relative z-10 flex flex-col items-center gap-3">
+                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#FF5C8A 0.5px, transparent 0.5px)', backgroundSize: '24px 24px' }}></div>
+                <div className="relative z-10 flex flex-col items-center gap-3">
                     <div className="w-16 h-16 bg-white rounded-[2rem] shadow-xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500">
                         <MapPin size={32} />
                     </div>
                     <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">Operational Map</p>
-                 </div>
+                </div>
             </div>
 
             {/* Active Task Hero Card */}
@@ -370,9 +462,9 @@ const DeliveryDashboard = () => {
                                             <div className="w-1.5 h-1.5 rounded-full bg-primary/40"></div>
                                         </div>
                                         <div className="w-0.5 h-14 bg-slate-100 border-dashed border-l-2 border-slate-200 -my-0.5"></div>
-                                        <motion.div 
-                                            animate={{ scale: [1, 1.2, 1] }} 
-                                            transition={{ repeat: Infinity, duration: 2 }} 
+                                        <motion.div
+                                            animate={{ scale: [1, 1.2, 1] }}
+                                            transition={{ repeat: Infinity, duration: 2 }}
                                             className="w-3.5 h-3.5 rounded-full bg-primary z-10 border-2 border-white shadow-md flex items-center justify-center"
                                         >
                                             <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
@@ -447,7 +539,7 @@ const DeliveryDashboard = () => {
                                         <span className="text-[11px] font-bold tracking-wider text-slate-400 capitalize">Arriving Soon</span>
                                     </div>
                                     <button
-                                        onClick={() => handleOpenMap(currentTask)}
+                                        onClick={() => setShowMapModal(true)}
                                         className="bg-primary text-white px-8 py-3.5 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-pink-900/10"
                                     >
                                         Open Map
@@ -465,7 +557,7 @@ const DeliveryDashboard = () => {
                     {availableOrders.length > 0 ? (
                         <div className="space-y-4">
                             <p className="text-slate-600 font-bold text-sm">You have no active tasks, but there are <span className="text-primary">{availableOrders.length} live orders</span> waiting!</p>
-                            <button 
+                            <button
                                 onClick={() => navigate('/delivery/tasks')}
                                 className="px-6 py-2 bg-primary text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg shadow-pink-900/20"
                             >
@@ -486,14 +578,14 @@ const DeliveryDashboard = () => {
                 <div className="space-y-3">
                     <div className="flex items-center justify-between px-1">
                         <div className="flex items-center gap-2">
-                             <div className="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></div>
-                             <h2 className="text-lg font-black text-slate-900 tracking-tight capitalize">Live <span className="text-primary">Available</span> Tasks</h2>
+                            <div className="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></div>
+                            <h2 className="text-lg font-black text-slate-900 tracking-tight capitalize">Live <span className="text-primary">Available</span> Tasks</h2>
                         </div>
                         <button onClick={() => navigate('/delivery/tasks')} className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">See All</button>
                     </div>
                     <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide px-1 -mx-1">
                         {availableOrders.slice(0, 5).map((order) => (
-                            <motion.div 
+                            <motion.div
                                 key={order._id}
                                 whileTap={{ scale: 0.98 }}
                                 onClick={() => setSelectedAvailableTask(order)}
@@ -520,6 +612,7 @@ const DeliveryDashboard = () => {
                     </div>
                 </div>
             )}
+
             {/* Available Task Detail Modal */}
             <AnimatePresence>
                 {selectedAvailableTask && (
@@ -560,7 +653,7 @@ const DeliveryDashboard = () => {
                                 {/* Route Info */}
                                 <div className="relative pl-6 space-y-6">
                                     <div className="absolute left-[7px] top-[10px] bottom-[10px] w-0.5 border-l-2 border-dashed border-slate-100"></div>
-                                    
+
                                     <div className="relative">
                                         <div className="absolute -left-[23px] top-1 w-4 h-4 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center">
                                             <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
@@ -569,13 +662,13 @@ const DeliveryDashboard = () => {
                                             <div>
                                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Pickup From ({selectedAvailableTask.taskType === 'fabric-pickup' ? 'Customer' : 'Artisan'})</p>
                                                 <p className="text-sm font-bold text-slate-800">
-                                                    {selectedAvailableTask.taskType === 'fabric-pickup' 
-                                                        ? selectedAvailableTask.customer?.name 
+                                                    {selectedAvailableTask.taskType === 'fabric-pickup'
+                                                        ? selectedAvailableTask.customer?.name
                                                         : selectedAvailableTask.tailor?.shopName}
                                                 </p>
                                                 <p className="text-xs text-slate-500 mt-0.5 italic">
-                                                    {selectedAvailableTask.taskType === 'fabric-pickup' 
-                                                        ? formatAddress(selectedAvailableTask.deliveryAddress) 
+                                                    {selectedAvailableTask.taskType === 'fabric-pickup'
+                                                        ? formatAddress(selectedAvailableTask.deliveryAddress)
                                                         : formatAddress(selectedAvailableTask.tailor?.address)}
                                                 </p>
                                             </div>
@@ -598,13 +691,13 @@ const DeliveryDashboard = () => {
                                             <div>
                                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Drop To ({selectedAvailableTask.taskType === 'fabric-pickup' ? 'Artisan' : 'Customer'})</p>
                                                 <p className="text-sm font-bold text-slate-800">
-                                                    {selectedAvailableTask.taskType === 'fabric-pickup' 
-                                                        ? selectedAvailableTask.tailor?.shopName 
+                                                    {selectedAvailableTask.taskType === 'fabric-pickup'
+                                                        ? selectedAvailableTask.tailor?.shopName
                                                         : selectedAvailableTask.customer?.name}
                                                 </p>
                                                 <p className="text-xs text-slate-500 mt-0.5 italic">
-                                                    {selectedAvailableTask.taskType === 'fabric-pickup' 
-                                                        ? formatAddress(selectedAvailableTask.tailor?.address) 
+                                                    {selectedAvailableTask.taskType === 'fabric-pickup'
+                                                        ? formatAddress(selectedAvailableTask.tailor?.address)
                                                         : formatAddress(selectedAvailableTask.deliveryAddress)}
                                                 </p>
                                             </div>
@@ -684,29 +777,47 @@ const DeliveryDashboard = () => {
                             <h2 className="text-sm font-black uppercase tracking-widest text-slate-900">Task Route</h2>
                             <div className="w-10 h-10" />
                         </div>
-                        
+
                         <div className="flex-1 bg-slate-50 relative overflow-hidden">
-                            {/* Detailed Map View - Currently Placeholder */}
-                            <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-slate-50">
-                                <div className="w-20 h-20 bg-white rounded-[2rem] shadow-xl flex items-center justify-center text-primary mb-4">
-                                    <Navigation size={40} className="animate-bounce" />
+                            {/* Detailed Map View - Fully Functional */}
+                            <div className="absolute inset-0">
+                                {(() => {
+                                    const isFabric = currentTask?.taskType === 'fabric-pickup';
+                                    const isPickup = ['fabric-ready-for-pickup', 'ready-for-pickup'].includes(currentTask?.status);
+
+                                    const destLoc = isPickup
+                                        ? (isFabric ? currentTask?.deliveryAddress?.location?.coordinates : currentTask?.tailor?.location?.coordinates)
+                                        : (isFabric ? currentTask?.tailor?.location?.coordinates : currentTask?.deliveryAddress?.location?.coordinates);
+
+                                    const destinationCoord = (destLoc && destLoc.length === 2)
+                                        ? { lat: destLoc[1], lng: destLoc[0] }
+                                        : null;
+
+                                    return (
+                                        <LiveMap
+                                            origin={currentCoords}
+                                            destination={destinationCoord}
+                                        />
+                                    );
+                                })()}
+                            </div>
+
+                            {/* Floating Map Controls */}
+                            <div className="absolute bottom-10 left-6 right-6 z-20 space-y-4">
+                                <div className="bg-white/90 backdrop-blur shadow-2xl rounded-2xl p-4 border border-white/50 animate-in slide-in-from-bottom-10">
+                                    <div className="flex justify-between items-center">
+                                        <div>
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Target Address</p>
+                                            <p className="text-xs font-bold text-slate-800 line-clamp-1">{getTaskAddress(currentTask)}</p>
+                                        </div>
+                                        <button
+                                            onClick={() => handleOpenMap(currentTask)}
+                                            className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center hover:bg-primary/20 transition-all"
+                                        >
+                                            <ArrowUpRight size={20} />
+                                        </button>
+                                    </div>
                                 </div>
-                                <h3 className="text-xl font-black text-slate-900 mb-2">Live Navigation</h3>
-                                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest leading-relaxed mb-8">
-                                    Calculating fastest route to <br/>
-                                    {getTaskAddress(currentTask)}
-                                </p>
-                                
-                                <button 
-                                    onClick={() => {
-                                        handleOpenMap(currentTask);
-                                        setShowMapModal(false);
-                                    }}
-                                    className="bg-slate-900 text-white px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl flex items-center gap-3"
-                                >
-                                    Launch External Map
-                                    <ArrowUpRight size={16} />
-                                </button>
                             </div>
                         </div>
                     </motion.div>

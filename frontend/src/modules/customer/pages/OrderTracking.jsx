@@ -4,13 +4,14 @@ import {
     ArrowLeft, MapPin, Phone, MessageSquare,
     AlertCircle, HelpCircle, Package, Truck,
     Calendar, ExternalLink, ChevronRight, ShieldCheck,
-    Loader2, CheckCircle2
+    Loader2, CheckCircle2, Star
 } from 'lucide-react';
 import api from '../../../utils/api';
 import TrackingTimeline from '../components/orders/TrackingTimeline';
 import { io } from 'socket.io-client';
 import { SOCKET_URL } from '../../../config/constants';
 import ReviewModal from '../components/orders/ReviewModal';
+import { motion } from 'framer-motion';
 
 const OrderTracking = () => {
     const { id } = useParams();
@@ -74,8 +75,8 @@ const OrderTracking = () => {
             <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 text-center">
                 <AlertCircle size={48} className="text-red-400 mb-4" />
                 <h2 className="text-lg font-bold text-gray-900">{error || 'Order Not Found'}</h2>
-                <button 
-                    onClick={() => navigate('/orders')} 
+                <button
+                    onClick={() => navigate('/orders')}
                     className="mt-6 px-8 py-3 bg-primary text-white rounded-full font-bold text-sm shadow-lg active:scale-95 transition-all"
                 >
                     Back to My Orders
@@ -111,7 +112,7 @@ const OrderTracking = () => {
 
         // Check if stage is completed in history or current
         if (stageKey === 'pending') return { completed: true, time: new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
-        
+
         if (stageKey === 'accepted') {
             const entry = history.find(h => h.status === 'accepted' || h.status.includes('ready-for-pickup'));
             const isCompleted = !!entry || ['fabric-ready-for-pickup', 'fabric-picked-up', 'fabric-delivered', 'cutting', 'stitching', 'completed', 'ready-for-pickup', 'out-for-delivery', 'delivered'].includes(status);
@@ -205,7 +206,7 @@ const OrderTracking = () => {
                                 {timelineStates[actualCurrentIndex]?.label}
                             </h2>
                             <p className="text-[10px] text-white/70 font-medium">
-                                {order.trackingHistory[order.trackingHistory.length-1]?.message || 'Your order is progressing smoothly.'}
+                                {order.trackingHistory[order.trackingHistory.length - 1]?.message || 'Your order is progressing smoothly.'}
                             </p>
                         </div>
                         <div className="absolute top-0 right-0 p-4 opacity-10">
@@ -213,9 +214,9 @@ const OrderTracking = () => {
                         </div>
                     </div>
 
-                    <TrackingTimeline 
-                        states={timelineStates} 
-                        currentIndex={actualCurrentIndex} 
+                    <TrackingTimeline
+                        states={timelineStates}
+                        currentIndex={actualCurrentIndex}
                     />
                 </div>
 
@@ -314,7 +315,7 @@ const OrderTracking = () => {
                                 </div>
                             </div>
                             {order.deliveryPartner.phoneNumber && (
-                                <a 
+                                <a
                                     href={`tel:${order.deliveryPartner.phoneNumber}`}
                                     className="w-10 h-10 rounded-full bg-pink-50 text-primary flex items-center justify-center border border-pink-100 shadow-sm active:scale-90 transition-all"
                                 >
@@ -338,7 +339,7 @@ const OrderTracking = () => {
                         <div className="relative z-10">
                             <h3 className="text-xl font-black italic tracking-tighter mb-2 uppercase">How was your Experience?</h3>
                             <p className="text-xs text-white/70 font-medium mb-8 leading-relaxed max-w-[200px] mx-auto">Help us improve the community by sharing your feedback for the Artisan & Rider.</p>
-                            <button 
+                            <button
                                 onClick={() => setIsReviewModalOpen(true)}
                                 className="px-10 py-4 bg-white text-primary rounded-full font-black text-xs uppercase shadow-xl hover:bg-gray-50 active:scale-95 transition-all outline-none"
                             >

@@ -1,19 +1,19 @@
 const express = require("express");
 const router = express.Router();
-const { 
-  getProfile, 
-  updateProfile, 
+const {
+  getProfile,
+  updateProfile,
   getTailors,
   getWishlist,
   wishlistToggle,
   applyPromoCode,
   getReferralStats
 } = require("../controllers/customer.controller");
-const { 
-  getAddresses, 
-  addAddress, 
-  updateAddress, 
-  deleteAddress 
+const {
+  getAddresses,
+  addAddress,
+  updateAddress,
+  deleteAddress
 } = require("../controllers/address.controller");
 const {
   getCart,

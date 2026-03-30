@@ -37,7 +37,7 @@ exports.register = asyncHandler(async (req, res, next) => {
 
   // 3. Create User - Tailors and Delivery partners are inactive until approved
   const isAutoActive = !["tailor", "delivery"].includes(finalRole.toLowerCase());
-  
+
   const user = await User.create({
     name,
     email,
@@ -63,31 +63,36 @@ exports.register = asyncHandler(async (req, res, next) => {
             await referrer.save();
           }
         }
-        profile = await Customer.create({ 
+        profile = await Customer.create({
           user: user._id,
           referredBy
         });
         break;
       case "tailor":
-        profile = await Tailor.create({ 
+        profile = await Tailor.create({
           user: user._id,
           shopName: shopName || `${name}'s Boutique`,
           experienceInYears: experienceInYears || 0,
           specializations: specializations || [],
           location: {
             type: "Point",
-            coordinates: coordinates || [0, 0] // [longitude, latitude]
+            coordinates: (coordinates && !isNaN(parseFloat(coordinates.lat)) && !isNaN(parseFloat(coordinates.lng)))
+              ? [parseFloat(coordinates.lng), parseFloat(coordinates.lat)]
+              : [0, 0]
           },
           documents: req.body.documents || [] // Save documents if provided
         });
         break;
       case "delivery":
-        profile = await Delivery.create({ 
+        profile = await Delivery.create({
           user: user._id,
           vehicleType: req.body.vehicleType || "bike",
+          vehicleNumber: req.body.vehicleNumber || "",
           currentLocation: {
             type: "Point",
-            coordinates: coordinates || [0, 0]
+            coordinates: (coordinates && !isNaN(parseFloat(coordinates.lat)) && !isNaN(parseFloat(coordinates.lng)))
+              ? [parseFloat(coordinates.lng), parseFloat(coordinates.lat)]
+              : [0, 0]
           },
           documents: req.body.documents || [] // Save documents if provided
         });
@@ -133,7 +138,7 @@ exports.sendOTP = asyncHandler(async (req, res, next) => {
   if (!identifier) {
     return next(new ErrorResponse("Please provide an email or phone number", 400));
   }
-  
+
   // Real implementation would use Twilio/AWS SNS etc.
   console.log(`[OTP] Sending verification code 123456 to ${identifier}`);
   res.status(200).json({ success: true, message: "OTP sent successfully" });
@@ -149,9 +154,9 @@ exports.login = asyncHandler(async (req, res, next) => {
 
   // 1. Identify User (By Email OR Phone Number)
   if (!email) return next(new ErrorResponse("Identifier is required", 400));
-  
-  const user = await User.findOne({ 
-    $or: [{ email: email.toLowerCase() }, { phoneNumber: email }] 
+
+  const user = await User.findOne({
+    $or: [{ email: email.toLowerCase() }, { phoneNumber: email }]
   }).select("+password");
 
   if (!user) {

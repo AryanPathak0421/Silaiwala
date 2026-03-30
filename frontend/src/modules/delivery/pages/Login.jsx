@@ -7,7 +7,7 @@ import useAuthStore from '../../../store/authStore';
 const DeliveryLogin = () => {
     const navigate = useNavigate();
     const { otpLogin, sendOTP, isLoading } = useAuthStore();
-    
+
     const [mobileNumber, setMobileNumber] = useState('');
     const [otp, setOtp] = useState('');
     const [otpSent, setOtpSent] = useState(false);
@@ -81,9 +81,9 @@ const DeliveryLogin = () => {
                             className="rounded-2xl border-slate-200 focus:ring-pink-500 focus:border-pink-500 flex-1"
                         />
                         {!otpSent && (
-                            <Button 
-                                type="button" 
-                                onClick={handleSendOtp} 
+                            <Button
+                                type="button"
+                                onClick={handleSendOtp}
                                 disabled={!mobileNumber || mobileNumber.length < 10 || sendingOtp}
                                 className="bg-[#FF5C8A] hover:bg-[#cc496e] text-white shrink-0 rounded-2xl px-6 font-bold"
                             >
@@ -98,9 +98,9 @@ const DeliveryLogin = () => {
                         <div className="space-y-2">
                             <div className="flex justify-between items-center">
                                 <label className="text-sm font-semibold text-slate-700 uppercase tracking-wider pl-1">Enter OTP</label>
-                                <button 
-                                    type="button" 
-                                    onClick={() => setOtpSent(false)} 
+                                <button
+                                    type="button"
+                                    onClick={() => setOtpSent(false)}
                                     className="text-[10px] text-[#FF5C8A] font-bold uppercase tracking-wider hover:underline"
                                 >
                                     Change Number?

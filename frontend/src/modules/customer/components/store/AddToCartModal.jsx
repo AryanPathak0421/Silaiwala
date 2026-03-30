@@ -50,7 +50,7 @@ const AddToCartModal = ({ isOpen, onClose, product }) => {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={onClose}
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm sm:items-center sm:p-0"
+                    className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md sm:items-center sm:p-0"
                 >
                     <motion.div 
                         initial={{ y: "100%", opacity: 0, scale: 0.95 }}
@@ -58,10 +58,10 @@ const AddToCartModal = ({ isOpen, onClose, product }) => {
                         exit={{ y: "100%", opacity: 0, scale: 0.95 }}
                         transition={{ type: "spring", damping: 25, stiffness: 300 }}
                         onClick={(e) => e.stopPropagation()}
-                        className="w-full max-w-sm bg-white overflow-hidden shadow-2xl rounded-3xl"
+                        className="w-full max-w-[92%] sm:max-w-sm bg-white overflow-hidden shadow-2xl rounded-[2.5rem] flex flex-col max-h-[90vh]"
                     >
                         {/* Image Section */}
-                        <div className="relative aspect-square sm:aspect-video md:aspect-square bg-gray-100 w-full overflow-hidden">
+                        <div className="relative aspect-square sm:aspect-video bg-gray-100 w-full overflow-hidden shrink-0">
                             <img 
                                 src={getImageUrl(product.image)} 
                                 alt={product.name}
@@ -72,19 +72,19 @@ const AddToCartModal = ({ isOpen, onClose, product }) => {
                                 onClick={onClose}
                                 className="absolute top-4 right-4 bg-white/50 backdrop-blur-md p-2 rounded-full text-gray-800 hover:bg-white transition"
                             >
-                                <X size={20} strokeWidth={2.5} />
+                                <X size={18} strokeWidth={2.5} />
                             </button>
                             
                             {/* Discount Badge */}
                             {product.discount && (
-                                <div className="absolute top-4 left-4 bg-[#FFBC00] text-[#FF5C8A] text-xs font-black px-3 py-1 rounded-full shadow-lg border border-white/20">
+                                <div className="absolute top-4 left-4 bg-[#FFBC00] text-[#FF5C8A] text-[10px] font-black px-2.5 py-1 rounded-lg border border-white/20 uppercase tracking-widest">
                                     -{product.discount}%
                                 </div>
                             )}
                         </div>
 
                         {/* Content Section (Matches Image 3 perfectly!) */}
-                        <div className="p-5 flex flex-col gap-3">
+                        <div className="p-4 sm:p-5 flex flex-col gap-3 overflow-y-auto custom-scrollbar">
                             <div className="flex justify-between items-center -mb-1">
                                 <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
                                     {categoryName || 'FABRICS'}

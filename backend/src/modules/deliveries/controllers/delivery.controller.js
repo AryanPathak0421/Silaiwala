@@ -182,45 +182,64 @@ exports.getDashboardStats = asyncHandler(async (req, res, next) => {
   const userId = new mongoose.Types.ObjectId(req.user.id);
   const userIdStr = req.user.id.toString();
 
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  
+  const yesterdayStart = new Date(todayStart);
+  yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+
   // Primary: Aggregation pipeline (most efficient)
   let stats = await Order.aggregate([
     { $match: { deliveryPartner: userId } },
     {
-      $group: {
-        _id: null,
-        totalDeliveries: { $sum: { $cond: [{ $eq: ["$status", "delivered"] }, 1, 0] } },
-        activeDeliveries: { 
-          $sum: { 
-            $cond: [
-              { $in: ["$status", ["pending", "accepted", "fabric-ready-for-pickup", "fabric-picked-up", "ready-for-pickup", "out-for-delivery"]] }, 
-              1, 0
-            ] 
-          } 
-        },
-        totalEarnings: { $sum: { $cond: [{ $eq: ["$status", "delivered"] }, "$deliveryFee", 0] } }
+      $facet: {
+        overall: [
+          {
+            $group: {
+              _id: null,
+              totalDeliveries: { $sum: { $cond: [{ $eq: ["$status", "delivered"] }, 1, 0] } },
+              activeDeliveries: { 
+                $sum: { 
+                  $cond: [
+                    { $in: ["$status", ["pending", "accepted", "fabric-ready-for-pickup", "fabric-picked-up", "ready-for-pickup", "out-for-delivery"]] }, 
+                    1, 0
+                  ] 
+                } 
+              },
+              totalEarnings: { $sum: { $cond: [{ $eq: ["$status", "delivered"] }, "$deliveryFee", 0] } }
+            }
+          }
+        ],
+        today: [
+          { $match: { updatedAt: { $gte: todayStart }, status: "delivered" } },
+          { $group: { _id: null, earnings: { $sum: "$deliveryFee" }, count: { $sum: 1 } } }
+        ],
+        yesterday: [
+          { $match: { updatedAt: { $gte: yesterdayStart, $lt: todayStart }, status: "delivered" } },
+          { $group: { _id: null, earnings: { $sum: "$deliveryFee" } } }
+        ]
       }
     }
   ]);
 
-  // Fallback: If aggregation returns nothing, use find-based counting
-  // This handles edge cases where ObjectId casting fails in the pipeline
-  if (!stats || stats.length === 0) {
-    const allOrders = await Order.find({ deliveryPartner: req.user.id }).select('status deliveryFee').lean();
-    
-    if (allOrders.length > 0) {
-      const activeStatuses = ["pending", "accepted", "fabric-ready-for-pickup", "fabric-picked-up", "ready-for-pickup", "out-for-delivery"];
-      
-      const totalDeliveries = allOrders.filter(o => o.status === "delivered").length;
-      const activeDeliveries = allOrders.filter(o => activeStatuses.includes(o.status)).length;
-      const totalEarnings = allOrders
-        .filter(o => o.status === "delivered")
-        .reduce((sum, o) => sum + (o.deliveryFee || 0), 0);
-      
-      stats = [{ totalDeliveries, activeDeliveries, totalEarnings }];
-    }
+  const overall = stats[0]?.overall?.[0] || { totalDeliveries: 0, activeDeliveries: 0, totalEarnings: 0 };
+  const today = stats[0]?.today?.[0] || { earnings: 0, count: 0 };
+  const yesterday = stats[0]?.yesterday?.[0] || { earnings: 0 };
+
+  // Calculate growth percentage
+  let growth = 0;
+  if (yesterday.earnings > 0) {
+    growth = ((today.earnings - yesterday.earnings) / yesterday.earnings) * 100;
+  } else if (today.earnings > 0) {
+    growth = 100; // 100% growth if there were no earnings yesterday
   }
 
-  const dashboardStats = stats[0] || { totalDeliveries: 0, activeDeliveries: 0, totalEarnings: 0 };
+  const dashboardStats = {
+    ...overall,
+    todayEarnings: today.earnings,
+    todayCount: today.count,
+    growth: Math.round(growth * 10) / 10 // Round to 1 decimal place
+  };
 
   // Also use the wallet balance from the Delivery profile
   res.status(200).json({

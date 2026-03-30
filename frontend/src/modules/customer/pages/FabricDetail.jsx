@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Star, MapPin, ChevronRight, CheckCircle2, ShieldCheck, Tag, Info, Clock } from 'lucide-react';
+import { ArrowLeft, Star, MapPin, ChevronRight, CheckCircle2, ShieldCheck, Tag, Info, Clock, Scissors } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { TAILORS } from '../data/tailors';
 import useCheckoutStore from '../../../store/checkoutStore';
+import api from '../../../utils/api';
+import SafeImage from '../../../components/Common/SafeImage';
 
 const FabricDetail = () => {
     const { id } = useParams();
@@ -12,31 +13,43 @@ const FabricDetail = () => {
 
     const [fabric, setFabric] = useState(null);
     const [tailor, setTailor] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         window.scrollTo(0, 0);
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                // 1. Fetch Fabric Details
+                const fabricRes = await api.get(`/products/${id}`);
+                const fabricData = fabricRes.data.data;
+                setFabric(fabricData);
 
-        let foundFabric = null;
-        let foundTailor = null;
-
-        TAILORS.forEach(t => {
-            const f = t.fabrics?.find(f => f.id === parseInt(id));
-            if (f) {
-                foundFabric = f;
-                foundTailor = t;
+                // 2. Fetch Tailor Details using the tailor ID from fabric
+                if (fabricData?.tailor) {
+                    const tailorId = typeof fabricData.tailor === 'object' ? fabricData.tailor._id : fabricData.tailor;
+                    const tailorRes = await api.get(`/tailors/${tailorId}`);
+                    setTailor(tailorRes.data.data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch fabric detail:', error);
+            } finally {
+                setIsLoading(false);
             }
-        });
-
-        setFabric(foundFabric);
-        setTailor(foundTailor);
+        };
+        fetchData();
     }, [id]);
 
+    if (isLoading) return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="w-10 h-10 border-4 border-[#FF5C8A] border-t-transparent rounded-full animate-spin" />
+        </div>
+    );
+
     if (!fabric || !tailor) return (
-        <div className="min-h-screen flex items-center justify-center">
-            <div className="text-center">
-                <h2 className="text-xl font-bold text-gray-900">Fabric not found</h2>
-                <button onClick={() => navigate(-1)} className="mt-4 text-primary font-black uppercase tracking-widest text-xs">Go Back</button>
-            </div>
+        <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+            <h2 className="text-xl font-bold text-gray-900">Fabric Not Found</h2>
+            <button onClick={() => navigate(-1)} className="mt-4 text-[#FF5C8A] font-bold">Go Back</button>
         </div>
     );
 
@@ -58,15 +71,15 @@ const FabricDetail = () => {
 
             {/* Product Image */}
             <div className="relative aspect-[4/5] w-full overflow-hidden bg-gray-200">
-                <img
-                    src={fabric.image}
+                <SafeImage
+                    src={fabric.images?.[0] || fabric.image}
                     alt={fabric.name}
                     className="w-full h-full object-cover"
                 />
                 <div className="absolute top-4 left-4">
                     <div className="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-gray-100 shadow-xl flex items-center gap-1.5">
-                        <Tag size={12} className="text-primary" />
-                        <span className="text-[10px] font-black text-primary uppercase tracking-wider">{fabric.category}</span>
+                        <Tag size={12} className="text-[#FF5C8A]" />
+                        <span className="text-[10px] font-black text-[#FF5C8A] uppercase tracking-wider">{fabric.category?.name || 'Fabric'}</span>
                     </div>
                 </div>
             </div>
@@ -81,11 +94,11 @@ const FabricDetail = () => {
                     <div className="mb-6">
                         <h2 className="text-2xl font-black text-gray-900 tracking-tight mb-2 leading-tight">{fabric.name}</h2>
                         <div className="flex items-center gap-4">
-                            <span className="text-2xl font-black text-primary">₹{fabric.price}</span>
+                            <span className="text-2xl font-black text-[#FF5C8A]">₹{fabric.price}</span>
                             <div className="h-4 w-px bg-gray-200" />
                             <div className="flex items-center gap-1.5 text-green-600">
                                 <CheckCircle2 size={16} />
-                                <span className="text-xs font-black uppercase tracking-widest">In Stock</span>
+                                <span className="text-xs font-black uppercase tracking-widest">{fabric.inStock ? 'In Stock' : 'Out of Stock'}</span>
                             </div>
                         </div>
                     </div>
@@ -93,24 +106,12 @@ const FabricDetail = () => {
                     {/* Fabric Specifications */}
                     <div className="grid grid-cols-2 gap-4 mb-8">
                         <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-50">
-                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest block mb-1">Fabric Type</span>
-                            <span className="text-sm font-black text-gray-900">{fabric.type}</span>
+                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest block mb-1">Stock Status</span>
+                            <span className="text-sm font-black text-gray-900">{fabric.stock || 0} units</span>
                         </div>
                         <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-50">
-                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest block mb-1">Quality Status</span>
-                            <span className="text-sm font-black text-gray-900">{fabric.quality}</span>
-                        </div>
-                    </div>
-
-                    {/* Suitability Chips */}
-                    <div className="mb-8">
-                        <h3 className="text-xs font-black text-gray-900 tracking-widest uppercase mb-3 opacity-40">Best Suited For</h3>
-                        <div className="flex flex-wrap gap-2">
-                            {fabric.suitability?.map((item, idx) => (
-                                <div key={idx} className="bg-white border-2 border-gray-100 px-4 py-2 rounded-xl text-[11px] font-black text-gray-700 uppercase tracking-tight shadow-sm hover:border-primary/20 transition-colors">
-                                    {item}
-                                </div>
-                            ))}
+                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest block mb-1">Quality Guaranteed</span>
+                            <span className="text-sm font-black text-gray-900">{fabric.isActive ? 'Verified' : 'Reviewing'}</span>
                         </div>
                     </div>
 
@@ -120,11 +121,11 @@ const FabricDetail = () => {
                             <Clock size={20} />
                         </div>
                         <div>
-                            <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest mb-1">Stock Availability</h4>
+                            <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest mb-1">Artisan Availability</h4>
                             <p className="text-[11px] text-amber-700 font-medium leading-relaxed">
-                                {fabric.delivery_delta > 0
-                                    ? `This artisan fabric requires ${fabric.delivery_delta} extra days for processing from warehouse.`
-                                    : "This fabric is available in-store. Choosing this will save up to 2 days on your total delivery time."}
+                                {fabric.inStock 
+                                    ? "This fabric is currently available in the tailor's store. Ready for immediate stitching selection."
+                                    : "This fabric is currently out of stock. Contact the tailor for restocking details."}
                             </p>
                         </div>
                     </div>
@@ -134,7 +135,7 @@ const FabricDetail = () => {
                             <Info size={14} /> Artisan's Description
                         </h3>
                         <p className="text-sm text-gray-500 font-medium leading-relaxed">
-                            {fabric.description}
+                            {fabric.description || "No description provided for this premium fabric."}
                         </p>
                     </div>
 
@@ -143,25 +144,25 @@ const FabricDetail = () => {
                     {/* Tailor Information Section */}
                     <div>
                         <h3 className="text-xs font-black text-gray-900 tracking-widest uppercase mb-4 opacity-40">Artisan Mastermind</h3>
-                        <Link to={`/tailor/${tailor.id}`} className="flex items-center gap-4 bg-white p-4 rounded-[2.5rem] border-2 border-gray-50 active:scale-95 transition-transform group shadow-sm hover:border-primary/10">
+                        <Link to={`/tailor/${tailor._id}`} className="flex items-center gap-4 bg-white p-4 rounded-[2.5rem] border-2 border-gray-50 active:scale-95 transition-transform group shadow-sm hover:border-[#FF5C8A]/10">
                             <div className="w-16 h-16 rounded-[1.5rem] overflow-hidden border-2 border-white shadow-xl rotate-3 group-hover:rotate-0 transition-all duration-500">
-                                <img src={tailor.image} alt={tailor.name} className="w-full h-full object-cover" />
+                                <SafeImage src={tailor.user?.profileImage} alt={tailor.shopName} className="w-full h-full object-cover" />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-1.5 mb-1">
-                                    <h4 className="font-black text-gray-900 truncate group-hover:text-primary transition-colors">{tailor.name}</h4>
-                                    <ShieldCheck size={14} className="text-primary" />
+                                    <h4 className="font-black text-gray-900 truncate group-hover:text-[#FF5C8A] transition-colors">{tailor.shopName || tailor.user?.name}</h4>
+                                    <ShieldCheck size={14} className="text-[#FF5C8A]" />
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <div className="flex items-center gap-1 text-[10px] font-black text-primary bg-[#f2fcf9] px-2 py-0.5 rounded-lg border border-primary/5">
+                                    <div className="flex items-center gap-1 text-[10px] font-black text-[#FF5C8A] bg-pink-50 px-2 py-0.5 rounded-lg border border-[#FF5C8A]/5">
                                         {tailor.rating} <Star size={10} className="fill-current" />
                                     </div>
                                     <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                        {tailor.distance} away
+                                        Expert Artisan
                                     </div>
                                 </div>
                             </div>
-                            <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:text-primary group-hover:bg-[#f2fcf9] transition-all">
+                            <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:text-[#FF5C8A] group-hover:bg-pink-50 transition-all">
                                 <ChevronRight size={18} />
                             </div>
                         </Link>
@@ -174,14 +175,15 @@ const FabricDetail = () => {
                 <div className="max-w-md mx-auto">
                     <button
                         onClick={() => {
-                            setTailorInStore(tailor.id, tailor.name);
-                            navigate('/services', { state: { selectedFabric: fabric, tailorId: tailor.id, tailorName: tailor.name } });
+                            setTailorInStore(tailor._id, tailor.shopName || tailor.user?.name);
+                            navigate('/services', { state: { selectedFabric: fabric, tailorId: tailor._id, tailorName: tailor.shopName || tailor.user?.name, fabricSource: 'platform' } });
                         }}
-                        className="w-full bg-primary text-white py-4 rounded-2xl shadow-xl shadow-primary/30 font-black text-sm active:scale-95 transition-transform flex items-center justify-center gap-2"
+                        className="w-full bg-[#FF5C8A] text-white py-4 rounded-2xl shadow-xl shadow-[#FF5C8A]/30 font-black text-sm active:scale-95 transition-transform flex items-center justify-center gap-2"
                     >
+                        <Scissors size={18} />
                         Book Stitching With This Fabric
                     </button>
-                    <p className="text-[10px] text-gray-400 text-center mt-3 font-bold uppercase tracking-widest">Pricing includes fabric + base stitching charges</p>
+                    <p className="text-[10px] text-gray-400 text-center mt-3 font-bold uppercase tracking-widest">Pricing excludes base stitching charges</p>
                 </div>
             </div>
         </div>

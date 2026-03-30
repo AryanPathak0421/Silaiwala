@@ -11,7 +11,7 @@ exports.getAddresses = asyncHandler(async (req, res, next) => {
   let customer = await Customer.findOne({ user: req.user.id });
   
   // Auto-create profile if role is customer/admin but profile is missing
-  if (!customer && (req.user.role === "customer" || req.user.role === "admin")) {
+  if (!customer) {
     customer = await Customer.create({ user: req.user.id });
   }
 
@@ -40,7 +40,7 @@ exports.addAddress = asyncHandler(async (req, res, next) => {
   let customer = await Customer.findOne({ user: req.user.id });
   
   // Auto-create profile if role is customer/admin but profile is missing
-  if (!customer && (req.user.role === "customer" || req.user.role === "admin")) {
+  if (!customer) {
     customer = await Customer.create({ user: req.user.id });
   }
 

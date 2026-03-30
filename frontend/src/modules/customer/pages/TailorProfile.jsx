@@ -237,7 +237,13 @@ const TailorProfile = () => {
                                 transition={{ delay: idx * 0.1 }}
                                 className="snap-start flex-shrink-0 w-52"
                             >
-                                <div className="bg-white rounded-[2.5rem] p-3 shadow-md border border-gray-100 group cursor-pointer hover:shadow-xl transition-all duration-500 overflow-hidden">
+                                <div 
+                                    onClick={() => {
+                                        setTailorInStore(tailor._id, tailor.shopName || tailor.user?.name);
+                                        navigate(`/fabric/${fabric._id}`);
+                                    }}
+                                    className="bg-white rounded-[2.5rem] p-3 shadow-md border border-gray-100 group cursor-pointer hover:shadow-xl transition-all duration-500 overflow-hidden"
+                                >
                                     <div className="aspect-[3/4] rounded-[2rem] overflow-hidden mb-3 relative shadow-inner">
                                         <SafeImage src={fabric.images?.[0] || fabric.image} alt={fabric.name} className="w-full h-full group-hover:scale-110 transition-transform duration-1000" />
                                         <div className="absolute top-3 left-3">
@@ -282,7 +288,15 @@ const TailorProfile = () => {
                             viewport={{ once: true }}
                             transition={{ delay: idx * 0.1 }}
                         >
-                            <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 group">
+                            <div 
+                                onClick={() => {
+                                    if (sample.type === 'service') {
+                                        setTailorInStore(tailor._id, tailor.shopName || tailor.user?.name);
+                                        navigate(`/services/${sample._id}`, { state: { tailorId: tailor._id } });
+                                    }
+                                }}
+                                className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 group cursor-pointer hover:shadow-md transition-all duration-300"
+                            >
                                 <div className="aspect-[4/5] overflow-hidden">
                                     <SafeImage src={sample.image} alt={sample.title} className="w-full h-full group-hover:scale-105 transition-transform duration-700" />
                                 </div>
@@ -316,27 +330,27 @@ const TailorProfile = () => {
             </div>
 
             {/* Sticky Action Footer - DUAL ACTION */}
-            <div className="fixed bottom-0 left-0 right-0 p-5 pb-safe bg-white/80 backdrop-blur-2xl border-t border-gray-100 z-[40] animate-in slide-in-from-bottom">
-                <div className="max-w-md mx-auto flex gap-3">
+            <div className="fixed bottom-0 left-0 right-0 p-3 pb-safe bg-white/80 backdrop-blur-2xl border-t border-gray-100 z-[40] animate-in slide-in-from-bottom">
+                <div className="max-w-md mx-auto flex gap-2">
                     <button
                         onClick={() => {
                             setTailorInStore(tailor._id, tailor.shopName || tailor.user?.name);
                             navigate('/services', { state: { fabricSource: 'customer' } });
                         }}
-                        className="flex-1 bg-white border-2 border-[#FF5C8A] text-[#FF5C8A] py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest active:scale-95 transition-transform flex flex-col items-center justify-center gap-0.5"
+                        className="flex-1 bg-white border-2 border-[#FF5C8A] text-[#FF5C8A] py-2.5 rounded-xl font-black text-[9px] uppercase tracking-widest active:scale-95 transition-transform flex items-center justify-center gap-1.5 shadow-sm"
                     >
-                        <Scissors size={16} />
-                        <span>Stitch My Fabric</span>
+                        <Scissors size={14} />
+                        <span>Stitch Mine</span>
                     </button>
                     <button
                         onClick={() => {
                             const fabricSection = document.querySelector('.mt-10');
                             fabricSection?.scrollIntoView({ behavior: 'smooth' });
                         }}
-                        className="flex-[1.4] bg-[#FF5C8A] text-white py-4 rounded-2xl shadow-xl shadow-[#FF5C8A]/30 font-black text-[11px] uppercase tracking-widest active:scale-95 transition-transform flex flex-col items-center justify-center gap-0.5"
+                        className="flex-[1.2] bg-[#FF5C8A] text-white py-2.5 rounded-xl shadow-lg shadow-[#FF5C8A]/20 font-black text-[9px] uppercase tracking-widest active:scale-95 transition-transform flex items-center justify-center gap-1.5"
                     >
-                        <ShoppingBag size={16} />
-                        <span>Pick Tailor Fabric</span>
+                        <ShoppingBag size={14} />
+                        <span>Pick Tailor's</span>
                     </button>
                 </div>
             </div>

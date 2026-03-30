@@ -85,13 +85,6 @@ export const Step1Basic = ({ register, errors, setValue, watch }) => {
                         })}
                         error={errors.otp?.message}
                     />
-                    <Input
-                        label="Set Password"
-                        type="password"
-                        placeholder="••••••••"
-                        {...register('password', { required: 'Password is required' })}
-                        error={errors.password?.message}
-                    />
                 </div>
             )}
         </div>

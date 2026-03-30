@@ -68,8 +68,11 @@ const DeliveryDashboard = () => {
                     availableOrders: availableRes.data,
                     stats: {
                         activeTasks: statsRes.data.activeDeliveries || ordersRes.data.length,
-                        earnings: statsRes.data.walletBalance || statsRes.data.totalEarnings || 0,
-                        totalPickups: statsRes.data.totalDeliveries
+                        earnings: statsRes.data.walletBalance || 0,
+                        totalPickups: statsRes.data.totalDeliveries,
+                        todayEarnings: statsRes.data.todayEarnings || 0,
+                        todayCount: statsRes.data.todayCount || 0,
+                        growth: statsRes.data.growth || 0
                     }
                 });
             }
@@ -282,11 +285,21 @@ const DeliveryDashboard = () => {
                     </div>
 
                     <div className="flex items-end gap-2 mb-6">
-                        <h3 className="text-[40px] font-black text-slate-900 tracking-tighter leading-none">₹{dashboardStats.earnings || 0}</h3>
-                        <div className="flex items-center gap-1 bg-green-50 text-green-600 px-1.5 py-0.5 rounded-full mb-1 border border-green-100 scale-90">
-                            <TrendingUp size={11} strokeWidth={3} />
-                            <span className="text-[9px] font-black">+12%</span>
-                        </div>
+                        <h3 className="text-[40px] font-black text-slate-900 tracking-tighter leading-none">
+                            ₹{dashboardStats.todayEarnings || 0}
+                        </h3>
+                        {dashboardStats.growth !== 0 && (
+                            <div className={`flex items-center gap-1 ${dashboardStats.growth >= 0 ? 'bg-green-50 text-green-600 border-green-100' : 'bg-red-50 text-red-600 border-red-100'} px-1.5 py-0.5 rounded-full mb-1 border scale-90`}>
+                                <TrendingUp 
+                                    size={11} 
+                                    strokeWidth={3} 
+                                    className={dashboardStats.growth < 0 ? 'rotate-180' : ''} 
+                                />
+                                <span className="text-[9px] font-black">
+                                    {dashboardStats.growth >= 0 ? '+' : ''}{dashboardStats.growth}%
+                                </span>
+                            </div>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-3 gap-2 pt-4 border-t border-slate-50">
@@ -294,24 +307,24 @@ const DeliveryDashboard = () => {
                              <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
                                 <Package size={18} strokeWidth={2.5} />
                              </div>
-                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Orders</p>
-                             <p className="text-sm font-black text-slate-900">{dashboardStats.totalPickups || 18}</p>
+                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Today</p>
+                             <p className="text-sm font-black text-slate-900">{dashboardStats.todayCount || 0}</p>
                         </div>
                         <div className="text-center space-y-2 relative">
                              <div className="absolute inset-y-0 left-0 w-px bg-slate-100"></div>
                              <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
                                 <TrendingUp size={18} strokeWidth={2.5} />
                              </div>
-                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Incentives</p>
-                             <p className="text-sm font-black text-slate-900">₹0</p>
+                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Wallet</p>
+                             <p className="text-sm font-black text-slate-900">₹{dashboardStats.earnings || 0}</p>
                              <div className="absolute inset-y-0 right-0 w-px bg-slate-100"></div>
                         </div>
                         <div className="text-center space-y-2">
                              <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
-                                <IndianRupee size={18} strokeWidth={2.5} />
+                                <Package size={18} strokeWidth={2.5} />
                              </div>
-                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Cash</p>
-                             <p className="text-sm font-black text-slate-900">₹-1000</p>
+                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total</p>
+                             <p className="text-sm font-black text-slate-900">{profile?.totalDeliveries || 0}</p>
                         </div>
                     </div>
                 </div>

@@ -21,14 +21,15 @@ const generateToken = (id) => {
  * @access  Public
  */
 exports.register = asyncHandler(async (req, res, next) => {
-  const { name, email, phoneNumber, password, role, shopName, experienceInYears, coordinates, specializations, referralCode } = req.body;
+  const { name, email, phoneNumber, phone, password, role, shopName, experienceInYears, coordinates, specializations, referralCode } = req.body;
+  const finalPhoneNumber = phoneNumber || phone;
 
   // 1. Validate Role
   const allowedRoles = ["customer", "tailor", "delivery"];
   const finalRole = allowedRoles.includes(role?.toLowerCase()) ? role.toLowerCase() : "customer";
 
-  // 2. Check for existing user (Redundant if using Mongoose unique index, but good for custom error messages)
-  const userExists = await User.findOne({ $or: [{ email }, { phoneNumber }] });
+  // 2. Check for existing user
+  const userExists = await User.findOne({ $or: [{ email }, { phoneNumber: finalPhoneNumber }] });
   if (userExists) {
     const conflictField = userExists.email === email ? "email" : "phone number";
     return next(new ErrorResponse(`A user with this ${conflictField} already exists`, 400));
@@ -40,7 +41,7 @@ exports.register = asyncHandler(async (req, res, next) => {
   const user = await User.create({
     name,
     email,
-    phoneNumber,
+    phoneNumber: finalPhoneNumber,
     password,
     role: finalRole,
     isActive: isAutoActive

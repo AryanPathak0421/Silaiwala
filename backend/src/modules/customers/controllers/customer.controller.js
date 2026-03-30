@@ -20,7 +20,7 @@ exports.getProfile = asyncHandler(async (req, res, next) => {
   
   let customerProfile = await Customer.findOne({ user: req.user.id }).lean();
   
-  if (!customerProfile && (user.role === "customer" || user.role === "admin")) {
+  if (!customerProfile) {
     customerProfile = await Customer.create({ user: req.user.id });
     customerProfile = customerProfile.toJSON();
   }
@@ -119,10 +119,9 @@ exports.getTailors = asyncHandler(async (req, res, next) => {
  */
 exports.wishlistToggle = asyncHandler(async (req, res, next) => {
   const { productId } = req.body;
-  const customer = await Customer.findOne({ user: req.user.id });
-
+  let customer = await Customer.findOne({ user: req.user.id });
   if (!customer) {
-    return next(new ErrorResponse("Customer profile not found", 404));
+    customer = await Customer.create({ user: req.user.id });
   }
 
   const isExists = customer.wishlist.includes(productId);
@@ -147,13 +146,13 @@ exports.wishlistToggle = asyncHandler(async (req, res, next) => {
  * @access  Private (Customer)
  */
 exports.getWishlist = asyncHandler(async (req, res, next) => {
-  const customer = await Customer.findOne({ user: req.user.id }).populate({
+  let customer = await Customer.findOne({ user: req.user.id }).populate({
     path: "wishlist",
     populate: { path: "category", select: "name" },
   });
 
   if (!customer) {
-    return next(new ErrorResponse("Customer profile not found", 404));
+    customer = await Customer.create({ user: req.user.id });
   }
 
   res.status(200).json({
@@ -218,9 +217,9 @@ exports.applyPromoCode = asyncHandler(async (req, res, next) => {
  * @access  Private (Customer)
  */
 exports.getReferralStats = asyncHandler(async (req, res, next) => {
-  const customer = await Customer.findOne({ user: req.user.id });
+  let customer = await Customer.findOne({ user: req.user.id });
   if (!customer) {
-    return next(new ErrorResponse("Customer profile not found", 404));
+    customer = await Customer.create({ user: req.user.id });
   }
   const referralsCount = await Customer.countDocuments({ referredBy: req.user.id });
 

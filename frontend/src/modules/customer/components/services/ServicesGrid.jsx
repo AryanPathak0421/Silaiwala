@@ -88,11 +88,16 @@ const ServicesGrid = () => {
     const [isLoading, setIsLoading] = useState(true);
 
 
+    const routeLocation = useRouteLocation();
+    const tailorId = routeLocation.state?.tailorId;
+
     useEffect(() => {
         const fetchServices = async () => {
             setIsLoading(true);
             try {
-                const response = await api.get('/services');
+                const response = await api.get('/services', {
+                    params: { tailor: tailorId }
+                });
                 if (response.data.success) {
                     setServices(response.data.data);
                 }
@@ -103,7 +108,7 @@ const ServicesGrid = () => {
             }
         };
         fetchServices();
-    }, []);
+    }, [tailorId]);
 
     if (isLoading) {
         return (

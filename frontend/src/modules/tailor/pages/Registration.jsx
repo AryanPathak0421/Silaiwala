@@ -26,7 +26,7 @@ const Registration = () => {
         let fieldsToValidate = [];
         switch (step) {
             case 1:
-                fieldsToValidate = ['fullName', 'phone', 'email', 'otp', 'password'];
+                fieldsToValidate = ['fullName', 'phone', 'email', 'otp'];
                 break;
             case 2:
                 fieldsToValidate = ['shopName', 'address', 'city', 'pincode', 'serviceArea', 'experienceInYears', 'specializations'];
@@ -91,7 +91,6 @@ const Registration = () => {
                 name: data.fullName,
                 email: data.email,
                 phoneNumber: data.phone,
-                password: data.password,
                 role: 'tailor',
                 shopName: data.shopName,
                 experienceInYears: Number(data.experienceInYears),

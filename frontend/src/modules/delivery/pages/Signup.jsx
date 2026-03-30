@@ -14,9 +14,7 @@ const DeliverySignup = () => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        password: '',
-        confirmPassword: '',
-        phone: '',
+        phoneNumber: '',
         vehicleNumber: ''
     });
 
@@ -29,12 +27,6 @@ const DeliverySignup = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-
-        if (formData.password !== formData.confirmPassword) {
-            setError("Passwords don't match");
-            return;
-        }
-
         try {
             await signup({ ...formData, role: 'delivery' });
             navigate('/delivery');
@@ -98,9 +90,9 @@ const DeliverySignup = () => {
                     <div className="space-y-2">
                         <label className="text-sm font-semibold text-slate-700 uppercase tracking-wider pl-1">Phone</label>
                         <Input
-                            name="phone"
+                            name="phoneNumber"
                             placeholder="Mobile No."
-                            value={formData.phone}
+                            value={formData.phoneNumber}
                             onChange={handleChange}
                             required
                             className="rounded-2xl border-slate-200 focus:ring-pink-500 focus:border-pink-500"
@@ -112,33 +104,6 @@ const DeliverySignup = () => {
                             name="vehicleNumber"
                             placeholder="DL 1CB 1234"
                             value={formData.vehicleNumber}
-                            onChange={handleChange}
-                            required
-                            className="rounded-2xl border-slate-200 focus:ring-pink-500 focus:border-pink-500"
-                        />
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <label className="text-sm font-semibold text-slate-700 uppercase tracking-wider pl-1">Password</label>
-                        <Input
-                            name="password"
-                            type="password"
-                            placeholder="••••••••"
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                            className="rounded-2xl border-slate-200 focus:ring-pink-500 focus:border-pink-500"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-semibold text-slate-700 uppercase tracking-wider pl-1">Confirm</label>
-                        <Input
-                            name="confirmPassword"
-                            type="password"
-                            placeholder="••••••••"
-                            value={formData.confirmPassword}
                             onChange={handleChange}
                             required
                             className="rounded-2xl border-slate-200 focus:ring-pink-500 focus:border-pink-500"

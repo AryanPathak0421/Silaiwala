@@ -3,7 +3,14 @@ const { body, oneOf } = require('express-validator');
 exports.validateRegister = [
   body('name').trim().notEmpty().withMessage('Name is required').isLength({ max: 50 }).withMessage('Name cannot exceed 50 characters'),
   body('email').isEmail().withMessage('Please provide a valid email').normalizeEmail(),
-  body('phoneNumber').notEmpty().withMessage('Phone number is required').matches(/^\+?[\d\s-]{10,}$/).withMessage('Please provide a valid phone number'),
+  body('phoneNumber').optional().matches(/^\+?[\d\s-]{1,15}$/).withMessage('Please provide a valid phone number'),
+  body('phone').optional().matches(/^\+?[\d\s-]{1,15}$/).withMessage('Please provide a valid phone number'),
+  body().custom((value, { req }) => {
+    if (!req.body.phoneNumber && !req.body.phone) {
+      throw new Error('Phone number is required');
+    }
+    return true;
+  }),
   body('password').optional().isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
   body('role').optional().isIn(['customer', 'tailor', 'delivery']).withMessage('Invalid role'),
   
